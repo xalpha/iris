@@ -33,67 +33,6 @@ add_definitions(${QT_DEFINITIONS})
 set( Q_CUSTOM_PLOT_INC extern/qcustomplot/qcustomplot.h )
 set( Q_CUSTOM_PLOT_SRC extern/qcustomplot/qcustomplot.cpp )
 
-# set the header files of QWT Plot 3D
-set( QWT_PLOT_3D_INC
-    extern/qwtplot3d/include/qwt3d_extglwidget.h
-    extern/qwtplot3d/include/qwt3d_color.h
-    extern/qwtplot3d/include/qwt3d_global.h
-    extern/qwtplot3d/include/qwt3d_types.h
-    extern/qwtplot3d/include/qwt3d_axis.h
-    extern/qwtplot3d/include/qwt3d_coordsys.h
-    extern/qwtplot3d/include/qwt3d_drawable.h
-    extern/qwtplot3d/include/qwt3d_helper.h
-    extern/qwtplot3d/include/qwt3d_label.h
-    extern/qwtplot3d/include/qwt3d_openglhelper.h
-    extern/qwtplot3d/include/qwt3d_curve.h
-    extern/qwtplot3d/include/qwt3d_colorlegend.h
-    extern/qwtplot3d/include/qwt3d_plot.h
-    extern/qwtplot3d/include/qwt3d_enrichment.h
-    extern/qwtplot3d/include/qwt3d_enrichment_std.h
-    extern/qwtplot3d/include/qwt3d_autoscaler.h
-    extern/qwtplot3d/include/qwt3d_autoptr.h
-    extern/qwtplot3d/include/qwt3d_io.h
-    extern/qwtplot3d/include/qwt3d_io_reader.h
-    extern/qwtplot3d/include/qwt3d_scale.h
-    extern/qwtplot3d/include/qwt3d_portability.h
-    extern/qwtplot3d/include/qwt3d_mapping.h
-    extern/qwtplot3d/include/qwt3d_gridmapping.h
-    extern/qwtplot3d/include/qwt3d_parametricsurface.h
-    extern/qwtplot3d/include/qwt3d_function.h
-    extern/qwtplot3d/include/qwt3d_volumeplot.h
-    extern/qwtplot3d/include/qwt3d_graphplot.h
-    extern/qwtplot3d/include/qwt3d_multiplot.h
-    extern/qwtplot3d/include/qwt3d_io_gl2ps.h
-	extern/gl2ps/gl2ps.h )
-
-# the source files for QWT Plot 3D
-set( QWT_PLOT_3D_SRC
-    extern/qwtplot3d/src/qwt3d_extglwidget.cpp
-    extern/qwtplot3d/src/qwt3d_axis.cpp
-    extern/qwtplot3d/src/qwt3d_color.cpp
-    extern/qwtplot3d/src/qwt3d_coordsys.cpp
-    extern/qwtplot3d/src/qwt3d_drawable.cpp
-    extern/qwtplot3d/src/qwt3d_mousekeyboard.cpp
-    extern/qwtplot3d/src/qwt3d_movements.cpp
-    extern/qwtplot3d/src/qwt3d_lighting.cpp
-    extern/qwtplot3d/src/qwt3d_curve.cpp
-    extern/qwtplot3d/src/qwt3d_colorlegend.cpp
-    extern/qwtplot3d/src/qwt3d_plot.cpp
-    extern/qwtplot3d/src/qwt3d_label.cpp
-    extern/qwtplot3d/src/qwt3d_types.cpp
-    extern/qwtplot3d/src/qwt3d_enrichment_std.cpp
-    extern/qwtplot3d/src/qwt3d_autoscaler.cpp
-    extern/qwtplot3d/src/qwt3d_io_reader.cpp
-    extern/qwtplot3d/src/qwt3d_io.cpp
-    extern/qwtplot3d/src/qwt3d_scale.cpp
-    extern/qwtplot3d/src/qwt3d_gridmapping.cpp
-    extern/qwtplot3d/src/qwt3d_parametricsurface.cpp
-    extern/qwtplot3d/src/qwt3d_function.cpp
-    extern/qwtplot3d/src/qwt3d_gridplot.cpp
-    extern/qwtplot3d/src/qwt3d_meshplot.cpp
-    extern/qwtplot3d/src/qwt3d_io_gl2ps.cpp
-	extern/gl2ps/gl2ps.c )
-
 # set the target
 set( IrisCC_Target irisCC )
 

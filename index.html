@@ -66,12 +66,20 @@ Iris uses <a href="http://www.cmake.org/">CMake</a> for its build process, and a
 <h4>Windows</h4>
 
 <ol>
+<li>download <a href="https://github.com/xalpha/iris/zipball/master">Iris</a></li>
 <li>download and install <a href="http://www.cmake.org/">CMake</a></li>
 <li>setup dependencies</li>
   <ul>
   <li>download <a href="http://eigen.tuxfamily.org">Eigen</a> and set the <code>Eigen3_DIR</code> environment variable</li>
   <li>download <a href="http://opencv.willowgarage.com/wiki/">OpenCV</a> and set the <code>OpenCV_DIR</code> environment variable to point to the subdirectory where the file <b>OpenCVConfig.cmake</b> is located (usually under build/ ) </li>
+  <li>download <a href="http://qt.nokia.com/">Qt</a> and set the <code>Qt_DIR</code> environment variable</li>
   </ul> 
+<li>run the <a href="http://www.cmake.org/">CMake</a> GUI and point the directory where Iris is located</li>
+<li>choose a directory where Iris should be build to (<i>build directory</i>)</li>
+<li>Hit <b>Configure</b></li>
+<li>Choose toolchain and architecture</li>
+<li>Hit <b>Generate</b></li>
+<li>if there were no errors, you should find your solution files in the <i>build directory</i></li>
 </ol>
 
     

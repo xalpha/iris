@@ -61,21 +61,17 @@ $ git checkout gh-pages
 
 <h3>Instalation</h3>
 
-Iris uses <a href="http://www.cmake.org/">CMake</a> for its build process, and as such can be used with any of the supported IDEs or commandline toolchains available. A short description follows, of how to install Iris under different platforms:
+Iris uses <a href="http://www.cmake.org/">CMake</a> for its build process, and as such can be used with any of the supported IDEs or commandline toolchains available. A short description follows, of how to install Iris under different platforms.
 
 <h4>Windows</h4>
 
 <ol>
 <li>download and install <a href="http://www.cmake.org/">CMake</a></li>
-<li>setup dependencies:
+<li>setup dependencies</li>
   <ul>
-  <li><a href="http://eigen.tuxfamily.org">Eigen</a></li>
-  <li><a href="http://opencv.willowgarage.com/wiki/">OpenCV</a></li>
-  <li><a href="http://qt.nokia.com/">Qt</a> (for the GUI)</li>
-  <li><a href="http://www.workslikeclockwork.com/index.php/components/qt-plotting-widget/">Qt plotting widget</a> (for the GUI)</li> 
-  </ul>  
-  
-</li>
+  <li>download <a href="http://eigen.tuxfamily.org">Eigen</a> and set the %Eigen3_DIR% environment variable</li>
+  <li>download <a href="http://opencv.willowgarage.com/wiki/">OpenCV</a> and set the %OpenCV_DIR% environment variable to point to the subdirectory where the file OpenCVConfig.cmake is located (usually under build/ ) </li>
+  </ul> 
 </ol>
 
     

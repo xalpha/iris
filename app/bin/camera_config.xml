@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<Configuration version="1.0" >
+<Devices>
+        <!-- Base Devices -->
+
+        <!-- Cameras -->
+        <Device>
+            <Type>AVTCamera</Type>
+            <ID>cam1</ID>
+            <DeviceID>116022</DeviceID>
+            <Exposure>1000</Exposure>
+        </Device>
+
+        <Device>
+            <Type>AVTCamera</Type>
+            <ID>cam2</ID>
+            <DeviceID>116021</DeviceID>
+            <Exposure>1000</Exposure>
+        </Device>
+    </Devices>
+</Configuration>

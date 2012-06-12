@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<Configuration version="1.0" >
+    <Devices>
+        <Device type="AVTCamera" id="cam1" deviceID="116022" timeout="1000" />
+    </Devices>
+</Configuration>

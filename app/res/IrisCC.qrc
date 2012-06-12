@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>lib-iris.png</file>
+    </qresource>
+</RCC>

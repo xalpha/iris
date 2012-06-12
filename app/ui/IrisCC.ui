@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>IrisCC</class>
+ <widget class="QMainWindow" name="IrisCC">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1099</width>
+    <height>765</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>9999999</width>
+    <height>999999</height>
+   </size>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
+  <property name="windowTitle">
+   <string>Iris Camera Calibration</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../res/IrisCC.qrc">
+    <normaloff>:/icon/lib-iris.png</normaloff>:/icon/lib-iris.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_9">
+    <property name="leftMargin">
+     <number>7</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="views">
+      <property name="tabPosition">
+       <enum>QTabWidget::South</enum>
+      </property>
+      <property name="tabShape">
+       <enum>QTabWidget::Rounded</enum>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_image">
+       <attribute name="title">
+        <string>Image</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QCustomPlot" name="plot_image" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_error">
+       <attribute name="title">
+        <string>Error</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QCustomPlot" name="plot_error" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Finder</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <item>
+          <widget class="QComboBox" name="select_finder">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Chessboard</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="configure_finder">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Calibration</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QComboBox" name="select_calibration">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>OpenCV</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Multi-Camera</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="configure_calibration">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Images</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QPushButton" name="load">
+           <property name="text">
+            <string>Load Images</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab_detected">
+            <attribute name="title">
+             <string>Detected</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QListWidget" name="image_list_detected">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_rejected">
+            <attribute name="title">
+             <string>Rejected</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QListWidget" name="image_list_rejected"/>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="clear">
+           <property name="text">
+            <string>Clear All</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header location="global">qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../res/IrisCC.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -20,7 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
- * CameraCalibration.cpp
+ * OpenCVCalibration.cpp
  *
  *  Created on: Mar 14, 2011
  *      Author: duliu

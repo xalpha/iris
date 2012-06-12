@@ -7,7 +7,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # set some variabiles
-set( CMAKE_BUILD_TYPE Debug )
+set( CMAKE_BUILD_TYPE Release )
 if( NOT WIN32 )
     set( BUILD_SHARED_LIBS TRUE )
 endif()
@@ -35,7 +35,6 @@ list( APPEND Iris_SRC
 
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )
-
 
 # add release library
 add_library( ${Iris_TARGET} ${Iris_INC} ${Iris_SRC} ${LIBPPM_SRC} )

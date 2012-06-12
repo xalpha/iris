@@ -29,6 +29,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QProgressDialog>
+#include <QProgressBar>
 #include <QStringList>
 #include <QGraphicsPixmapItem>
 
@@ -392,9 +393,9 @@ void IrisCC::on_load()
             return;
 
         // init progress dialog
-        QProgressDialog progress("Loading Images ...", " ", 0, imagePaths.size(), this);
-        progress.setCancelButton(0);
+        QProgressDialog progress("Loading Images...", " ", 0, imagePaths.size(), this);
         progress.setWindowModality(Qt::WindowModal);
+        progress.setCancelButton(0);
         progress.show();
 
         // load the images

@@ -22,7 +22,7 @@
 #pragma once
 
 /*
- * CameraCalibration.hpp
+ * OpenCVCalibration.hpp
  *
  *  Created on: Mar 14, 2011
  *      Author: duliu

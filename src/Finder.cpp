@@ -2,7 +2,7 @@
 //                                                                            //
 // This file is part of iris, a lightweight C++ camera calibration library    //
 //                                                                            //
-// Copyright (C) 2010, 2011 Alexandru Duliu                                   //
+// Copyright (C) 2012 Alexandru Duliu                                         //
 //                                                                            //
 // iris is free software; you can redistribute it and/or                      //
 // modify it under the terms of the GNU Lesser General Public                 //

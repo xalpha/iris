@@ -35,9 +35,9 @@ namespace iris {
 
 OpenCVCalibration::OpenCVCalibration() :
     Calibration(),
-    m_fixPrincipalPoint( true ),
-    m_fixAspectRatio( false ),
-    m_tangentialDistortion( false )
+    m_fixPrincipalPoint( false ),
+    m_fixAspectRatio( true ),
+    m_tangentialDistortion( true )
 {
 }
 

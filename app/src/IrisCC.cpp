@@ -36,10 +36,13 @@
 #include "ui_IrisCC.h"
 #include "ui_ChessboardFinder.h"
 #include "ui_OpenCVCalibration.h"
+#include "ui_OpenCVStereoCalibration.h"
+
 #include <IrisCC.hpp>
 
 #include <iris/ChessboardFinder.hpp>
 #include <iris/OpenCVCalibration.hpp>
+#include <iris/OpenCVStereoCalibration.hpp>
 
 
 IrisCC::IrisCC(QWidget *parent) :
@@ -382,17 +385,34 @@ void IrisCC::on_configureCalibration()
             case 0 :
                 break;
 
-            // OpenCV (nothing to do)
+            // OpenCV
             case 1 :
             {
                 ui->configure_calibration->setEnabled(true);
-                Ui::OpenCVCalibration openCVCalibration;
-                openCVCalibration.setupUi( &dialog );
+                Ui::OpenCVCalibration form;
+                form.setupUi( &dialog );
                 dialog.exec();
                 iris::OpenCVCalibration* calib = new iris::OpenCVCalibration();
-                calib->configure( openCVCalibration.fixed_principal_point->isChecked(),
-                                  openCVCalibration.fixed_aspect_ratio->isChecked(),
-                                  openCVCalibration.tangential_distortion->isChecked() );
+                calib->configure( form.fixed_principal_point->isChecked(),
+                                  form.fixed_aspect_ratio->isChecked(),
+                                  form.tangential_distortion->isChecked() );
+                m_calibration = std::shared_ptr<iris::Calibration>( calib );
+                updateCalibration();
+                break;
+            }
+
+            // OpenCV Stereo
+            case 2 :
+            {
+                ui->configure_calibration->setEnabled(true);
+                Ui::OpenCVStereoCalibration form;
+                form.setupUi( &dialog );
+                dialog.exec();
+                iris::OpenCVStereoCalibration* calib = new iris::OpenCVStereoCalibration();
+                calib->configure( form.fixed_principal_point->isChecked(),
+                                  form.fixed_aspect_ratio->isChecked(),
+                                  form.same_focal_length->isChecked(),
+                                  form.tangential_distortion->isChecked() );
                 m_calibration = std::shared_ptr<iris::Calibration>( calib );
                 updateCalibration();
                 break;

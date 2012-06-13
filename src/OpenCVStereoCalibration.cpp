@@ -43,6 +43,15 @@ OpenCVStereoCalibration::~OpenCVStereoCalibration() {
 }
 
 
+void OpenCVStereoCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, bool sameFocalLength, bool tangentialDistortion )
+{
+    m_fixPrincipalPoint = fixPrincipalPoint;
+    m_fixAspectRatio = fixAspectRatio;
+    m_sameFocalLength = sameFocalLength;
+    m_tangentialDistortion = tangentialDistortion;
+}
+
+
 void OpenCVStereoCalibration::calibrate()
 {
     // assuming there are only two cameras
@@ -95,17 +104,24 @@ void OpenCVStereoCalibration::calibrate()
     // try to compute the intrinsic and extrinsic parameters
     cv::Mat cameraMatrix_1 = cv::Mat::eye(3,3,CV_64F);
     cv::Mat cameraMatrix_2 = cv::Mat::eye(3,3,CV_64F);
+    cv::Mat essentialMatrix = cv::Mat::eye(3,3,CV_64F);
+    cv::Mat fundamentalMatrix = cv::Mat::eye(3,3,CV_64F);
     cv::Mat distCoeff_1(5,1,CV_64F);
     cv::Mat distCoeff_2(5,1,CV_64F);
     std::vector<cv::Mat> rotationVectors;
     std::vector<cv::Mat> translationVectors;
-//    double error = cv::calibrateCamera( cvVectorPoints3D,
-//                                        cvVectorPoints2D,
-//                                        cv::Size( imageSize(0), imageSize(1) ),
-//                                        cameraMatrix,
-//                                        distCoeff,
-//                                        rotationVectors,
-//                                        translationVectors );
+    double error = cv::stereoCalibrate( cvVectorPoints3D,
+                                        cvVectorPoints2D_1,
+                                        cvVectorPoints2D_2,
+                                        cameraMatrix_1,
+                                        distCoeff_1,
+                                        cameraMatrix_2,
+                                        distCoeff_2,
+                                        cv::Size( imageSize(0), imageSize(1) ),
+                                        rotationVectors,
+                                        translationVectors,
+                                        essentialMatrix,
+                                        fundamentalMatrix );
 
 //    // instrinsic matrix
 //    cv::cv2eigen( cameraMatrix, cam.intrinsic );
@@ -148,6 +164,27 @@ void OpenCVStereoCalibration::calibrate()
 //        for( size_t p=0; p<projected.size(); p++ )
 //            cam.poses[i].projected2D.push_back( Eigen::Vector2d( projected[p].x, projected[p].y ) );
 //    }
+}
+
+
+int OpenCVStereoCalibration::flags()
+{
+    // init stuff
+    int result = 0;
+
+    if( m_fixPrincipalPoint )
+        result = result | CV_CALIB_FIX_PRINCIPAL_POINT;
+
+    if( m_fixAspectRatio )
+        result = result | CV_CALIB_FIX_ASPECT_RATIO;
+
+    if( m_sameFocalLength )
+        result = result | CV_CALIB_SAME_FOCAL_LENGTH;
+
+    if( !m_tangentialDistortion )
+        result = result | CV_CALIB_ZERO_TANGENT_DIST;
+
+    return result;
 }
 
 

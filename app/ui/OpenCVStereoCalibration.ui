@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OpenCVCalibration</class>
- <widget class="QDialog" name="OpenCVCalibration">
+ <class>OpenCVStereoCalibration</class>
+ <widget class="QDialog" name="OpenCVStereoCalibration">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>294</width>
-    <height>138</height>
+    <width>338</width>
+    <height>166</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>OpenCV Calibration Settings</string>
+   <string>OpenCV Stereo Calibration Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -40,6 +40,13 @@
      </property>
      <property name="checked">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="same_focal_length">
+     <property name="text">
+      <string>same focal length</string>
      </property>
     </widget>
    </item>
@@ -77,7 +84,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>OpenCVCalibration</receiver>
+   <receiver>OpenCVStereoCalibration</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -93,7 +100,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>OpenCVCalibration</receiver>
+   <receiver>OpenCVStereoCalibration</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -53,7 +53,8 @@ set( IrisCC_SRC src/IrisCC.cpp src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
-    ui/OpenCVCalibration.ui )
+    ui/OpenCVCalibration.ui
+    ui/OpenCVStereoCalibration.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
 # set include directories
@@ -62,7 +63,6 @@ set( IrisCC_INCLUDE_DIRS
     extern/gl2ps
     extern/qcustomplot
     extern/qwtplot3d/include
-    ui
     ${Iris_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR} )

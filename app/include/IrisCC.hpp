@@ -32,7 +32,6 @@
 
 namespace Ui {
     class IrisCC;
-    class ChessboardFinder;
 }
 
 
@@ -68,7 +67,6 @@ protected slots:
 protected:
     // ui's
     Ui::IrisCC *ui;
-    Ui::ChessboardFinder* ui_chessboardFinder;
 
     // actual work gets done here
     iris::CameraCalibration m_cc;

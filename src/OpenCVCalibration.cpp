@@ -33,13 +33,25 @@
 
 namespace iris {
 
-OpenCVCalibration::OpenCVCalibration() : Calibration()
+OpenCVCalibration::OpenCVCalibration() :
+    Calibration(),
+    m_fixPrincipalPoint( true ),
+    m_fixAspectRatio( false ),
+    m_tangentialDistortion( false )
 {
 }
 
 
 OpenCVCalibration::~OpenCVCalibration() {
 	// TODO Auto-generated destructor stub
+}
+
+
+void OpenCVCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, bool tangentialDistortion )
+{
+    m_fixPrincipalPoint = fixPrincipalPoint;
+    m_fixAspectRatio = fixAspectRatio;
+    m_tangentialDistortion = tangentialDistortion;
 }
 
 
@@ -90,7 +102,8 @@ void OpenCVCalibration::calibrateCamera( Calibration::Camera& cam )
                                         cameraMatrix,
                                         distCoeff,
                                         rotationVectors,
-                                        translationVectors );
+                                        translationVectors,
+                                        flags() );
 
     // instrinsic matrix
     cv::cv2eigen( cameraMatrix, cam.intrinsic );
@@ -133,6 +146,24 @@ void OpenCVCalibration::calibrateCamera( Calibration::Camera& cam )
         for( size_t p=0; p<projected.size(); p++ )
             cam.poses[i].projected2D.push_back( Eigen::Vector2d( projected[p].x, projected[p].y ) );
     }
+}
+
+
+int OpenCVCalibration::flags()
+{
+    // init stuff
+    int result = 0;
+
+    if( m_fixPrincipalPoint )
+        result = result | CV_CALIB_FIX_PRINCIPAL_POINT;
+
+    if( m_fixAspectRatio )
+        result = result | CV_CALIB_FIX_ASPECT_RATIO;
+
+    if( !m_tangentialDistortion )
+        result = result | CV_CALIB_ZERO_TANGENT_DIST;
+
+    return result;
 }
 
 

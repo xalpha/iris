@@ -52,7 +52,8 @@ set( IrisCC_INC include/IrisCC.hpp )
 set( IrisCC_SRC src/IrisCC.cpp src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
-    ui/IrisCC.ui )
+    ui/IrisCC.ui
+    ui/OpenCVCalibration.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
 # set include directories

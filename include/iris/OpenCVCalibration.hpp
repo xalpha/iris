@@ -38,10 +38,21 @@ public:
     OpenCVCalibration();
     virtual ~OpenCVCalibration();
 
+    void configure( bool fixPrincipalPoint,
+                    bool fixAspectRatio,
+                    bool tangentialDistortion );
+
     virtual void calibrate();
 
  protected:
     void calibrateCamera( Calibration::Camera& cam );
+
+    int flags();
+
+protected:
+    bool m_fixPrincipalPoint;
+    bool m_fixAspectRatio;
+    bool m_tangentialDistortion;
 
 };
 

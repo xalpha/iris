@@ -35,6 +35,7 @@
 
 #include "ui_IrisCC.h"
 #include "ui_ChessboardFinder.h"
+#include "ui_OpenCVCalibration.h"
 #include <IrisCC.hpp>
 
 #include <iris/ChessboardFinder.hpp>
@@ -43,8 +44,7 @@
 
 IrisCC::IrisCC(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::IrisCC),
-    ui_chessboardFinder( new Ui::ChessboardFinder )
+    ui(new Ui::IrisCC)
 {
     ui->setupUi(this);
 
@@ -81,7 +81,6 @@ IrisCC::IrisCC(QWidget *parent) :
 
 IrisCC::~IrisCC()
 {
-    delete ui_chessboardFinder;
     delete ui;
 }
 
@@ -331,25 +330,26 @@ void IrisCC::on_configureFinder()
     {
         // init stuff
         QDialog dialog(this);
-        ui->configure_finder->setEnabled(true);
+        ui->configure_finder->setEnabled(false);
 
         // choose what to do
         switch( ui->select_finder->currentIndex() )
         {
             // nothing selected
             case 0 :
-                ui->configure_finder->setEnabled(false);
                 break;
 
             // chessboard
             case 1 :
             {
-                ui_chessboardFinder->setupUi( &dialog );
+                ui->configure_finder->setEnabled(true);
+                Ui::ChessboardFinder chessboardFinderUI;
+                chessboardFinderUI.setupUi( &dialog );
                 dialog.exec();
                 iris::ChessboardFinder* finder = new iris::ChessboardFinder();
-                finder->configure( static_cast<size_t>( ui_chessboardFinder->columns->value() ),
-                                   static_cast<size_t>( ui_chessboardFinder->rows->value() ),
-                                   ui_chessboardFinder->square_size->value() );
+                finder->configure( static_cast<size_t>( chessboardFinderUI.columns->value() ),
+                                   static_cast<size_t>( chessboardFinderUI.rows->value() ),
+                                   chessboardFinderUI.square_size->value() );
                 m_finder = std::shared_ptr<iris::Finder>(finder);
                 updateCalibration();
                 break;
@@ -373,22 +373,30 @@ void IrisCC::on_configureCalibration()
     {
         // init stuff
         QDialog dialog(this);
-        ui->configure_calibration->setEnabled(true);
+        ui->configure_calibration->setEnabled(false);
 
         // choose what to do
         switch( ui->select_calibration->currentIndex() )
         {
             // nothing selected
             case 0 :
-                ui->configure_calibration->setEnabled(false);
                 break;
 
             // OpenCV (nothing to do)
             case 1 :
-                ui->configure_calibration->setEnabled(false);
-                m_calibration = std::shared_ptr<iris::Calibration>( new iris::OpenCVCalibration );
+            {
+                ui->configure_calibration->setEnabled(true);
+                Ui::OpenCVCalibration openCVCalibration;
+                openCVCalibration.setupUi( &dialog );
+                dialog.exec();
+                iris::OpenCVCalibration* calib = new iris::OpenCVCalibration();
+                calib->configure( openCVCalibration.fixed_principal_point->isChecked(),
+                                  openCVCalibration.fixed_aspect_ratio->isChecked(),
+                                  openCVCalibration.tangential_distortion->isChecked() );
+                m_calibration = std::shared_ptr<iris::Calibration>( calib );
                 updateCalibration();
                 break;
+            }
 
             // not supported finder
             default:

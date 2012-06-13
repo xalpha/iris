@@ -44,6 +44,7 @@ list( APPEND Iris_INC
     include/iris/ChessboardFinder.hpp
     include/iris/Finder.hpp
     include/iris/OpenCVCalibration.hpp
+    include/iris/OpenCVStereoCalibration.hpp
     include/iris/vision.hpp
     extern/include/CImg.h )
 
@@ -53,7 +54,8 @@ list( APPEND Iris_SRC
     src/CameraCalibration.cpp
     src/ChessboardFinder.cpp
     src/Finder.cpp
-    src/OpenCVCalibration.cpp )
+    src/OpenCVCalibration.cpp
+    src/OpenCVStereoCalibration.cpp )
 
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )

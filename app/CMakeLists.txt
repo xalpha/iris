@@ -89,7 +89,6 @@ QT4_WRAP_UI( IrisCC_QT_UI_UIC ${IrisCC_QT_UI} )
 if( Bazar_FOUND )
     list( APPEND IrisCC_INCLUDE_DIRS ${Bazar_INCLUDE_DIR} )
     list( APPEND IrisCC_LINK_LIBS ${Bazar_LIBRARY} )
-    message("${Bazar_INCLUDE_DIR} ${Bazar_LIBRARY}")
 endif()
 
 

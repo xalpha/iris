@@ -51,6 +51,7 @@ protected:
     void updateImage( int idx, bool detected );
 
     void critical( const std::string& message );
+    void warning( const std::string& message );
 
     const iris::Calibration::Pose& getPose( size_t idx );
 
@@ -80,7 +81,10 @@ protected:
 
     // images
     std::vector< std::shared_ptr< cimg_library::CImg<uint8_t> > > m_images;
+    std::vector< size_t > m_images_camIDs;
     std::vector< QString > m_filenames;
+
+    // processed images
     std::vector< std::shared_ptr< cimg_library::CImg<uint8_t> > > m_detected;
     std::vector< std::shared_ptr< cimg_library::CImg<uint8_t> > > m_rejected;
     std::vector< size_t > m_detected_idx;

@@ -105,6 +105,8 @@ void IrisCC::updateCalibration()
         // cleanup
         m_detected.clear();
         m_rejected.clear();
+        m_detected_idx.clear();
+        m_rejected_idx.clear();
         ui->image_list_detected->clear();
         ui->image_list_rejected->clear();
 
@@ -121,7 +123,7 @@ void IrisCC::updateCalibration()
         // try to find correspondences
         for( size_t i=0; i<m_images.size(); i++ )
         {
-            bool detected = m_cc.addImage( m_images[i], i );
+            bool detected = m_cc.addImage( m_images[i], i, m_images_camIDs[i] );
 
             // add image
             if( detected )
@@ -212,8 +214,19 @@ void IrisCC::updateImage( int idx, bool detected )
 {
     try
     {
+        // get the image
+        std::shared_ptr< cimg_library::CImg<uint8_t> > image;
+        if( detected && idx < m_detected.size() )
+            image = m_detected[idx];
+        else if( !detected && idx < m_rejected.size() )
+            image = m_rejected[idx];
+        else if( ( detected && idx >= m_detected.size() ) || ( !detected && idx >= m_rejected.size() ) )
+        {
+            warning( "IrisCC::updateImage: image index outside bounds... ignoring." );
+            return;
+        }
+
         // convert image to Qt
-        std::shared_ptr< cimg_library::CImg<uint8_t> > image = detected ? m_detected[idx] : m_rejected[idx];
         QImage imageQt( image->width(), image->height(), QImage::Format_RGB888 );
         for( int y=0; y<image->height(); y++ )
         {
@@ -290,6 +303,13 @@ void IrisCC::critical( const std::string& message )
     ui->statusBar->showMessage( QString( message.c_str() ), 5000 );
     std::cerr << message << std::endl;
     QMessageBox::critical(this, "Select Finder", QString( message.c_str() ) );
+}
+
+
+void IrisCC::warning( const std::string& message )
+{
+    ui->statusBar->showMessage( QString( message.c_str() ), 5000 );
+    std::cout << message << std::endl;
 }
 
 
@@ -421,6 +441,7 @@ void IrisCC::on_load()
 
             // add image
             m_images.push_back( image );
+            m_images_camIDs.push_back( static_cast<size_t>( ui->cameraID->value() ) );
             m_filenames.push_back( QFileInfo( imagePaths[i] ).fileName() );
 
             // update progress
@@ -456,6 +477,8 @@ void IrisCC::on_clear()
 
     // clear images
     m_images.clear();
+    m_images_camIDs.clear();
+    m_filenames.clear();
     m_detected.clear();
     m_rejected.clear();
 }

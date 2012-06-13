@@ -153,11 +153,6 @@
              <string>OpenCV Stereo</string>
             </property>
            </item>
-           <item>
-            <property name="text">
-             <string>Multi-Camera</string>
-            </property>
-           </item>
           </widget>
          </item>
          <item>

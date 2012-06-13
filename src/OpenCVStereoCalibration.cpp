@@ -123,16 +123,22 @@ void OpenCVStereoCalibration::calibrate()
                                         essentialMatrix,
                                         fundamentalMatrix );
 
-//    // instrinsic matrix
-//    cv::cv2eigen( cameraMatrix, cam.intrinsic );
+    // instrinsic matrix
+    cv::cv2eigen( cameraMatrix_1, cam1.intrinsic );
+    cv::cv2eigen( cameraMatrix_2, cam2.intrinsic );
 
-//    // distortion coefficeints
-//    cam.distortion.clear();
-//    for( int i=0; i<distCoeff.size().width; i++ )
-//        cam.distortion.push_back( distCoeff.at<double>( i, 0 ) );
+    // distortion coefficeints
+    cam1.distortion.clear();
+    cam2.distortion.clear();
+    for( int i=0; i<distCoeff_1.size().width; i++ )
+    {
+        cam1.distortion.push_back( distCoeff_1.at<double>( i, 0 ) );
+        cam2.distortion.push_back( distCoeff_2.at<double>( i, 0 ) );
+    }
 
-//    // error
-//    cam.error = error;
+    // error
+    cam1.error = error;
+    cam2.error = error;
 
 //    // compute and save the poses
 //    for( size_t i=0; i<rotationVectors.size(); i++ )

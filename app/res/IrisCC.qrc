@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/icon">
         <file>lib-iris.png</file>
+        <file>process-stop.svg</file>
+        <file>applications-system.svg</file>
     </qresource>
 </RCC>

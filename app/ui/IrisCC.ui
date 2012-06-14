@@ -123,7 +123,11 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>...</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../res/IrisCC.qrc">
+             <normaloff>:/icon/applications-system.svg</normaloff>:/icon/applications-system.svg</iconset>
            </property>
           </widget>
          </item>
@@ -161,7 +165,11 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>...</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../res/IrisCC.qrc">
+             <normaloff>:/icon/applications-system.svg</normaloff>:/icon/applications-system.svg</iconset>
            </property>
           </widget>
          </item>
@@ -175,17 +183,38 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QPushButton" name="load">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Load Images</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="load">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Load Images</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="clear">
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../res/IrisCC.qrc">
+               <normaloff>:/icon/process-stop.svg</normaloff>:/icon/process-stop.svg</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
           <layout class="QFormLayout" name="formLayout">
@@ -260,14 +289,17 @@
            </widget>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="clear">
-           <property name="text">
-            <string>Clear All</string>
-           </property>
-          </widget>
-         </item>
         </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="update">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>Update</string>
+        </property>
        </widget>
       </item>
      </layout>

@@ -59,6 +59,7 @@ IrisCC::IrisCC(QWidget *parent) :
 
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
+    connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
 
     connect( ui->image_list_detected, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
     connect( ui->image_list_rejected, SIGNAL(currentRowChanged(int)), this, SLOT(on_rejectedImageChanged(int)) );
@@ -66,8 +67,6 @@ IrisCC::IrisCC(QWidget *parent) :
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
     ui->plot_image->yAxis->setRange(0, 1);
-//    ui->plot_image->xAxis->setAutoTickStep( false );
-//    ui->plot_image->yAxis->setAutoTickStep( false );
 
     // init error plot
     ui->plot_error->xAxis->setRange(-1.5, 1.5);
@@ -78,7 +77,7 @@ IrisCC::IrisCC(QWidget *parent) :
     ui->plot_error->yAxis->setTickStep( 0.5 );
 
     // fresh start
-    on_clear();
+    clear();
 }
 
 
@@ -88,7 +87,7 @@ IrisCC::~IrisCC()
 }
 
 
-void IrisCC::updateCalibration()
+void IrisCC::update()
 {
     try
     {
@@ -304,7 +303,7 @@ void IrisCC::critical( const std::string& message )
 {
     ui->statusBar->showMessage( QString( message.c_str() ), 5000 );
     std::cerr << message << std::endl;
-    QMessageBox::critical(this, "Select Finder", QString( message.c_str() ) );
+    QMessageBox::critical(this, "Error", QString( message.c_str() ) );
 }
 
 
@@ -324,6 +323,29 @@ const iris::Pose_d &IrisCC::getPose( size_t idx )
 
     // nothing found
     throw std::runtime_error("IrisCC::pose: pose not found.");
+}
+
+
+void IrisCC::clear()
+{
+    // cleanup the image plot
+    ui->plot_image->clearGraphs();
+    ui->plot_image->clearPlottables();
+
+    // cleanup the error plot
+    ui->plot_error->clearPlottables();
+    ui->plot_error->clearGraphs();
+
+    // cleanup the lists
+    ui->image_list_detected->clear();
+    ui->image_list_rejected->clear();
+
+    // clear images
+    m_images.clear();
+    m_images_camIDs.clear();
+    m_filenames.clear();
+    m_detected.clear();
+    m_rejected.clear();
 }
 
 
@@ -354,7 +376,6 @@ void IrisCC::on_configureFinder()
                                    static_cast<size_t>( chessboardFinderUI.rows->value() ),
                                    chessboardFinderUI.square_size->value() );
                 m_finder = std::shared_ptr<iris::Finder>(finder);
-                updateCalibration();
                 break;
             }
 
@@ -397,7 +418,6 @@ void IrisCC::on_configureCalibration()
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.tangential_distortion->isChecked() );
                 m_calibration = std::shared_ptr<iris::Calibration>( calib );
-                updateCalibration();
                 break;
             }
 
@@ -415,7 +435,6 @@ void IrisCC::on_configureCalibration()
                                   form.same_focal_length->isChecked(),
                                   form.tangential_distortion->isChecked() );
                 m_calibration = std::shared_ptr<iris::Calibration>( calib );
-                updateCalibration();
                 break;
             }
 
@@ -479,9 +498,6 @@ void IrisCC::on_load()
 
         // tidy up progress bar
         progress.setValue(imagePaths.size());
-
-        // update reconstruction
-        updateCalibration();
     }
     catch( std::exception &e )
     {
@@ -492,24 +508,12 @@ void IrisCC::on_load()
 
 void IrisCC::on_clear()
 {
-    // cleanup the image plot
-    ui->plot_image->clearGraphs();
-    ui->plot_image->clearPlottables();
-
-    // cleanup the error plot
-    ui->plot_error->clearPlottables();
-    ui->plot_error->clearGraphs();
-
-    // cleanup the lists
-    ui->image_list_detected->clear();
-    ui->image_list_rejected->clear();
-
-    // clear images
-    m_images.clear();
-    m_images_camIDs.clear();
-    m_filenames.clear();
-    m_detected.clear();
-    m_rejected.clear();
+    QMessageBox::StandardButton response = QMessageBox::warning( this,
+                                                                 QString(),
+                                                                 "Clear all images?",
+                                                                 QMessageBox::Yes | QMessageBox::No );
+    if( QMessageBox::Yes == response )
+        clear();
 }
 
 

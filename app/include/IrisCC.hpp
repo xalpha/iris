@@ -44,7 +44,7 @@ public:
     ~IrisCC();
 
 protected:
-    void updateCalibration();
+    void update();
 
     void updateErrorPlot();
     void updateImage( int idx, bool detected );
@@ -53,6 +53,8 @@ protected:
     void warning( const std::string& message );
 
     const iris::Pose_d& getPose( size_t idx );
+
+    void clear();
 
 protected slots:
     void on_configureFinder();

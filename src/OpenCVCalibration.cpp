@@ -88,7 +88,7 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam, int flags )
     for( size_t i=0; i<rotationVectors.size(); i++ )
     {
         // store the transformation
-        cam.poses[i].transformation = getTrans( rotationVectors[i], translationVectors[i] );
+        cam.poses[i].transformation = cv2eigen( rotationVectors[i], translationVectors[i] );
 
         // reproject points from the opencv poses
         cam.poses[i].projected2D = projectPoints( cvVectorPoints3D[i],
@@ -128,7 +128,7 @@ std::vector<cv::Point3f> OpenCVCalibration::eigen2cv( const std::vector<Eigen::V
 }
 
 
-Eigen::Matrix4d OpenCVCalibration::getTrans( const cv::Mat& rot, const cv::Mat& transl )
+Eigen::Matrix4d OpenCVCalibration::cv2eigen( const cv::Mat& rot, const cv::Mat& transl )
 {
     // get the rotation
     cv::Mat rotationCV( 3, 3, rot.type() );
@@ -148,6 +148,25 @@ Eigen::Matrix4d OpenCVCalibration::getTrans( const cv::Mat& rot, const cv::Mat& 
 
     // return
     return trans.matrix().cast<double>();
+}
+
+
+void OpenCVCalibration::eigen2cv( const Eigen::Matrix4d& trans, cv::Mat& rot, cv::Mat& transl )
+{
+    // generate the affine trans
+    Eigen::Affine3f affine( trans.cast<float>() );
+
+    // decompose the affine transformation
+    Eigen::Matrix3f rotation = affine.rotation();
+    Eigen::Vector3f translation = affine.translation();
+
+    // convert rotation
+    cv::Mat rotationCV( 3, 3, rot.type() );
+    cv::eigen2cv( rotation, rotationCV );
+    cv::Rodrigues( rotationCV, rot );
+
+    // convert translation
+    cv::eigen2cv( translation, transl );
 }
 
 

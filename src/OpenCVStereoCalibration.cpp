@@ -142,25 +142,26 @@ void OpenCVStereoCalibration::calibrate()
     for( size_t i=0; i<poseCount; i++ )
     {
         // get the 4x4 affine trans between the two cameras
-        Eigen::Matrix4d trans = getTrans( rotationVectors[i], translationVectors[i] );
+        Eigen::Matrix4d trans = cv2eigen( rotationVectors[i], translationVectors[i] );
 
-        // either global or local coordinates
-        if( m_relativeToPattern )
-        {
+        // set the camera transformations in world space
+        cam2.poses[i].transformation *= trans;
 
-        }
-        else
+        // devompose the matrices back for reprojection
+        cv::Mat rot_1, rot_2, transl_1, transl_2;
+        eigen2cv( cam1.poses[i].transformation, rot_1, transl_1 );
+        eigen2cv( cam2.poses[i].transformation, rot_2, transl_2 );
+
+        // reproject points from the opencv poses
+        cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rot_1, transl_1, cameraMatrix_1, distCoeff_1 );
+        cam2.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rot_2, transl_2, cameraMatrix_2, distCoeff_2 );
+
+        // if only the relative poses were desired
+        if( !m_relativeToPattern )
         {
             cam1.poses[i].transformation = Eigen::Matrix4d::Identity();
             cam2.poses[i].transformation = trans;
         }
-
-        // reproject points from the opencv poses
-//        std::vector< cv::Point2f > projected;
-//        cv::projectPoints( cv::Mat(cvVectorPoints3D[i]), rotationVectors[i], translationVectors[i], cameraMatrix, distCoeff, projected );
-//        cam.poses[i].projected2D.clear();
-//        for( size_t p=0; p<projected.size(); p++ )
-//            cam.poses[i].projected2D.push_back( Eigen::Vector2d( projected[p].x, projected[p].y ) );
     }
 }
 

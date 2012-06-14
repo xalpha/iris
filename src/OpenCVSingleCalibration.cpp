@@ -2,7 +2,7 @@
 //                                                                            //
 // This file is part of iris, a lightweight C++ camera calibration library    //
 //                                                                            //
-// Copyright (C) 2010, 2011 Alexandru Duliu                                   //
+// Copyright (C) 2012 Alexandru Duliu                                         //
 //                                                                            //
 // iris is free software; you can redistribute it and/or                      //
 // modify it under the terms of the GNU Lesser General Public                 //
@@ -19,40 +19,62 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
 /*
- * OpenCVStereoCalibration.hpp
+ * OpenCVSingleCalibration.cpp
  *
- *  Created on: June 12, 2012
+ *  Created on: Jun 14, 2012
  *      Author: duliu
  */
 
-#include <iris/OpenCVCalibration.hpp>
+
+#include <iris/OpenCVSingleCalibration.hpp>
+
 
 namespace iris {
 
-class OpenCVStereoCalibration : public OpenCVCalibration
+OpenCVSingleCalibration::OpenCVSingleCalibration() : OpenCVCalibration()
 {
-public:
-    OpenCVStereoCalibration();
-    virtual ~OpenCVStereoCalibration();
+}
 
-    void configure( bool relativeToPattern,
-                    bool fixPrincipalPoint,
-                    bool fixAspectRatio,
-                    bool sameFocalLength,
-                    bool tangentialDistortion );
 
-    virtual void calibrate();
+OpenCVSingleCalibration::~OpenCVSingleCalibration() {
+	// TODO Auto-generated destructor stub
+}
 
-protected:
-    virtual int flags();
 
-protected:
-    bool m_relativeToPattern;
-    bool m_sameFocalLength;
+void OpenCVSingleCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, bool tangentialDistortion )
+{
+    m_fixPrincipalPoint = fixPrincipalPoint;
+    m_fixAspectRatio = fixAspectRatio;
+    m_tangentialDistortion = tangentialDistortion;
+}
 
-};
+
+void OpenCVSingleCalibration::calibrate()
+{
+    // run over all cameras and calibrate them
+    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+        calibrateCamera( (*it).second, flags() );
+}
+
+
+int OpenCVSingleCalibration::flags()
+{
+    // init stuff
+    int result = 0;
+
+    if( m_fixPrincipalPoint )
+        result = result | CV_CALIB_FIX_PRINCIPAL_POINT;
+
+    if( m_fixAspectRatio )
+        result = result | CV_CALIB_FIX_ASPECT_RATIO;
+
+    if( !m_tangentialDistortion )
+        result = result | CV_CALIB_ZERO_TANGENT_DIST;
+
+    return result;
+}
+
 
 } // end namespace iris
+

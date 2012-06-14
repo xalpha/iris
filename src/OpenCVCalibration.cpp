@@ -46,23 +46,7 @@ OpenCVCalibration::~OpenCVCalibration() {
 }
 
 
-void OpenCVCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, bool tangentialDistortion )
-{
-    m_fixPrincipalPoint = fixPrincipalPoint;
-    m_fixAspectRatio = fixAspectRatio;
-    m_tangentialDistortion = tangentialDistortion;
-}
-
-
-void OpenCVCalibration::calibrate()
-{
-    // run over all cameras and calibrate them
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
-        calibrateCamera( (*it).second );
-}
-
-
-void OpenCVCalibration::calibrateCamera( Camera_d &cam )
+void OpenCVCalibration::calibrateCamera( Camera_d &cam, int flags )
 {
     // init stuff
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D;
@@ -87,7 +71,7 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam )
                                         distCoeff,
                                         rotationVectors,
                                         translationVectors,
-                                        flags() );
+                                        flags );
 
     // instrinsic matrix
     cv::cv2eigen( cameraMatrix, cam.intrinsic );
@@ -113,24 +97,6 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam )
                                                   cameraMatrix,
                                                   distCoeff );
     }
-}
-
-
-int OpenCVCalibration::flags()
-{
-    // init stuff
-    int result = 0;
-
-    if( m_fixPrincipalPoint )
-        result = result | CV_CALIB_FIX_PRINCIPAL_POINT;
-
-    if( m_fixAspectRatio )
-        result = result | CV_CALIB_FIX_ASPECT_RATIO;
-
-    if( !m_tangentialDistortion )
-        result = result | CV_CALIB_ZERO_TANGENT_DIST;
-
-    return result;
 }
 
 

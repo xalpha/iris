@@ -35,13 +35,13 @@
 
 #include "ui_IrisCC.h"
 #include "ui_ChessboardFinder.h"
-#include "ui_OpenCVCalibration.h"
+#include "ui_OpenCVSingleCalibration.h"
 #include "ui_OpenCVStereoCalibration.h"
 
 #include <IrisCC.hpp>
 
 #include <iris/ChessboardFinder.hpp>
-#include <iris/OpenCVCalibration.hpp>
+#include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
 
 
@@ -389,10 +389,10 @@ void IrisCC::on_configureCalibration()
             case 1 :
             {
                 ui->configure_calibration->setEnabled(true);
-                Ui::OpenCVCalibration form;
+                Ui::OpenCVSingleCalibration form;
                 form.setupUi( &dialog );
                 dialog.exec();
-                iris::OpenCVCalibration* calib = new iris::OpenCVCalibration();
+                iris::OpenCVSingleCalibration* calib = new iris::OpenCVSingleCalibration();
                 calib->configure( form.fixed_principal_point->isChecked(),
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.tangential_distortion->isChecked() );
@@ -409,7 +409,8 @@ void IrisCC::on_configureCalibration()
                 form.setupUi( &dialog );
                 dialog.exec();
                 iris::OpenCVStereoCalibration* calib = new iris::OpenCVStereoCalibration();
-                calib->configure( form.fixed_principal_point->isChecked(),
+                calib->configure( form.relative_to_pattern->isChecked(),
+                                  form.fixed_principal_point->isChecked(),
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.same_focal_length->isChecked(),
                                   form.tangential_distortion->isChecked() );

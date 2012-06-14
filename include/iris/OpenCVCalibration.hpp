@@ -38,16 +38,8 @@ public:
     OpenCVCalibration();
     virtual ~OpenCVCalibration();
 
-    void configure( bool fixPrincipalPoint,
-                    bool fixAspectRatio,
-                    bool tangentialDistortion );
-
-    virtual void calibrate();
-
  protected:
-    void calibrateCamera( Camera_d& cam );
-
-    virtual int flags();
+    void calibrateCamera( Camera_d &cam, int flags );
 
     std::vector<cv::Point2f> eigen2cv( const std::vector<Eigen::Vector2d>& points2D );
     std::vector<cv::Point3f> eigen2cv( const std::vector<Eigen::Vector3d>& points3D );

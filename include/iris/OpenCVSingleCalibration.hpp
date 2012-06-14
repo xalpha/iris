@@ -2,7 +2,7 @@
 //                                                                            //
 // This file is part of iris, a lightweight C++ camera calibration library    //
 //                                                                            //
-// Copyright (C) 2010, 2011 Alexandru Duliu                                   //
+// Copyright (C) 2012 Alexandru Duliu                                         //
 //                                                                            //
 // iris is free software; you can redistribute it and/or                      //
 // modify it under the terms of the GNU Lesser General Public                 //
@@ -22,9 +22,9 @@
 #pragma once
 
 /*
- * OpenCVStereoCalibration.hpp
+ * OpenCVSingleCalibration.hpp
  *
- *  Created on: June 12, 2012
+ *  Created on: Jun 14, 2012
  *      Author: duliu
  */
 
@@ -32,26 +32,20 @@
 
 namespace iris {
 
-class OpenCVStereoCalibration : public OpenCVCalibration
+class OpenCVSingleCalibration : public OpenCVCalibration
 {
 public:
-    OpenCVStereoCalibration();
-    virtual ~OpenCVStereoCalibration();
+    OpenCVSingleCalibration();
+    virtual ~OpenCVSingleCalibration();
 
-    void configure( bool relativeToPattern,
-                    bool fixPrincipalPoint,
+    void configure( bool fixPrincipalPoint,
                     bool fixAspectRatio,
-                    bool sameFocalLength,
                     bool tangentialDistortion );
 
     virtual void calibrate();
 
-protected:
-    virtual int flags();
-
-protected:
-    bool m_relativeToPattern;
-    bool m_sameFocalLength;
+ protected:
+    int flags();
 
 };
 

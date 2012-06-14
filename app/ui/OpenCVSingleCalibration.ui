@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OpenCVStereoCalibration</class>
- <widget class="QDialog" name="OpenCVStereoCalibration">
+ <class>OpenCVSingleCalibration</class>
+ <widget class="QDialog" name="OpenCVSingleCalibration">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>338</width>
-    <height>294</height>
+    <width>337</width>
+    <height>174</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,35 +17,9 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>OpenCV Stereo Calibration Settings</string>
+   <string>OpenCV Single Camera Calibration Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Extrinsic Matrices</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QRadioButton" name="relative_to_cam1">
-        <property name="text">
-         <string>relative to first camera</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="relative_to_pattern">
-        <property name="text">
-         <string>relative to calibration pattern</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -78,16 +52,6 @@
         </property>
         <property name="checked">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="same_focal_length">
-        <property name="toolTip">
-         <string>Enforces fx1 = fx2 and fy1 = fy2</string>
-        </property>
-        <property name="text">
-         <string>same focal length</string>
         </property>
        </widget>
       </item>
@@ -131,7 +95,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>OpenCVStereoCalibration</receiver>
+   <receiver>OpenCVSingleCalibration</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -147,7 +111,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>OpenCVStereoCalibration</receiver>
+   <receiver>OpenCVSingleCalibration</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

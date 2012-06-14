@@ -53,7 +53,7 @@ set( IrisCC_SRC src/IrisCC.cpp src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
-    ui/OpenCVCalibration.ui
+    ui/OpenCVSingleCalibration.ui
     ui/OpenCVStereoCalibration.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 

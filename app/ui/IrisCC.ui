@@ -145,7 +145,7 @@
            </item>
            <item>
             <property name="text">
-             <string>OpenCV</string>
+             <string>OpenCV Single Camera</string>
             </property>
            </item>
            <item>

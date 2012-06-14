@@ -517,6 +517,12 @@ void IrisCC::on_clear()
 }
 
 
+void IrisCC::on_update()
+{
+    update();
+}
+
+
 void IrisCC::on_detectedImageChanged( int idx )
 {
     updateImage( idx, true );

@@ -62,6 +62,7 @@ protected slots:
 
     void on_load();
     void on_clear();
+    void on_update();
 
     void on_detectedImageChanged( int idx );
     void on_rejectedImageChanged( int idx );

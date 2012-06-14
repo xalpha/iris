@@ -46,15 +46,6 @@
 <p>Iris is available under the GPL/LGPL. The iris library itself is distributed under the LGPL while the UI (IrisCC) is distributed under the GPL.</p>
 
 
-<h3>Dependencies</h3>
-<p>
-<ul>
-<li><a href="http://eigen.tuxfamily.org">Eigen</a></li>
-<li><a href="http://opencv.willowgarage.com/wiki/">OpenCV</a></li>
-<li><a href="http://qt.nokia.com/">Qt</a> (for the GUI)</li>
-</ul> 
-</p>
-
 <h3>Installation</h3>
 <p>Iris uses <a href="http://www.cmake.org/">CMake</a> for its build process, and as such can be used with any of the supported IDEs or commandline toolchains available. A short description follows, of how to install Iris under different platforms.</p>
 
@@ -66,7 +57,7 @@
   <ul>
   <li>download <a href="http://eigen.tuxfamily.org">Eigen</a> and set the <code>Eigen3_DIR</code> environment variable</li>
   <li>download <a href="http://opencv.willowgarage.com/wiki/">OpenCV</a> and set the <code>OpenCV_DIR</code> environment variable to point to the subdirectory where the file <b>OpenCVConfig.cmake</b> is located (usually under build/ ) </li>
-  <li>download <a href="http://qt.nokia.com/">Qt</a> and set the <code>Qt_DIR</code> environment variable</li>
+  <li>if you wish to build the UI app, also download <a href="http://qt.nokia.com/">Qt</a> and set the <code>Qt_DIR</code> environment variable</li>
   </ul> 
 <li>run the <a href="http://www.cmake.org/">CMake</a> GUI and point the directory where Iris is located</li>
 <li>choose a directory where Iris should be build to (<i>build directory</i>)</li>
@@ -79,8 +70,8 @@
 </p>
 
 <h3>Acknowledgement</h3>
-
-The plots in the in the Iris GUI app were realized with the <a href="http://www.workslikeclockwork.com/index.php/components/qt-plotting-widget/">Qt plotting widget</a>, a very usefull little piece of software for simple and beautifull plots under Qt.
+<p>The internal image representation of iris uses the <a href="http://cimg.sourceforge.net/">CImg</a> C++ toolkit for image processing.</p>
+<p>The plots in the in the Iris GUI app were realized with the <a href="http://www.workslikeclockwork.com/index.php/components/qt-plotting-widget/">Qt plotting widget</a>, a very usefull little piece of software for simple and beautifull plots under Qt.</p>
 
       </section>
       <footer>

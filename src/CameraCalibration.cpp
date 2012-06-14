@@ -55,7 +55,7 @@ bool CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > 
     if( found )
     {
         // assemble the pose
-        Calibration::Pose pose;
+        Pose_d pose;
         pose.points2D = m_finder->points2D();
         pose.points3D = m_finder->points3D();
         pose.id = poseID;

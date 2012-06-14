@@ -32,12 +32,6 @@
 namespace iris {
 
 
-//FinderSettings::FinderSettings(){}
-//FinderSettings::FinderSettings( const FinderSettings& settings ){}
-//FinderSettings::~FinderSettings(){}
-//FinderSettings FinderSettings::operator = ( const FinderSettings& settings ){ return FinderSettings(settings); }
-
-
 Finder::Finder() :
     m_configured(false)
 {

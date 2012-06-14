@@ -52,7 +52,7 @@ protected:
     void critical( const std::string& message );
     void warning( const std::string& message );
 
-    const iris::Calibration::Pose& getPose( size_t idx );
+    const iris::Pose_d& getPose( size_t idx );
 
 protected slots:
     void on_configureFinder();

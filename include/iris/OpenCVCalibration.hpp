@@ -45,9 +45,9 @@ public:
     virtual void calibrate();
 
  protected:
-    void calibrateCamera( Calibration::Camera& cam );
+    void calibrateCamera( Camera_d& cam );
 
-    int flags();
+    virtual int flags();
 
 protected:
     bool m_fixPrincipalPoint;

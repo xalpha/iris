@@ -256,7 +256,7 @@ void IrisCC::updateImage( int idx, bool detected )
         if( detected )
         {
             // get the pose
-            const iris::Calibration::Pose& pose = getPose( m_detected_idx[idx] );
+            const iris::Pose_d& pose = getPose( m_detected_idx[idx] );
 
             // copy the data
             QVector<double> x( pose.points2D.size() );
@@ -315,7 +315,7 @@ void IrisCC::warning( const std::string& message )
 }
 
 
-const iris::Calibration::Pose& IrisCC::getPose( size_t idx )
+const iris::Pose_d &IrisCC::getPose( size_t idx )
 {
     for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
         for( size_t p=0; p<camIt->second.poses.size(); p++ )

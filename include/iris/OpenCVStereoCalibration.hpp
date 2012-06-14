@@ -28,11 +28,11 @@
  *      Author: duliu
  */
 
-#include <iris/Calibration.hpp>
+#include <iris/OpenCVCalibration.hpp>
 
 namespace iris {
 
-class OpenCVStereoCalibration : public Calibration
+class OpenCVStereoCalibration : public OpenCVCalibration
 {
 public:
     OpenCVStereoCalibration();
@@ -46,13 +46,10 @@ public:
     virtual void calibrate();
 
 protected:
-    int flags();
+    virtual int flags();
 
 protected:
-    bool m_fixPrincipalPoint;
-    bool m_fixAspectRatio;
     bool m_sameFocalLength;
-    bool m_tangentialDistortion;
 
 };
 

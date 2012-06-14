@@ -27,7 +27,6 @@
  */
 
 
-#include <iris/vision.hpp>
 #include <iris/OpenCVCalibration.hpp>
 
 
@@ -58,12 +57,12 @@ void OpenCVCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, 
 void OpenCVCalibration::calibrate()
 {
     // run over all cameras and calibrate them
-    for( std::map< size_t, Camera >::iterator it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
         calibrateCamera( (*it).second );
 }
 
 
-void OpenCVCalibration::calibrateCamera( Calibration::Camera& cam )
+void OpenCVCalibration::calibrateCamera( Camera_d &cam )
 {
     // init stuff
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D;

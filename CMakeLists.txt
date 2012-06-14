@@ -45,7 +45,7 @@ list( APPEND Iris_INC
     include/iris/Finder.hpp
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
-    include/iris/vision.hpp
+    include/iris/util.hpp
     extern/include/CImg.h )
 
 # add the source files

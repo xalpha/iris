@@ -38,19 +38,11 @@
 #define cimg_display 0
 #include <CImg.h>
 
+#include <iris/util.hpp>
+
 
 namespace iris
 {
-
-//class FinderSettings
-//{
-//public:
-//    FinderSettings();
-//    FinderSettings( const FinderSettings& settings );
-//    virtual ~FinderSettings();
-//    FinderSettings operator = ( const FinderSettings& settings );
-//};
-
 
 class Finder
 {

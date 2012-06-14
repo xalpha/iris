@@ -43,7 +43,7 @@ Calibration::~Calibration() {
 }
 
 
-void Calibration::addPose( const Pose& pose, const Eigen::Vector2i& imageSize, const size_t cameraID )
+void Calibration::addPose( const Pose_d &pose, const Eigen::Vector2i& imageSize, const size_t cameraID )
 {
     // check if the corresponcences match
     if( pose.points2D.size() != pose.points3D.size() )
@@ -64,10 +64,10 @@ void Calibration::addPose( const Pose& pose, const Eigen::Vector2i& imageSize, c
 }
 
 
-const Calibration::Camera& Calibration::camera( const size_t id) const
+const Camera_d &Calibration::camera( const size_t id) const
 {
     // find the camera
-    std::map< size_t, Camera >::const_iterator camIt = m_cameras.find( id );
+    std::map< size_t, Camera_d >::const_iterator camIt = m_cameras.find( id );
 
     // search for the camera
     if( camIt != m_cameras.end() )
@@ -77,7 +77,7 @@ const Calibration::Camera& Calibration::camera( const size_t id) const
 }
 
 
-const std::map< size_t, iris::Calibration::Camera >& Calibration::cameras() const
+const std::map< size_t, iris::Camera_d >& Calibration::cameras() const
 {
     return m_cameras;
 }

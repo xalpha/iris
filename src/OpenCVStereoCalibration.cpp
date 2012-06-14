@@ -27,13 +27,15 @@
  */
 
 
-#include <iris/vision.hpp>
+#include <iris/util.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
 
 
 namespace iris {
 
-OpenCVStereoCalibration::OpenCVStereoCalibration() : Calibration()
+OpenCVStereoCalibration::OpenCVStereoCalibration() :
+    OpenCVCalibration(),
+    m_sameFocalLength(false)
 {
 }
 
@@ -45,10 +47,8 @@ OpenCVStereoCalibration::~OpenCVStereoCalibration() {
 
 void OpenCVStereoCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, bool sameFocalLength, bool tangentialDistortion )
 {
-    m_fixPrincipalPoint = fixPrincipalPoint;
-    m_fixAspectRatio = fixAspectRatio;
+    OpenCVCalibration::configure( fixPrincipalPoint, fixAspectRatio, tangentialDistortion );
     m_sameFocalLength = sameFocalLength;
-    m_tangentialDistortion = tangentialDistortion;
 }
 
 
@@ -59,8 +59,8 @@ void OpenCVStereoCalibration::calibrate()
         throw std::runtime_error("OpenCVStereoCalibration::calibrate: exactly 2 cameras are required.");
 
     // get cameras
-    Calibration::Camera& cam1 = m_cameras.begin()->second;
-    Calibration::Camera& cam2 = (m_cameras.begin()++)->second;
+    Camera_d& cam1 = m_cameras.begin()->second;
+    Camera_d& cam2 = (m_cameras.begin()++)->second;
 
     // check that both cameras have the same number of poses
     if( cam1.poses.size() != cam2.poses.size() )
@@ -175,22 +175,7 @@ void OpenCVStereoCalibration::calibrate()
 
 int OpenCVStereoCalibration::flags()
 {
-    // init stuff
-    int result = 0;
-
-    if( m_fixPrincipalPoint )
-        result = result | CV_CALIB_FIX_PRINCIPAL_POINT;
-
-    if( m_fixAspectRatio )
-        result = result | CV_CALIB_FIX_ASPECT_RATIO;
-
-    if( m_sameFocalLength )
-        result = result | CV_CALIB_SAME_FOCAL_LENGTH;
-
-    if( !m_tangentialDistortion )
-        result = result | CV_CALIB_ZERO_TANGENT_DIST;
-
-    return result;
+    return OpenCVCalibration::flags() | CV_CALIB_ZERO_TANGENT_DIST;
 }
 
 

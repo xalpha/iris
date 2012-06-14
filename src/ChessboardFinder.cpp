@@ -27,7 +27,6 @@
  */
 
 
-#include <iris/vision.hpp>
 #include <iris/ChessboardFinder.hpp>
 
 namespace iris {

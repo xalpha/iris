@@ -67,27 +67,12 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam )
     // init stuff
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D;
     std::vector< std::vector<cv::Point3f> > cvVectorPoints3D;
-    Eigen::Vector2i imageSize = cam.imageSize;
 
     // run over all the poses of this camera and assemble the correspondences
     for( size_t i=0; i<cam.poses.size(); i++ )
     {
-        // init stuff
-        std::vector<cv::Point2f> cvPoints2D;
-        std::vector<cv::Point3f> cvPoints3D;
-        const std::vector<Eigen::Vector2d>& points2D = cam.poses[i].points2D;
-        const std::vector<Eigen::Vector3d>& points3D = cam.poses[i].points3D;
-
-        // convert the points
-        for( size_t j=0; j<points2D.size(); j++ )
-        {
-            cvPoints2D.push_back( cv::Point2f( points2D[j](0), points2D[j](1) ) );
-            cvPoints3D.push_back( cv::Point3f( points3D[j](0), points3D[j](1), points3D[j](2) ) );
-        }
-
-        // add them to the opemcv vectors
-        cvVectorPoints2D.push_back( cvPoints2D );
-        cvVectorPoints3D.push_back( cvPoints3D );
+        cvVectorPoints2D.push_back( eigen2cv( cam.poses[i].points2D ) );
+        cvVectorPoints3D.push_back( eigen2cv( cam.poses[i].points3D ) );
     }
 
     // try to compute the intrinsic and extrinsic parameters
@@ -97,7 +82,7 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam )
     std::vector<cv::Mat> translationVectors;
     double error = cv::calibrateCamera( cvVectorPoints3D,
                                         cvVectorPoints2D,
-                                        cv::Size( imageSize(0), imageSize(1) ),
+                                        cv::Size( cam.imageSize(0), cam.imageSize(1) ),
                                         cameraMatrix,
                                         distCoeff,
                                         rotationVectors,
@@ -118,32 +103,15 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam )
     // compute and save the poses
     for( size_t i=0; i<rotationVectors.size(); i++ )
     {
-        // get the rotation
-        cv::Mat rotationCV( 3, 3, rotationVectors[i].type() );
-        cv::Rodrigues( rotationVectors[i], rotationCV );
-        Eigen::Matrix3f rotation;
-        cv::cv2eigen( rotationCV, rotation );
-
-        // get the translation
-        Eigen::Vector3f translation;
-        cv::cv2eigen( translationVectors[i], translation );
-
-        // convert to a blas transformation
-        Eigen::Affine3f trans;
-        trans.setIdentity();
-        trans.translate( translation );
-
-        trans.rotate( rotation );
-
         // store the transformation
-        cam.poses[i].transformation = trans.matrix().cast<double>();
+        cam.poses[i].transformation = getTrans( rotationVectors[i], translationVectors[i] );
 
         // reproject points from the opencv poses
-        std::vector< cv::Point2f > projected;
-        cv::projectPoints( cv::Mat(cvVectorPoints3D[i]), rotationVectors[i], translationVectors[i], cameraMatrix, distCoeff, projected );
-        cam.poses[i].projected2D.clear();
-        for( size_t p=0; p<projected.size(); p++ )
-            cam.poses[i].projected2D.push_back( Eigen::Vector2d( projected[p].x, projected[p].y ) );
+        cam.poses[i].projected2D = projectPoints( cvVectorPoints3D[i],
+                                                  rotationVectors[i],
+                                                  translationVectors[i],
+                                                  cameraMatrix,
+                                                  distCoeff );
     }
 }
 
@@ -162,6 +130,77 @@ int OpenCVCalibration::flags()
     if( !m_tangentialDistortion )
         result = result | CV_CALIB_ZERO_TANGENT_DIST;
 
+    return result;
+}
+
+
+std::vector<cv::Point2f> OpenCVCalibration::eigen2cv( const std::vector<Eigen::Vector2d>& points2D )
+{
+    // init stuff
+    std::vector<cv::Point2f> cvPoints2D;
+
+    // convert the points
+    for( size_t j=0; j<points2D.size(); j++ )
+        cvPoints2D.push_back( cv::Point2f( points2D[j](0), points2D[j](1) ) );
+
+    // return
+    return cvPoints2D;
+}
+
+
+std::vector<cv::Point3f> OpenCVCalibration::eigen2cv( const std::vector<Eigen::Vector3d>& points3D )
+{
+    // init stuff
+    std::vector<cv::Point3f> cvPoints3D;
+
+    // convert the points
+    for( size_t j=0; j<points3D.size(); j++ )
+        cvPoints3D.push_back( cv::Point3f( points3D[j](0), points3D[j](1), points3D[j](2) ) );
+
+    // return
+    return cvPoints3D;
+}
+
+
+Eigen::Matrix4d OpenCVCalibration::getTrans( const cv::Mat& rot, const cv::Mat& transl )
+{
+    // get the rotation
+    cv::Mat rotationCV( 3, 3, rot.type() );
+    cv::Rodrigues( rot, rotationCV );
+    Eigen::Matrix3f rotation;
+    cv::cv2eigen( rotationCV, rotation );
+
+    // get the translation
+    Eigen::Vector3f translation;
+    cv::cv2eigen( transl, translation );
+
+    // convert to a blas transformation
+    Eigen::Affine3f trans;
+    trans.setIdentity();
+    trans.translate( translation );
+    trans.rotate( rotation );
+
+    // return
+    return trans.matrix().cast<double>();
+}
+
+
+std::vector< Eigen::Vector2d > OpenCVCalibration::projectPoints( const std::vector<cv::Point3f> points3D,
+                                                                 const cv::Mat& rot,
+                                                                 const cv::Mat& transl,
+                                                                 const cv::Mat& cameraMatrix,
+                                                                 const cv::Mat& distCoeff )
+{
+    // init stuff
+    std::vector< cv::Point2f > projected;
+    std::vector< Eigen::Vector2d > result;
+
+    // project points and store
+    cv::projectPoints( cv::Mat(points3D), rot, transl, cameraMatrix, distCoeff, projected );
+    for( size_t p=0; p<projected.size(); p++ )
+        result.push_back( Eigen::Vector2d( projected[p].x, projected[p].y ) );
+
+    // return
     return result;
 }
 

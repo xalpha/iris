@@ -101,6 +101,10 @@ void OpenCVStereoCalibration::calibrate()
         cvVectorPoints3D.push_back( cvPoints3D );
     }
 
+    // before we do a stereo calibration, we calibrate each camera individually
+    calibrateCamera( cam1 );
+    calibrateCamera( cam2 );
+
     // try to compute the intrinsic and extrinsic parameters
     cv::Mat cameraMatrix_1 = cv::Mat::eye(3,3,CV_64F);
     cv::Mat cameraMatrix_2 = cv::Mat::eye(3,3,CV_64F);
@@ -121,7 +125,9 @@ void OpenCVStereoCalibration::calibrate()
                                         rotationVectors,
                                         translationVectors,
                                         essentialMatrix,
-                                        fundamentalMatrix );
+                                        fundamentalMatrix,
+                                        cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6),
+                                        flags() );
 
     // instrinsic matrix
     cv::cv2eigen( cameraMatrix_1, cam1.intrinsic );
@@ -175,7 +181,12 @@ void OpenCVStereoCalibration::calibrate()
 
 int OpenCVStereoCalibration::flags()
 {
-    return OpenCVCalibration::flags() | CV_CALIB_ZERO_TANGENT_DIST;
+    int result = OpenCVCalibration::flags();
+
+    if( m_sameFocalLength )
+        result = result | CV_CALIB_SAME_FOCAL_LENGTH;
+
+    return result;
 }
 
 

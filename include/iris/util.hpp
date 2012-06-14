@@ -49,6 +49,7 @@ public:
 };
 typedef Pose<double> Pose_d;
 
+
 /////
 // Camera
 ///

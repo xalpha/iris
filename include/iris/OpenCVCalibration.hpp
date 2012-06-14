@@ -49,6 +49,17 @@ public:
 
     virtual int flags();
 
+    std::vector<cv::Point2f> eigen2cv( const std::vector<Eigen::Vector2d>& points2D );
+    std::vector<cv::Point3f> eigen2cv( const std::vector<Eigen::Vector3d>& points3D );
+
+    Eigen::Matrix4d getTrans( const cv::Mat& rot, const cv::Mat& transl );
+
+    std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,
+                                                  const cv::Mat& rot,
+                                                  const cv::Mat& transl,
+                                                  const cv::Mat& cameraMatrix,
+                                                  const cv::Mat& distCoeff );
+
 protected:
     bool m_fixPrincipalPoint;
     bool m_fixAspectRatio;

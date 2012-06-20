@@ -93,45 +93,42 @@ void OpenCVStereoCalibration::calibrate()
         cvVectorPoints3D.push_back( eigen2cv( cam1.poses[i].points3D ) );
     }
 
-    // before we do a stereo calibration, we calibrate each camera individually
-    calibrateCamera( cam1, flags() );
-    calibrateCamera( cam2, flags() );
-
     // try to compute the intrinsic and extrinsic parameters
-    cv::Mat cameraMatrix_1 = cv::Mat::eye(3,3,CV_64F);
-    cv::Mat cameraMatrix_2 = cv::Mat::eye(3,3,CV_64F);
-    cv::Mat essentialMatrix = cv::Mat::eye(3,3,CV_64F);
-    cv::Mat fundamentalMatrix = cv::Mat::eye(3,3,CV_64F);
-    cv::Mat distCoeff_1(5,1,CV_64F);
-    cv::Mat distCoeff_2(5,1,CV_64F);
-    std::vector<cv::Mat> rotationVectors;
-    std::vector<cv::Mat> translationVectors;
+    cv::Mat A_1 = cv::Mat::eye(3,3,CV_64F); // intrinsic matrix 1
+    cv::Mat A_2 = cv::Mat::eye(3,3,CV_64F); // intrinsic matrix 2
+    cv::Mat E = cv::Mat::eye(3,3,CV_64F); // essential matrix
+    cv::Mat F = cv::Mat::eye(3,3,CV_64F); // fundamental matrix
+    cv::Mat dc_1(5,1,CV_64F); // distortion coefficients
+    cv::Mat dc_2(5,1,CV_64F); // distortion coefficients
+    cv::Mat R; // rotation
+    cv::Mat T; // translation
     double error = cv::stereoCalibrate( cvVectorPoints3D,
                                         cvVectorPoints2D_1,
                                         cvVectorPoints2D_2,
-                                        cameraMatrix_1,
-                                        distCoeff_1,
-                                        cameraMatrix_2,
-                                        distCoeff_2,
+                                        A_1,
+                                        dc_1,
+                                        A_2,
+                                        dc_2,
                                         cv::Size( cam1.imageSize(0), cam1.imageSize(1) ),
-                                        rotationVectors,
-                                        translationVectors,
-                                        essentialMatrix,
-                                        fundamentalMatrix,
+                                        R, T, E, F,
                                         cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6),
                                         flags() );
 
+    // compute the poses
+    std::vector<cv::Mat> rVec_cam1, tVec_cam1;
+    cv::solvePnP( cvVectorPoints3D, cvVectorPoints2D_1, A_1, dc_1, rVec_cam1, tVec_cam1 );
+
     // instrinsic matrix
-    cv::cv2eigen( cameraMatrix_1, cam1.intrinsic );
-    cv::cv2eigen( cameraMatrix_2, cam2.intrinsic );
+    cv::cv2eigen( A_1, cam1.intrinsic );
+    cv::cv2eigen( A_2, cam2.intrinsic );
 
     // distortion coefficeints
     cam1.distortion.clear();
     cam2.distortion.clear();
-    for( int i=0; i<distCoeff_1.size().width; i++ )
+    for( int i=0; i<dc_1.size().width; i++ )
     {
-        cam1.distortion.push_back( distCoeff_1.at<double>( i, 0 ) );
-        cam2.distortion.push_back( distCoeff_2.at<double>( i, 0 ) );
+        cam1.distortion.push_back( dc_1.at<double>( i, 0 ) );
+        cam2.distortion.push_back( dc_2.at<double>( i, 0 ) );
     }
 
     // error
@@ -139,29 +136,30 @@ void OpenCVStereoCalibration::calibrate()
     cam2.error = error;
 
     // compute and save the poses
+    Eigen::Matrix4d RT = cv2eigen( R, T );
     for( size_t i=0; i<poseCount; i++ )
     {
-        // get the 4x4 affine trans between the two cameras
-        Eigen::Matrix4d trans = cv2eigen( rotationVectors[i], translationVectors[i] );
+        // get the extrinsics
+        Eigen::Matrix4d trans_cam1 = cv2eigen( rVec_cam1[i], tVec_cam1[i] );
+        cam1.poses[i].transformation = trans_cam1;
+        cam2.poses[i].transformation = trans_cam1 * RT;
 
-        // set the camera transformations in world space
-        cam2.poses[i].transformation *= trans;
-
-        // devompose the matrices back for reprojection
-        cv::Mat rot_1, rot_2, transl_1, transl_2;
-        eigen2cv( cam1.poses[i].transformation, rot_1, transl_1 );
-        eigen2cv( cam2.poses[i].transformation, rot_2, transl_2 );
+        // now the ugly part, convert back to openCV for back projection
+        cv::Mat rv1, rv2, tv1, tv2;
+        eigen2cv( cam1.poses[i].transformation, rv1, tv1 );
+        eigen2cv( cam2.poses[i].transformation, rv2, tv2 );
 
         // reproject points from the opencv poses
-        cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rot_1, transl_1, cameraMatrix_1, distCoeff_1 );
-        cam2.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rot_2, transl_2, cameraMatrix_2, distCoeff_2 );
+        cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv1, tv1, A_1, dc_1 );
+        cam2.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv2, tv2, A_2, dc_2 );
+    }
 
-        // if only the relative poses were desired
-        if( !m_relativeToPattern )
-        {
-            cam1.poses[i].transformation = Eigen::Matrix4d::Identity();
-            cam2.poses[i].transformation = trans;
-        }
+    // if only the relative pose is desired, just blank it all
+    for( size_t i=0; !m_relativeToPattern && i<poseCount; i++ )
+    {
+        // get the extrinsics
+        cam1.poses[i].transformation = Eigen::Matrix4d::Identity();
+        cam2.poses[i].transformation = RT;
     }
 }
 

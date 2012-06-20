@@ -52,6 +52,8 @@ public:
 
     virtual bool find( std::shared_ptr<cimg_library::CImg<uint8_t> > image ) = 0;
 
+    void clear();
+
     const std::vector< Eigen::Vector2d >& points2D() const;
     const std::vector< Eigen::Vector3d >& points3D() const;
 

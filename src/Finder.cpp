@@ -43,6 +43,13 @@ Finder::~Finder() {
 }
 
 
+void Finder::clear()
+{
+    m_points2D.clear();
+    m_points3D.clear();
+}
+
+
 const std::vector< Eigen::Vector2d >& Finder::points2D() const
 {
     return m_points2D;

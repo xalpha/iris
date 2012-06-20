@@ -29,7 +29,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # set some variabiles
-set( CMAKE_BUILD_TYPE Release )
+set( CMAKE_BUILD_TYPE Debug )
 if( NOT WIN32 )
     set( BUILD_SHARED_LIBS TRUE )
 endif()

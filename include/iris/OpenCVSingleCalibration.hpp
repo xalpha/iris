@@ -44,6 +44,8 @@ public:
 
     virtual void calibrate();
 
+    virtual bool multipleCameras();
+
  protected:
     int flags();
 

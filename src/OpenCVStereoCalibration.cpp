@@ -114,10 +114,6 @@ void OpenCVStereoCalibration::calibrate()
                                         cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6),
                                         flags() );
 
-    // compute the poses
-    std::vector<cv::Mat> rVec_cam1, tVec_cam1;
-    cv::solvePnP( cvVectorPoints3D, cvVectorPoints2D_1, A_1, dc_1, rVec_cam1, tVec_cam1 );
-
     // instrinsic matrix
     cv::cv2eigen( A_1, cam1.intrinsic );
     cv::cv2eigen( A_2, cam2.intrinsic );
@@ -135,7 +131,11 @@ void OpenCVStereoCalibration::calibrate()
     cam1.error = error;
     cam2.error = error;
 
-    // compute and save the poses
+    // compute the poses
+    std::vector<cv::Mat> rVec_cam1, tVec_cam1;
+    cv::solvePnP( cvVectorPoints3D, cvVectorPoints2D_1, A_1, dc_1, rVec_cam1, tVec_cam1 );
+
+    // convert and save the poses
     Eigen::Matrix4d RT = cv2eigen( R, T );
     for( size_t i=0; i<poseCount; i++ )
     {
@@ -161,6 +161,12 @@ void OpenCVStereoCalibration::calibrate()
         cam1.poses[i].transformation = Eigen::Matrix4d::Identity();
         cam2.poses[i].transformation = RT;
     }
+}
+
+
+bool OpenCVStereoCalibration::multipleCameras()
+{
+    return true;
 }
 
 

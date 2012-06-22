@@ -52,6 +52,8 @@ public:
     const Camera_d& camera( const size_t id=0 ) const;
     const std::map< size_t, iris::Camera_d >& cameras() const;
 
+    virtual bool multipleCameras() = 0;
+
 protected:
     // cameras
     std::map< size_t, iris::Camera_d > m_cameras;

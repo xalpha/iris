@@ -58,6 +58,12 @@ void OpenCVSingleCalibration::calibrate()
 }
 
 
+bool OpenCVSingleCalibration::multipleCameras()
+{
+    return false;
+}
+
+
 int OpenCVSingleCalibration::flags()
 {
     // init stuff

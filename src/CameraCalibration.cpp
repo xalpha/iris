@@ -69,68 +69,6 @@ bool CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > 
 }
 
 
-bool CameraCalibration::addFrame( std::vector< std::shared_ptr<cimg_library::CImg<uint8_t> > > &images, const size_t poseID )
-{
-    // auto generate IDs
-    std::vector<size_t> camIDs;
-    for( size_t i=0; i<images.size(); i++ )
-        camIDs.push_back(i);
-
-    // now add the frame
-    return addFrame( images, poseID, camIDs );
-}
-
-
-bool CameraCalibration::addFrame( std::vector< std::shared_ptr<cimg_library::CImg<uint8_t> > > &images, const size_t poseID, const std::vector<size_t>& cameraIDs )
-{
-    // init stuff
-    bool found = true;
-    std::vector<Pose_d> poses;
-
-    // check that all is well
-    check();
-
-    // check that the camIDs fit with the images
-    if( images.size() != cameraIDs.size() )
-        throw std::runtime_error("CameraCalibration::addFrame: number of images does not match number of IDs.");
-
-    // add the images on the frame
-    for( size_t i=0; found && i<images.size(); i++ )
-    {
-        // try find correspondences
-        m_finder->clear();
-        found &= m_finder->find( images[i] );
-
-        // if detection succedeed, add the correspondences to the calibration
-        if( found )
-        {
-            // assemble the pose
-            Pose_d pose;
-            pose.points2D = m_finder->points2D();
-            pose.points3D = m_finder->points3D();
-            pose.id = poseID;
-
-            // add correspondences
-            poses.push_back( pose );
-
-        }
-        else
-            break;
-    }
-
-    // sanity check
-    if( images.size() != poses.size() )
-        throw std::runtime_error("CameraCalibration::addFrame: number of images does not match number of recovered poses.");
-
-    // add the poses
-    for( size_t i=0; found && i<poses.size(); i++ )
-        m_calibration->addPose( poses[i], Eigen::Vector2i( images[i]->width(), images[i]->height() ), cameraIDs[i] );
-
-    // return
-    return found;
-}
-
-
 void CameraCalibration::calibrate()
 {
     // check that all is well

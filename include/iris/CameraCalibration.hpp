@@ -49,10 +49,6 @@ public:
     // add single image
     virtual bool addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t poseID, const size_t cameraID=0 );
 
-    // add bundle of images
-    virtual bool addFrame( std::vector< std::shared_ptr<cimg_library::CImg<uint8_t> > > &images, const size_t poseID );
-    virtual bool addFrame( std::vector< std::shared_ptr<cimg_library::CImg<uint8_t> > > &images, const size_t poseID, const std::vector<size_t>& cameraIDs );
-
     // run the calibration
     virtual void calibrate();
 

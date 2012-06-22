@@ -41,12 +41,6 @@ public:
  protected:
     void calibrateCamera( Camera_d &cam, int flags );
 
-    std::vector<cv::Point2f> eigen2cv( const std::vector<Eigen::Vector2d>& points2D );
-    std::vector<cv::Point3f> eigen2cv( const std::vector<Eigen::Vector3d>& points3D );
-
-    Eigen::Matrix4d cv2eigen( const cv::Mat& rot, const cv::Mat& transl );
-    void eigen2cv( const Eigen::Matrix4d& trans, cv::Mat& rot, cv::Mat& transl );
-
     std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,
                                                   const cv::Mat& rot,
                                                   const cv::Mat& transl,

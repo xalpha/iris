@@ -55,8 +55,8 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam, int flags )
     // run over all the poses of this camera and assemble the correspondences
     for( size_t i=0; i<cam.poses.size(); i++ )
     {
-        cvVectorPoints2D.push_back( eigen2cv( cam.poses[i].points2D ) );
-        cvVectorPoints3D.push_back( eigen2cv( cam.poses[i].points3D ) );
+        cvVectorPoints2D.push_back( iris::eigen2cv<float>( cam.poses[i].points2D ) );
+        cvVectorPoints3D.push_back( iris::eigen2cv<float>( cam.poses[i].points3D ) );
     }
 
     // try to compute the intrinsic and extrinsic parameters
@@ -88,7 +88,7 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam, int flags )
     for( size_t i=0; i<rotationVectors.size(); i++ )
     {
         // store the transformation
-        cam.poses[i].transformation = cv2eigen( rotationVectors[i], translationVectors[i] );
+        iris::cv2eigen( rotationVectors[i], translationVectors[i], cam.poses[i].transformation );
 
         // reproject points from the opencv poses
         cam.poses[i].projected2D = projectPoints( cvVectorPoints3D[i],
@@ -97,76 +97,6 @@ void OpenCVCalibration::calibrateCamera( Camera_d &cam, int flags )
                                                   cameraMatrix,
                                                   distCoeff );
     }
-}
-
-
-std::vector<cv::Point2f> OpenCVCalibration::eigen2cv( const std::vector<Eigen::Vector2d>& points2D )
-{
-    // init stuff
-    std::vector<cv::Point2f> cvPoints2D;
-
-    // convert the points
-    for( size_t j=0; j<points2D.size(); j++ )
-        cvPoints2D.push_back( cv::Point2f( points2D[j](0), points2D[j](1) ) );
-
-    // return
-    return cvPoints2D;
-}
-
-
-std::vector<cv::Point3f> OpenCVCalibration::eigen2cv( const std::vector<Eigen::Vector3d>& points3D )
-{
-    // init stuff
-    std::vector<cv::Point3f> cvPoints3D;
-
-    // convert the points
-    for( size_t j=0; j<points3D.size(); j++ )
-        cvPoints3D.push_back( cv::Point3f( points3D[j](0), points3D[j](1), points3D[j](2) ) );
-
-    // return
-    return cvPoints3D;
-}
-
-
-Eigen::Matrix4d OpenCVCalibration::cv2eigen( const cv::Mat& rot, const cv::Mat& transl )
-{
-    // get the rotation
-    cv::Mat rotationCV( 3, 3, rot.type() );
-    cv::Rodrigues( rot, rotationCV );
-    Eigen::Matrix3f rotation;
-    cv::cv2eigen( rotationCV, rotation );
-
-    // get the translation
-    Eigen::Vector3f translation;
-    cv::cv2eigen( transl, translation );
-
-    // convert to a blas transformation
-    Eigen::Affine3f trans;
-    trans.setIdentity();
-    trans.translate( translation );
-    trans.rotate( rotation );
-
-    // return
-    return trans.matrix().cast<double>();
-}
-
-
-void OpenCVCalibration::eigen2cv( const Eigen::Matrix4d& trans, cv::Mat& rot, cv::Mat& transl )
-{
-    // generate the affine trans
-    Eigen::Affine3f affine( trans.cast<float>() );
-
-    // decompose the affine transformation
-    Eigen::Matrix3f rotation = affine.rotation();
-    Eigen::Vector3f translation = affine.translation();
-
-    // convert rotation
-    cv::Mat rotationCV( 3, 3, rot.type() );
-    cv::eigen2cv( rotation, rotationCV );
-    cv::Rodrigues( rotationCV, rot );
-
-    // convert translation
-    cv::eigen2cv( translation, transl );
 }
 
 

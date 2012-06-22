@@ -65,6 +65,101 @@ public:
 };
 typedef Camera<double> Camera_d;
 
+
+/////
+// OpenCV Points
+///
+template <typename To>
+inline std::vector<cv::Point_<To> > eigen2cv( const std::vector<Eigen::Vector2d >& points2D )
+{
+    // init stuff
+    std::vector<cv::Point_<To> > cvPoints2D;
+
+    // convert the points
+    for( size_t j=0; j<points2D.size(); j++ )
+        cvPoints2D.push_back( cv::Point_<To>( static_cast<To>( points2D[j](0) ),
+                                              static_cast<To>( points2D[j](1) ) ) );
+
+    // return
+    return cvPoints2D;
+}
+
+
+template <typename To>
+inline std::vector<cv::Point3_<To> > eigen2cv( const std::vector<Eigen::Vector3d>& points3D )
+{
+    // init stuff
+    std::vector<cv::Point3_<To> > cvPoints3D;
+
+    // convert the points
+    for( size_t j=0; j<points3D.size(); j++ )
+        cvPoints3D.push_back( cv::Point3_<To>( static_cast<To>( points3D[j](0) ),
+                                               static_cast<To>( points3D[j](1) ),
+                                               static_cast<To>( points3D[j](2) ) ) );
+
+    // return
+    return cvPoints3D;
+}
+
+
+
+/////
+// OpenCV Transformation
+///
+template <typename T, int Rows, int Cols>
+void cv2eigen( const cv::Mat& rot, const cv::Mat& transl, Eigen::Matrix<T,Rows,Cols>& mat )
+{
+    // init stuff
+    Eigen::Transform<T,3,Eigen::Affine> trans;
+    trans.setIdentity();
+
+    try
+    {
+        // get the rotation
+        cv::Mat rotationCV( 3, 3, rot.type() );
+        cv::Rodrigues( rot, rotationCV );
+        Eigen::Matrix<T,3,3> rotation;
+        cv::cv2eigen( rotationCV, rotation );
+
+        // get the translation
+        Eigen::Matrix<T,3,1> translation;
+        cv::cv2eigen( transl, translation );
+
+        // convert to a blas transformation
+        trans.translate( translation );
+        trans.rotate( rotation );
+    }
+    catch( std::exception& e )
+    {
+        throw std::runtime_error("iris::cv2eigen: type of openCV rotation and translation matrices don't match that of the output matrix.");
+    }
+
+    // return
+    //mat = trans.matrix().cast<T>;
+    mat = trans.matrix();
+}
+
+
+template <typename T, int Rows, int Cols>
+inline void eigen2cv( const Eigen::Matrix<T, Rows, Cols>& trans, cv::Mat& rot, cv::Mat& transl )
+{
+    // generate the affine trans
+    Eigen::Transform<T, 3, Eigen::Affine> affine( trans );
+
+    // decompose the affine transformation
+    Eigen::Matrix<T, 3, 3> rotation = affine.rotation();
+    Eigen::Matrix<T, 3, 1> translation = affine.translation();
+
+    // convert rotation
+    cv::Mat rotationCV( 3, 3, rot.type() );
+    cv::eigen2cv( rotation, rotationCV );
+    cv::Rodrigues( rotationCV, rot );
+
+    // convert translation
+    cv::eigen2cv( translation, transl );
+}
+
+
 /////
 // OpenCV Matrix Access
 ///

@@ -88,9 +88,9 @@ void OpenCVStereoCalibration::calibrate()
             throw std::runtime_error("OpenCVStereoCalibration::calibrate: cameras don't have the same number of correspondences in this pose.");
 
         // add them to the opemcv vectors
-        cvVectorPoints2D_1.push_back( eigen2cv( cam1.poses[i].points2D ) );
-        cvVectorPoints2D_2.push_back( eigen2cv( cam2.poses[i].points2D ) );
-        cvVectorPoints3D.push_back( eigen2cv( cam1.poses[i].points3D ) );
+        cvVectorPoints2D_1.push_back( iris::eigen2cv<float>( cam1.poses[i].points2D ) );
+        cvVectorPoints2D_2.push_back( iris::eigen2cv<float>( cam2.poses[i].points2D ) );
+        cvVectorPoints3D.push_back( iris::eigen2cv<float>( cam1.poses[i].points3D ) );
     }
 
     // try to compute the intrinsic and extrinsic parameters
@@ -136,18 +136,20 @@ void OpenCVStereoCalibration::calibrate()
     cv::solvePnP( cvVectorPoints3D, cvVectorPoints2D_1, A_1, dc_1, rVec_cam1, tVec_cam1 );
 
     // convert and save the poses
-    Eigen::Matrix4d RT = cv2eigen( R, T );
+    Eigen::Matrix4d RT;
+    iris::cv2eigen( R, T, RT );
     for( size_t i=0; i<poseCount; i++ )
     {
         // get the extrinsics
-        Eigen::Matrix4d trans_cam1 = cv2eigen( rVec_cam1[i], tVec_cam1[i] );
+        Eigen::Matrix4d trans_cam1;
+        iris::cv2eigen( rVec_cam1[i], tVec_cam1[i], trans_cam1 );
         cam1.poses[i].transformation = trans_cam1;
         cam2.poses[i].transformation = trans_cam1 * RT;
 
         // now the ugly part, convert back to openCV for back projection
         cv::Mat rv1, rv2, tv1, tv2;
-        eigen2cv( cam1.poses[i].transformation, rv1, tv1 );
-        eigen2cv( cam2.poses[i].transformation, rv2, tv2 );
+        iris::eigen2cv( cam1.poses[i].transformation, rv1, tv1 );
+        iris::eigen2cv( cam2.poses[i].transformation, rv2, tv2 );
 
         // reproject points from the opencv poses
         cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv1, tv1, A_1, dc_1 );

@@ -171,7 +171,19 @@ void OpenCVStereoCalibration::calibrate()
 
 bool validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t frame )
 {
-    return cam1.poses[frame].points2D.size() > 0 && (cam1.poses[frame].points2D.size() == cam2.poses[frame].points2D.size());
+    // check if the arrays have the same length
+    if( cam1.poses[frame].points2D.size() == 0 ||
+        cam1.poses[frame].pointIndices.size() == 0 ||
+        (cam1.poses[frame].points2D.size() != cam2.poses[frame].points2D.size() ) ||
+        (cam1.poses[frame].pointIndices.size() != cam2.poses[frame].pointIndices.size() ) )
+        return false;
+
+    // check that all the indices match
+    for( size_t i=0; i<cam1.poses[frame].pointIndices.size(); i++ )
+        if( cam1.poses[frame].pointIndices[i] != cam2.poses[frame].pointIndices[i] )
+            return false;
+
+    return true;
 }
 
 

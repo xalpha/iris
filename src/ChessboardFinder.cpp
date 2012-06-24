@@ -44,21 +44,27 @@ ChessboardFinder::~ChessboardFinder() {
 
 void ChessboardFinder::configure( const size_t columns, const size_t rows, const double squareSize )
 {
+    // init stuff
+    m_points3D.clear();
+    m_indices.clear();
+
     // set stuff
     m_columns = columns;
     m_rows = rows;
     m_squareSize = squareSize;
 
     // generate the points
-    // compute the coordinates of the corners in 3Ds
-    m_points3D.clear();
+    // compute the coordinates of the corners in 3D
     float ss = static_cast<float>( m_squareSize );
 
     // compute the positions of the points
     for( size_t i=0; i<m_columns*m_rows; i++ )
+    {
         m_points3D.push_back( Eigen::Vector3d( static_cast<double>( i % m_columns ) *ss,
                                               -static_cast<double>( i / m_columns ) *ss,
                                                0.0f ) );
+        m_indices.push_back(i);
+    }
 
     // all is well in the jungle
     m_configured = true;
@@ -105,6 +111,7 @@ bool ChessboardFinder::find( Pose_d& pose )
 
         // set the 3d Points
         pose.points3D = m_points3D;
+        pose.pointIndices = m_indices;
     }
 
     // return

@@ -49,7 +49,8 @@ public:
 
 protected:
     bool m_configured;
-    std::vector< Eigen::Vector3d > m_points3D;
+    std::vector<Eigen::Vector3d> m_points3D;
+    std::vector<size_t> m_indices;
 };
 
 } // end namespace iris

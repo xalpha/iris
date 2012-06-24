@@ -50,6 +50,7 @@ public:
     bool rejected;
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
+    std::vector<size_t> pointIndices;
     size_t id;
     Eigen::Matrix<T,4,4> transformation;
     std::vector< Eigen::Matrix<T,2,1> > projected2D;

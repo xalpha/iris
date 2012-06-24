@@ -39,7 +39,6 @@ include( IrisConfig.cmake )
 
 # add the include files
 list( APPEND Iris_INC
-    include/iris/Calibration.hpp
     include/iris/CameraCalibration.hpp
     include/iris/ChessboardFinder.hpp
     include/iris/Finder.hpp
@@ -51,7 +50,6 @@ list( APPEND Iris_INC
 
 # add the source files
 list( APPEND Iris_SRC
-    src/Calibration.cpp
     src/CameraCalibration.cpp
     src/ChessboardFinder.cpp
     src/Finder.cpp

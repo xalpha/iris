@@ -44,9 +44,9 @@ public:
 
     virtual void calibrate();
 
-    virtual bool multipleCameras();
-
  protected:
+    void calibrateCamera( Camera_d &cam, int flags );
+
     int flags();
 
 };

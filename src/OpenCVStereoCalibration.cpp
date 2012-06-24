@@ -71,7 +71,7 @@ void OpenCVStereoCalibration::calibrate()
     Camera_d& cam2 = (m_cameras.begin()++)->second;
 
     // check that both cameras have the same number of poses
-    size_t poseCount = cam1.poses.size();
+    size_t frameCount = cam1.poses.size();
     if( cam1.poses.size() != cam2.poses.size() )
         throw std::runtime_error("OpenCVStereoCalibration::calibrate: cameras don't have the same number of poses.");
 
@@ -81,16 +81,19 @@ void OpenCVStereoCalibration::calibrate()
     std::vector< std::vector<cv::Point3f> > cvVectorPoints3D;
 
     // run over all the poses of this camera and assemble the correspondences
-    for( size_t i=0; i<poseCount; i++ )
+    for( size_t f=0; f<frameCount; f++ )
     {
-        // check that the number of correspondences is the same for both cameras
-        if( cam1.poses[i].points2D.size() != cam2.poses[i].points2D.size() )
-            throw std::runtime_error("OpenCVStereoCalibration::calibrate: cameras don't have the same number of correspondences in this pose.");
+        // check if this frame is valid
+        if( !validFrame( cam1, cam2, f ) )
+        {
+            cam1.poses[f].rejected = true;
+            cam2.poses[f].rejected = true;
+        }
 
         // add them to the opemcv vectors
-        cvVectorPoints2D_1.push_back( iris::eigen2cv<float>( cam1.poses[i].points2D ) );
-        cvVectorPoints2D_2.push_back( iris::eigen2cv<float>( cam2.poses[i].points2D ) );
-        cvVectorPoints3D.push_back( iris::eigen2cv<float>( cam1.poses[i].points3D ) );
+        cvVectorPoints2D_1.push_back( iris::eigen2cv<float>( cam1.poses[f].points2D ) );
+        cvVectorPoints2D_2.push_back( iris::eigen2cv<float>( cam2.poses[f].points2D ) );
+        cvVectorPoints3D.push_back( iris::eigen2cv<float>( cam1.poses[f].points3D ) );
     }
 
     // try to compute the intrinsic and extrinsic parameters
@@ -138,7 +141,7 @@ void OpenCVStereoCalibration::calibrate()
     // convert and save the poses
     Eigen::Matrix4d RT;
     iris::cv2eigen( R, T, RT );
-    for( size_t i=0; i<poseCount; i++ )
+    for( size_t i=0; i<frameCount; i++ )
     {
         // get the extrinsics
         Eigen::Matrix4d trans_cam1;
@@ -157,7 +160,7 @@ void OpenCVStereoCalibration::calibrate()
     }
 
     // if only the relative pose is desired, just blank it all
-    for( size_t i=0; !m_relativeToPattern && i<poseCount; i++ )
+    for( size_t i=0; !m_relativeToPattern && i<frameCount; i++ )
     {
         // get the extrinsics
         cam1.poses[i].transformation = Eigen::Matrix4d::Identity();
@@ -166,9 +169,15 @@ void OpenCVStereoCalibration::calibrate()
 }
 
 
-bool OpenCVStereoCalibration::multipleCameras()
+bool validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t frame )
 {
-    return true;
+    return cam1.poses[frame].points2D.size() > 0 && (cam1.poses[frame].points2D.size() == cam2.poses[frame].points2D.size());
+}
+
+
+void OpenCVStereoCalibration::stereoCalibrate()
+{
+
 }
 
 

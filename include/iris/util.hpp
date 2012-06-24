@@ -21,7 +21,9 @@
 
 #pragma once
 
+#include <cstdint>
 #include <list>
+#include <memory>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -30,6 +32,9 @@ using std::ptrdiff_t;
 
 #include <opencv/cv.h>
 #include <opencv2/core/eigen.hpp>
+
+#define cimg_display 0
+#include <CImg.h>
 
 namespace iris
 {
@@ -41,6 +46,8 @@ template <typename T>
 class Pose
 {
 public:
+    std::shared_ptr< cimg_library::CImg<uint8_t> > image;
+    bool rejected;
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
     size_t id;

@@ -28,18 +28,18 @@
  *      Author: duliu
  */
 
-#include <iris/Calibration.hpp>
+#include <iris/CameraCalibration.hpp>
 
 namespace iris {
 
-class OpenCVCalibration : public Calibration
+class OpenCVCalibration : public CameraCalibration
 {
 public:
     OpenCVCalibration();
     virtual ~OpenCVCalibration();
 
  protected:
-    void calibrateCamera( Camera_d &cam, int flags );
+
 
     std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,
                                                   const cv::Mat& rot,

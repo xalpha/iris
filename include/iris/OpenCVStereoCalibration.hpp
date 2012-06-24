@@ -46,9 +46,11 @@ public:
 
     virtual void calibrate();
 
-    virtual bool multipleCameras();
-
 protected:
+    bool validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t frame );
+
+    void stereoCalibrate();
+
     virtual int flags();
 
 protected:

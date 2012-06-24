@@ -65,21 +65,24 @@ void ChessboardFinder::configure( const size_t columns, const size_t rows, const
 }
 
 
-bool ChessboardFinder::find( std::shared_ptr<cimg_library::CImg<uint8_t> > image )
+bool ChessboardFinder::find( Pose_d& pose )
 {
     // check if configured
     if( !m_configured )
         throw std::runtime_error("ChessboardFinder::find: pattern not configured not configured.");
 
     // init stuff
-    cv::Mat imageCV( image->height(), image->width(), CV_8UC3 );
+    cimg_library::CImg<uint8_t>& image = *(pose.image);
+    cv::Mat imageCV( image.height(), image.width(), CV_8UC3 );
     std::vector< cv::Point2f > corners;
+    pose.points2D.clear();
+    pose.points3D.clear();
 
     // convert it to the openCV internal format
-    for( int y=0; y<image->height(); y++ )
-        for( int x=0; x<image->width(); x++ )
+    for( int y=0; y<image.height(); y++ )
+        for( int x=0; x<image.width(); x++ )
             for( int c=0; c<3; c++ )
-                imageCV.at<cv::Vec3b>(y,x)[c] = static_cast<unsigned char>( (*image)( x, y, 0, c ) );
+                imageCV.at<cv::Vec3b>(y,x)[c] = static_cast<unsigned char>( image( x, y, 0, c ) );
 
     // now detech the corners
     bool found = cv::findChessboardCorners( imageCV, cv::Size( m_columns, m_rows ), corners );//, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK );
@@ -88,7 +91,7 @@ bool ChessboardFinder::find( std::shared_ptr<cimg_library::CImg<uint8_t> > image
     if( found )
     {
         // check if all corners were found (not sure this is necessary)
-        if( corners.size() != m_points3D.size() )
+        if( corners.size() != pose.points3D.size() )
             throw std::runtime_error("ChessboardFinder::find: found less corners then the grid should have.");
 
         // try to refine the corners (example from the opencv doc)
@@ -97,9 +100,11 @@ bool ChessboardFinder::find( std::shared_ptr<cimg_library::CImg<uint8_t> > image
         cv::cornerSubPix(grayImage, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 0.1 ));
 
         // convert to eigen
-        m_points2D.clear();
         for( size_t i=0; i<corners.size(); i++ )
-            m_points2D.push_back( Eigen::Vector2d( corners[i].x, corners[i].y ) );
+            pose.points2D.push_back( Eigen::Vector2d( corners[i].x, corners[i].y ) );
+
+        // set the 3d Points
+        pose.points3D = m_points3D;
     }
 
     // return

@@ -32,8 +32,7 @@
 #include <memory>
 
 #include <iris/Finder.hpp>
-#include <iris/Calibration.hpp>
-
+#include <iris/util.hpp>
 
 namespace iris
 {
@@ -41,22 +40,24 @@ namespace iris
 class CameraCalibration
 {
 public:
-
-public:
     CameraCalibration();
     virtual ~CameraCalibration();
 
     // add single image
-    virtual bool addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t poseID, const size_t cameraID=0 );
+    virtual size_t addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID=0 );
+
+    // clear
+    void clear();
 
     // run the calibration
-    virtual void calibrate();
+    virtual void calibrate() = 0;
 
     void setFinder( std::shared_ptr<Finder> finder );
-    void setCalibration( std::shared_ptr<Calibration> calibration );
 
     const Finder& finder() const;
-    const Calibration& calibration() const;
+
+    const Camera_d& camera( const size_t id=0 ) const;
+    const Pose_d& pose( const size_t id ) const;
 
 protected:
     void check();
@@ -64,7 +65,10 @@ protected:
 protected:
     // these two do the work
     std::shared_ptr<Finder> m_finder;
-    std::shared_ptr<Calibration> m_calibration;
+
+    // this on what the work gets done
+    size_t m_poseCount;
+    std::map< size_t, iris::Camera_d > m_cameras;
 };
 
 

@@ -52,8 +52,6 @@ protected:
     void critical( const std::string& message );
     void warning( const std::string& message );
 
-    const iris::Pose_d& getPose( size_t idx );
-
     void clear();
 
 protected slots:
@@ -71,23 +69,17 @@ protected:
     // ui's
     Ui::IrisCC *ui;
 
-    // actual work gets done here
-    iris::CameraCalibration m_cc;
-
     // finder
     std::shared_ptr<iris::Finder> m_finder;
 
     // calibration
-    std::shared_ptr<iris::Calibration> m_calibration;
+    std::shared_ptr<iris::CameraCalibration> m_calibration;
 
     // images
-    std::vector< std::shared_ptr< cimg_library::CImg<uint8_t> > > m_images;
-    std::vector< size_t > m_images_camIDs;
-    std::vector< QString > m_filenames;
+    std::vector< size_t > m_poseIndices;
+    std::vector< QString > m_poseFilenames;
 
     // processed images
-    std::vector< std::shared_ptr< cimg_library::CImg<uint8_t> > > m_detected;
-    std::vector< std::shared_ptr< cimg_library::CImg<uint8_t> > > m_rejected;
     std::vector< size_t > m_detected_idx;
     std::vector< size_t > m_rejected_idx;
 };

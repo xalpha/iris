@@ -314,18 +314,6 @@ void IrisCC::warning( const std::string& message )
 }
 
 
-const iris::Pose_d &IrisCC::getPose( size_t idx )
-{
-    for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
-        for( size_t p=0; p<camIt->second.poses.size(); p++ )
-            if( camIt->second.poses[p].id == idx )
-                return camIt->second.poses[p];
-
-    // nothing found
-    throw std::runtime_error("IrisCC::pose: pose not found.");
-}
-
-
 void IrisCC::clear()
 {
     // cleanup the image plot
@@ -417,7 +405,7 @@ void IrisCC::on_configureCalibration()
                 calib->configure( form.fixed_principal_point->isChecked(),
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.tangential_distortion->isChecked() );
-                m_calibration = std::shared_ptr<iris::Calibration>( calib );
+                m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
 

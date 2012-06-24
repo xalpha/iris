@@ -28,15 +28,10 @@
  *      Author: duliu
  */
 
-#include <cstdint>
 #include <map>
-#include <memory>
 #include <vector>
 
 #include <Eigen/Core>
-
-#define cimg_display 0
-#include <CImg.h>
 
 #include <iris/util.hpp>
 
@@ -50,16 +45,10 @@ public:
     Finder();
     virtual ~Finder();
 
-    virtual bool find( std::shared_ptr<cimg_library::CImg<uint8_t> > image ) = 0;
-
-    void clear();
-
-    const std::vector< Eigen::Vector2d >& points2D() const;
-    const std::vector< Eigen::Vector3d >& points3D() const;
+    virtual bool find( Pose_d& pose ) = 0;
 
 protected:
     bool m_configured;
-    std::vector< Eigen::Vector2d > m_points2D;
     std::vector< Eigen::Vector3d > m_points3D;
 };
 

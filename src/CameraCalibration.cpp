@@ -33,7 +33,7 @@ namespace iris {
 
 CameraCalibration::CameraCalibration() :
     m_finder(0),
-    m_calibration(0)
+    m_poseCount(0)
 {
 }
 
@@ -43,51 +43,49 @@ CameraCalibration::~CameraCalibration() {
 }
 
 
-bool CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t poseID, const size_t cameraID )
+size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID )
 {
     // check that all is well
     check();
 
-    // find the pattern (whatever it may be)
-    bool found = m_finder->find( image );
+    // assemble the pose
+    Pose_d pose;
+    pose.id = m_poseCount;
+    pose.image = image;
 
-    // if detection succedeed, add the correspondences to the calibration
-    if( found )
+    // add the pose
+    m_cameras[cameraID].poses.push_back( pose );
+
+    // get the image size
+    Eigen::Vector2i imageSize( image->width(), image->height() );
+
+    // make sure the image sizes are the same
+    if( m_cameras[cameraID].poses.size() == 1 )
+        m_cameras[cameraID].imageSize = imageSize;
+    else
     {
-        // assemble the pose
-        Pose_d pose;
-        pose.points2D = m_finder->points2D();
-        pose.points3D = m_finder->points3D();
-        pose.id = poseID;
-
-        // add correspondences
-        m_calibration->addPose( pose, Eigen::Vector2i( image->width(), image->height() ), cameraID );
+        Eigen::Vector2i tmp = imageSize - m_cameras[cameraID].imageSize;
+        if( (tmp(0) != 0) || (tmp(1) != 0) )
+            throw std::runtime_error( "CameraCalibration::addImage: pose has different image size than already stored poses." );
     }
 
-    // return
-    return found;
+    // increment pose count and return id
+    m_poseCount++;
+    return pose.id;
 }
 
 
-void CameraCalibration::calibrate()
+void CameraCalibration::clear()
 {
-    // check that all is well
-    check();
-
-    // run the calibration
-    m_calibration->calibrate();
+    m_poseCount = 0;
+    m_cameras.clear();
 }
+
 
 
 void CameraCalibration::setFinder( std::shared_ptr<Finder> finder )
 {
     m_finder = finder;
-}
-
-
-void CameraCalibration::setCalibration( std::shared_ptr<Calibration> calibration )
-{
-    m_calibration = calibration;
 }
 
 
@@ -97,25 +95,35 @@ const Finder& CameraCalibration::finder() const
 }
 
 
-const Calibration& CameraCalibration::calibration() const
+const Camera_d& CameraCalibration::camera( const size_t id ) const
 {
-    return *m_calibration;
+    // find the camera
+    std::map< size_t, Camera_d >::const_iterator camIt = m_cameras.find( id );
+
+    // search for the camera
+    if( camIt != m_cameras.end() )
+        return (*camIt).second;
+    else
+        throw std::runtime_error("CameraCalibration::camera: camera not found.");
+}
+
+
+const Pose_d& CameraCalibration::pose( const size_t id ) const
+{
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+            if( camIt->second.poses[p].id == id )
+                return camIt->second.poses[p];
+
+    // nothing found
+    throw std::runtime_error("IrisCC::pose: pose not found.");
 }
 
 
 void CameraCalibration::check()
 {
-    if( m_finder == 0 && m_calibration == 0 )
-    {
-        throw std::runtime_error("CameraCalibration: Finder and Calibration not set.");
-    }
-    else
-    {
-        if( m_finder == 0 )
-            throw std::runtime_error("CameraCalibration: Finder not set.");
-        if( m_calibration == 0 )
-            throw std::runtime_error("CameraCalibration: Calibration not set.");
-    }
+    if( m_finder == 0 )
+        throw std::runtime_error("CameraCalibration: Finder not set.");
 }
 
 

@@ -43,7 +43,7 @@ public:
 
     void configure( const size_t columns, const size_t rows, const double squareSize );
 
-    virtual bool find( std::shared_ptr<cimg_library::CImg<uint8_t> > image );
+    virtual bool find( Pose_d& pose );
 
 protected:
     size_t m_columns;

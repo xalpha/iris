@@ -45,9 +45,6 @@ CameraCalibration::~CameraCalibration() {
 
 size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID )
 {
-    // check that all is well
-    check();
-
     // assemble the pose
     Pose_d pose;
     pose.id = m_poseCount;
@@ -95,6 +92,12 @@ const Finder& CameraCalibration::finder() const
 }
 
 
+const std::map< size_t, iris::Camera_d >& CameraCalibration::cameras() const
+{
+    return m_cameras;
+}
+
+
 const Camera_d& CameraCalibration::camera( const size_t id ) const
 {
     // find the camera
@@ -120,9 +123,19 @@ const Pose_d& CameraCalibration::pose( const size_t id ) const
 }
 
 
+const size_t CameraCalibration::poseCount() const
+{
+    // count all poses over all cameras
+    size_t pc = 0;
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+        pc += camIt->second.poses.size();
+    return pc;
+}
+
+
 void CameraCalibration::check()
 {
-    if( m_finder == 0 )
+    if( !m_finder )
         throw std::runtime_error("CameraCalibration: Finder not set.");
 }
 

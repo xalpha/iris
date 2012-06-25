@@ -60,9 +60,7 @@ IrisCC::IrisCC(QWidget *parent) :
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
     connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
-
     connect( ui->image_list_detected, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
-    connect( ui->image_list_rejected, SIGNAL(currentRowChanged(int)), this, SLOT(on_rejectedImageChanged(int)) );
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -91,64 +89,16 @@ void IrisCC::update()
 {
     try
     {
-        // arer there any images
-        if( m_images.size() == 0 )
-            return;
-
-        // is there a finder
-        if( !m_finder )
-            throw std::runtime_error("IrisCC::updateCalibration: no Finder selected.");
-
-        // is there a calibration
-        if( !m_calibration )
-            throw std::runtime_error("IrisCC::updateCalibration:: no Calibration selected.");
+        check();
 
         // cleanup
-        m_detected.clear();
-        m_rejected.clear();
-        m_detected_idx.clear();
-        m_rejected_idx.clear();
         ui->image_list_detected->clear();
-        ui->image_list_rejected->clear();
 
         // configure CameraCalibration
-        m_cc.setFinder( m_finder );
-        m_cc.setCalibration( m_calibration );
-
-        // init progress dialog
-        QProgressDialog progress("Finding Correspondences ...", " ", 0, static_cast<int>(m_images.size()), this);
-        progress.setCancelButton(0);
-        progress.setWindowModality(Qt::WindowModal);
-        progress.show();
-
-        // try to find correspondences
-        for( size_t i=0; i<m_images.size(); i++ )
-        {
-            bool detected = m_cc.addImage( m_images[i], i, m_images_camIDs[i] );
-
-            // add image
-            if( detected )
-            {
-                ui->image_list_detected->insertItem( ui->image_list_detected->count(), m_filenames[i] );
-                m_detected.push_back( m_images[i] );
-                m_detected_idx.push_back( i );
-            }
-            else
-            {
-                ui->image_list_rejected->insertItem( ui->image_list_rejected->count(), m_filenames[i] );
-                m_rejected.push_back( m_images[i] );
-                m_rejected_idx.push_back( i );
-            }
-
-            // update progress bar
-            progress.setValue( static_cast<int>(i) );
-        }
-
-        // tidy up progress bar
-        progress.setValue( static_cast<int>(m_images.size()) );
+        m_calibration->setFinder( m_finder );
 
         // run the calibration
-        m_cc.calibrate();
+        m_calibration->calibrate();
 
         // update the error plot
         updateErrorPlot();
@@ -167,39 +117,39 @@ void IrisCC::updateErrorPlot()
     ui->plot_error->clearPlottables();
     //ui->plot_error->legend->setVisible(true);
 
-    // run over all detected poses
-    size_t c=0;
-    size_t cameraCount = m_calibration->cameras().size();
+    // run over all camera poses
+    int c=0;
+    size_t cameraCount;
     for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
     {
+        // run over all poses of the camera
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
         {
-            // get the pose
-            auto pose = camIt->second.poses[p];
-
-            // copy the data
+            // update more stuff
+            const iris::Pose_d& pose = camIt->second.poses[p];
+            auto graph = ui->plot_error->addGraph();
             QVector<double> x( pose.points2D.size() );
             QVector<double> y( pose.points2D.size() );
+
+            // run over the points
             for( size_t i=0; i<pose.points2D.size(); i++ )
             {
                 x[i] = pose.projected2D[i](0) - pose.points2D[i](0);
                 y[i] = pose.projected2D[i](1) - pose.points2D[i](1);
+
+                // generate random color
+                QColor col;
+                col.setHslF( static_cast<double>(c)/static_cast<double>(cameraCount),
+                             1.0,
+                             0.2 + 0.6*(static_cast<double>(p)/static_cast<double>(camIt->second.poses.size()) ) );
+
+                // plot the detected points
+                graph->setData(x, y);
+                graph->setPen( col );
+                graph->setLineStyle(QCPGraph::lsNone);
+                graph->setScatterStyle(QCPGraph::ssPlus);
+                graph->setScatterSize(4);
             }
-
-            // generate random color
-            QColor col;
-            col.setHslF( static_cast<double>(c)/static_cast<double>(cameraCount),
-                         1.0,
-                         0.2 + 0.6*(static_cast<double>(p)/static_cast<double>(camIt->second.poses.size()) ) );
-
-            // plot the detected points
-            ui->plot_error->addGraph();
-            auto graph = ui->plot_error->graph(c*cameraCount + p);
-            graph->setData(x, y);
-            graph->setPen( col );
-            graph->setLineStyle(QCPGraph::lsNone);
-            graph->setScatterStyle(QCPGraph::ssPlus);
-            graph->setScatterSize(4);
         }
 
         // increment current camera
@@ -211,31 +161,23 @@ void IrisCC::updateErrorPlot()
 }
 
 
-void IrisCC::updateImage( int idx, bool detected )
+void IrisCC::updateImage( int idx )
 {
     try
     {
         // get the image
-        std::shared_ptr< cimg_library::CImg<uint8_t> > image;
-        if( detected && idx < m_detected.size() )
-            image = m_detected[idx];
-        else if( !detected && idx < m_rejected.size() )
-            image = m_rejected[idx];
-        else if( ( detected && idx >= m_detected.size() ) || ( !detected && idx >= m_rejected.size() ) )
-        {
-            warning( "IrisCC::updateImage: image index outside bounds... ignoring." );
-            return;
-        }
+        const iris::Pose_d pose = m_calibration->pose( m_poseIndices[idx] );
+        const cimg_library::CImg<uint8_t>& image = *pose.image;
 
         // convert image to Qt
-        QImage imageQt( image->width(), image->height(), QImage::Format_RGB888 );
-        for( int y=0; y<image->height(); y++ )
+        QImage imageQt( image.width(), image.height(), QImage::Format_RGB888 );
+        for( int y=0; y<image.height(); y++ )
         {
-            for( int x=0; x<image->width(); x++ )
+            for( int x=0; x<image.width(); x++ )
             {
-                QColor col( (*image)(x,y,0,0),
-                            (*image)(x,y,0,1),
-                            (*image)(x,y,0,2) );
+                QColor col( image(x,y,0,0),
+                            image(x,y,0,1),
+                            image(x,y,0,2) );
                 imageQt.setPixel( x, y, col.rgb() );
             }
         }
@@ -250,12 +192,11 @@ void IrisCC::updateImage( int idx, bool detected )
         ui->plot_image->xAxis->setRange(0, imageQt.width() );
         ui->plot_image->yAxis->setRange(0, imageQt.height() );
 
-
         // draw the detected points
-        if( detected )
+        if( pose.points2D.size() > 0 )
         {
             // get the pose
-            const iris::Pose_d& pose = getPose( m_detected_idx[idx] );
+            const iris::Pose_d& pose = m_calibration->pose( m_poseIndices[idx] );
 
             // copy the data
             QVector<double> x( pose.points2D.size() );
@@ -326,14 +267,40 @@ void IrisCC::clear()
 
     // cleanup the lists
     ui->image_list_detected->clear();
-    ui->image_list_rejected->clear();
 
     // clear images
-    m_images.clear();
-    m_images_camIDs.clear();
-    m_filenames.clear();
-    m_detected.clear();
-    m_rejected.clear();
+    m_poseFilenames.clear();
+    m_poseIndices.clear();
+}
+
+
+void IrisCC::check( bool complain )
+{
+    ui->update->setEnabled(false);
+
+    try
+    {
+        // arer there any images
+        if( m_calibration && m_calibration->poseCount() == 0 )
+            throw std::runtime_error("IrisCC: no poses.");
+
+        // check if there is any calibration
+        if( !m_calibration )
+            throw std::runtime_error("IrisCC: no Calibration selected.");
+
+        // is there a finder
+        if( !m_finder )
+            throw std::runtime_error("IrisCC: no Finder selected.");
+    }
+    catch( std::exception& e )
+    {
+        if( complain )
+            critical( e.what() );
+        else
+            warning( e.what() );
+    }
+
+    ui->update->setEnabled(true);
 }
 
 
@@ -371,6 +338,8 @@ void IrisCC::on_configureFinder()
             default:
                 throw std::runtime_error("IrisCC::on_configure_finder: Finder not supported.");
         }
+
+        check();
     }
     catch( std::exception &e )
     {
@@ -422,7 +391,7 @@ void IrisCC::on_configureCalibration()
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.same_focal_length->isChecked(),
                                   form.tangential_distortion->isChecked() );
-                m_calibration = std::shared_ptr<iris::Calibration>( calib );
+                m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
 
@@ -430,6 +399,8 @@ void IrisCC::on_configureCalibration()
             default:
                 throw std::runtime_error("IrisCC::on_configureCalibration: Calibration not supported.");
         }
+
+        check();
     }
     catch( std::exception &e )
     {
@@ -476,9 +447,12 @@ void IrisCC::on_load()
             }
 
             // add image
-            m_images.push_back( image );
-            m_images_camIDs.push_back( static_cast<size_t>( ui->cameraID->value() ) );
-            m_filenames.push_back( QFileInfo( imagePaths[i] ).fileName() );
+            size_t id = m_calibration->addImage( image, static_cast<size_t>( ui->cameraID->value() ) );
+            m_poseIndices.push_back( id );
+            m_poseFilenames.push_back( QFileInfo( imagePaths[i] ).fileName() );
+
+            // update list
+            ui->image_list_detected->addItem( QFileInfo( imagePaths[i] ).fileName() );
 
             // update progress
             progress.setValue(i);
@@ -486,6 +460,8 @@ void IrisCC::on_load()
 
         // tidy up progress bar
         progress.setValue(imagePaths.size());
+
+        check();
     }
     catch( std::exception &e )
     {
@@ -502,6 +478,8 @@ void IrisCC::on_clear()
                                                                  QMessageBox::Yes | QMessageBox::No );
     if( QMessageBox::Yes == response )
         clear();
+
+    check();
 }
 
 
@@ -513,12 +491,5 @@ void IrisCC::on_update()
 
 void IrisCC::on_detectedImageChanged( int idx )
 {
-    updateImage( idx, true );
-    //updateErrorPlot(  );
-}
-
-
-void IrisCC::on_rejectedImageChanged( int idx )
-{
-    updateImage( idx, false );
+    updateImage( idx );
 }

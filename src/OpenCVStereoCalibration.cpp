@@ -169,7 +169,7 @@ void OpenCVStereoCalibration::calibrate()
 }
 
 
-bool validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t frame )
+bool OpenCVStereoCalibration::validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t frame )
 {
     // check if the arrays have the same length
     if( cam1.poses[frame].points2D.size() == 0 ||
@@ -184,12 +184,6 @@ bool validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t 
             return false;
 
     return true;
-}
-
-
-void OpenCVStereoCalibration::stereoCalibrate()
-{
-
 }
 
 

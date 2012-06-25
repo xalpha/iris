@@ -56,8 +56,12 @@ public:
 
     const Finder& finder() const;
 
+    const std::map< size_t, iris::Camera_d >& cameras() const;
+
     const Camera_d& camera( const size_t id=0 ) const;
     const Pose_d& pose( const size_t id ) const;
+
+    const size_t poseCount() const;
 
 protected:
     void check();

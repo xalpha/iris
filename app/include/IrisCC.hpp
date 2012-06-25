@@ -47,12 +47,14 @@ protected:
     void update();
 
     void updateErrorPlot();
-    void updateImage( int idx, bool detected );
+    void updateImage( int idx );
 
     void critical( const std::string& message );
     void warning( const std::string& message );
 
     void clear();
+
+    void check( bool complain=false );
 
 protected slots:
     void on_configureFinder();
@@ -63,7 +65,6 @@ protected slots:
     void on_update();
 
     void on_detectedImageChanged( int idx );
-    void on_rejectedImageChanged( int idx );
 
 protected:
     // ui's
@@ -78,8 +79,4 @@ protected:
     // images
     std::vector< size_t > m_poseIndices;
     std::vector< QString > m_poseFilenames;
-
-    // processed images
-    std::vector< size_t > m_detected_idx;
-    std::vector< size_t > m_rejected_idx;
 };

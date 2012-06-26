@@ -298,6 +298,8 @@ void IrisCC::check( bool complain )
             critical( e.what() );
         else
             warning( e.what() );
+
+        return;
     }
 
     ui->update->setEnabled(true);

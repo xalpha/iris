@@ -75,6 +75,11 @@ void OpenCVStereoCalibration::calibrate()
     if( cam1.poses.size() != cam2.poses.size() )
         throw std::runtime_error("OpenCVStereoCalibration::calibrate: cameras don't have the same number of poses.");
 
+    // detect correspondences over all poses
+    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+        for( size_t p=0; p<it->second.poses.size(); p++ )
+            m_finder->find( it->second.poses[p] );
+
     // init stuff
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D_1;
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D_2;

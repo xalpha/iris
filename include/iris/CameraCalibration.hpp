@@ -66,6 +66,8 @@ public:
     void copyCameras( std::shared_ptr<CameraCalibration> cc );
 
 protected:
+    virtual void filter() = 0;
+
     void check();
 
 protected:
@@ -75,6 +77,9 @@ protected:
     // this on what the work gets done
     size_t m_poseCount;
     std::map< size_t, iris::Camera_d > m_cameras;
+
+    // filtered
+    std::map< size_t, iris::Camera_d > m_filteredCameras;
 };
 
 

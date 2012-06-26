@@ -83,6 +83,7 @@ bool ChessboardFinder::find( Pose_d& pose )
     std::vector< cv::Point2f > corners;
     pose.points2D.clear();
     pose.points3D.clear();
+    pose.pointIndices.clear();
 
     // convert it to the openCV internal format
     for( int y=0; y<image.height(); y++ )

@@ -133,6 +133,13 @@ const size_t CameraCalibration::poseCount() const
 }
 
 
+void CameraCalibration::copyCameras( std::shared_ptr<CameraCalibration> cc )
+{
+    if( cc.get() != 0 )
+        m_cameras = cc->m_cameras;
+}
+
+
 void CameraCalibration::check()
 {
     if( !m_finder )

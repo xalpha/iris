@@ -63,6 +63,8 @@ public:
 
     const size_t poseCount() const;
 
+    void copyCameras( std::shared_ptr<CameraCalibration> cc );
+
 protected:
     void check();
 

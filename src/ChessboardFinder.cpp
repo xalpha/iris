@@ -97,7 +97,7 @@ bool ChessboardFinder::find( Pose_d& pose )
     if( found )
     {
         // check if all corners were found (not sure this is necessary)
-        if( corners.size() != pose.points3D.size() )
+        if( corners.size() != m_points3D.size() )
             throw std::runtime_error("ChessboardFinder::find: found less corners then the grid should have.");
 
         // try to refine the corners (example from the opencv doc)

@@ -91,9 +91,6 @@ void IrisCC::update()
     {
         check();
 
-        // cleanup
-        ui->image_list_detected->clear();
-
         // configure CameraCalibration
         m_calibration->setFinder( m_finder );
 
@@ -376,6 +373,7 @@ void IrisCC::on_configureCalibration()
                 calib->configure( form.fixed_principal_point->isChecked(),
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.tangential_distortion->isChecked() );
+                calib->copyCameras( m_calibration );
                 m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
@@ -393,6 +391,7 @@ void IrisCC::on_configureCalibration()
                                   form.fixed_aspect_ratio->isChecked(),
                                   form.same_focal_length->isChecked(),
                                   form.tangential_distortion->isChecked() );
+                calib->copyCameras( m_calibration );
                 m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }

@@ -67,6 +67,7 @@ public:
 
 protected:
     virtual void filter() = 0;
+    virtual void commit();
 
     void check();
 

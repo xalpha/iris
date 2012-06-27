@@ -47,7 +47,9 @@ public:
  protected:
     void calibrateCamera( Camera_d &cam, int flags );
 
-    int flags();
+    virtual void filter();
+
+    virtual int flags();
 
 };
 

@@ -115,42 +115,40 @@ void IrisCC::updateErrorPlot()
     //ui->plot_error->legend->setVisible(true);
 
     // run over all camera poses
-    int c=0;
-    size_t cameraCount;
     for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
     {
         // run over all poses of the camera
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
         {
-            // update more stuff
-            const iris::Pose_d& pose = camIt->second.poses[p];
-            auto graph = ui->plot_error->addGraph();
-            QVector<double> x( pose.points2D.size() );
-            QVector<double> y( pose.points2D.size() );
-
-            // run over the points
-            for( size_t i=0; i<pose.points2D.size(); i++ )
+            if( !camIt->second.poses[p].rejected )
             {
-                x[i] = pose.projected2D[i](0) - pose.points2D[i](0);
-                y[i] = pose.projected2D[i](1) - pose.points2D[i](1);
+                // update more stuff
+                const iris::Pose_d& pose = camIt->second.poses[p];
+                auto graph = ui->plot_error->addGraph();
+                QVector<double> x( pose.points2D.size() );
+                QVector<double> y( pose.points2D.size() );
 
-                // generate random color
-                QColor col;
-                col.setHslF( static_cast<double>(c)/static_cast<double>(cameraCount),
-                             1.0,
-                             0.2 + 0.6*(static_cast<double>(p)/static_cast<double>(camIt->second.poses.size()) ) );
+                // run over the points
+                for( size_t i=0; i<pose.points2D.size(); i++ )
+                {
+                    x[i] = pose.projected2D[i](0) - pose.points2D[i](0);
+                    y[i] = pose.projected2D[i](1) - pose.points2D[i](1);
 
-                // plot the detected points
-                graph->setData(x, y);
-                graph->setPen( col );
-                graph->setLineStyle(QCPGraph::lsNone);
-                graph->setScatterStyle(QCPGraph::ssPlus);
-                graph->setScatterSize(4);
+                    // generate random color
+                    QColor col;
+                    col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_calibration->cameras().size()),
+                                 1.0,
+                                 0.2 + 0.6*(static_cast<double>(p)/static_cast<double>(camIt->second.poses.size()) ) );
+
+                    // plot the detected points
+                    graph->setData(x, y);
+                    graph->setPen( col );
+                    graph->setLineStyle(QCPGraph::lsNone);
+                    graph->setScatterStyle(QCPGraph::ssPlus);
+                    graph->setScatterSize(4);
+                }
             }
         }
-
-        // increment current camera
-        c++;
     }
 
     // redraw
@@ -190,7 +188,7 @@ void IrisCC::updateImage( int idx )
         ui->plot_image->yAxis->setRange(0, imageQt.height() );
 
         // draw the detected points
-        if( pose.points2D.size() > 0 )
+        if( !pose.rejected )
         {
             // get the pose
             const iris::Pose_d& pose = m_calibration->pose( m_poseIndices[idx] );

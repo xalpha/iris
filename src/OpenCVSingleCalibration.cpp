@@ -53,18 +53,22 @@ void OpenCVSingleCalibration::configure( bool fixPrincipalPoint, bool fixAspectR
 void OpenCVSingleCalibration::calibrate()
 {
     // check that all is OK
-    void check();
+    check();
 
     // run over all cameras and calibrate them
     for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
-    {
-        // run the finder on all poses of the camera
         for( size_t p=0; p<it->second.poses.size(); p++ )
             m_finder->find( it->second.poses[p] );
 
-        // calibrate
+    // filter the poses
+    filter();
+
+    // calibrate all cameras
+    for( auto it = m_filteredCameras.begin(); it != m_filteredCameras.end(); it++ )
         calibrateCamera( (*it).second, flags() );
-    }
+
+    // commit the calibration calibrated frames
+    commit();
 }
 
 
@@ -118,6 +122,41 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
                                                   translationVectors[i],
                                                   cameraMatrix,
                                                   distCoeff );
+    }
+}
+
+
+void OpenCVSingleCalibration::filter()
+{
+    // init stuff
+    m_filteredCameras.clear();
+
+    // run over all the poses and only
+    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    {
+        // update stuff
+        std::vector<size_t> pointIndices;
+
+        for( size_t p=0; p<it->second.poses.size(); p++ )
+        {
+            // guilty untill proven innocent
+            it->second.poses[p].rejected = true;
+
+            // check that all is well
+            if( it->second.poses[p].pointIndices.size() > 0 )
+            {
+                // get the point indices of first pose
+                if( pointIndices.size() == 0 )
+                    pointIndices = it->second.poses[p].pointIndices;
+
+                // check that the indices match with first pose
+                if( it->second.poses[p].pointIndices == pointIndices )
+                    m_filteredCameras[it->first].poses.push_back( it->second.poses[p] );
+            }
+        }
+
+        // set image size
+        m_filteredCameras[it->first].imageSize = it->second.imageSize;
     }
 }
 

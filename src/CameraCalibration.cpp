@@ -140,6 +140,34 @@ void CameraCalibration::copyCameras( std::shared_ptr<CameraCalibration> cc )
 }
 
 
+void CameraCalibration::commit()
+{
+    for( auto camIt=m_filteredCameras.begin(); camIt != m_filteredCameras.end(); camIt++ )
+    {
+        // get the poses for the target
+        std::vector<Pose_d>& poses = m_cameras[ camIt->first ].poses;
+
+        // run over all found poses and commit
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+        {
+            // find the corresponding target pose
+            for( size_t tp=0; tp<poses.size(); tp++ )
+            {
+                if( poses[tp].id == camIt->second.poses[p].id )
+                {
+                    camIt->second.poses[p] = poses[tp];
+                    camIt->second.poses[p].rejected = false;
+                }
+            }
+        }
+
+        // get camera params
+        m_cameras[ camIt->first ].intrinsic = camIt->second.intrinsic;
+        m_cameras[ camIt->first ].distortion = camIt->second.distortion;
+    }
+}
+
+
 void CameraCalibration::check()
 {
     if( !m_finder )

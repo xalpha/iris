@@ -46,14 +46,45 @@ template <typename T>
 class Pose
 {
 public:
+    Pose()
+    {
+        id = -1;
+        transformation = Eigen::Matrix<T,4,4>::Identity();
+        rejected = true;
+    }
+
+
+    Pose( const Pose& pose )
+    {
+        *this = pose;
+    }
+
+
+    void operator =( const Pose& pose )
+    {
+        id = pose.id;
+        image = pose.image;
+        points2D = pose.points2D;
+        points3D = pose.points3D;
+        pointIndices = pose.pointIndices;
+        transformation = pose.transformation;
+        projected2D = pose.projected2D;
+        rejected = pose.rejected;
+    }
+
+public:
+    // id
+    size_t id;
+    // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
-    bool rejected;
+    // correspondences
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
     std::vector<size_t> pointIndices;
-    size_t id;
+    // calibration results
     Eigen::Matrix<T,4,4> transformation;
     std::vector< Eigen::Matrix<T,2,1> > projected2D;
+    bool rejected;
 };
 typedef Pose<double> Pose_d;
 
@@ -64,6 +95,30 @@ typedef Pose<double> Pose_d;
 template <typename T>
 class Camera
 {
+public:
+    Camera()
+    {
+        intrinsic = Eigen::Matrix<T,3,3>::Identity();
+        error = 0;
+    }
+
+
+    Camera( const Camera& cam )
+    {
+        *this = cam;
+    }
+
+
+    void operator =( const Camera& cam )
+    {
+        poses = cam.poses;
+        imageSize = cam.imageSize;
+        intrinsic = cam.intrinsic;
+        distortion = cam.distortion;
+        error = cam.error;
+    }
+
+
 public:
     std::vector< Pose<T> > poses;
     Eigen::Vector2i imageSize;

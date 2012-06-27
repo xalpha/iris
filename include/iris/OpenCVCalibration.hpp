@@ -47,6 +47,8 @@ public:
                                                   const cv::Mat& cameraMatrix,
                                                   const cv::Mat& distCoeff );
 
+    virtual int flags() = 0;
+
 protected:
     bool m_fixPrincipalPoint;
     bool m_fixAspectRatio;

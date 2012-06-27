@@ -192,6 +192,12 @@ bool OpenCVStereoCalibration::validFrame( const iris::Camera_d& cam1, const iris
 }
 
 
+void OpenCVStereoCalibration::filter()
+{
+
+}
+
+
 int OpenCVStereoCalibration::flags()
 {
     int result = 0;

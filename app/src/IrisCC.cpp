@@ -117,6 +117,14 @@ void IrisCC::updateErrorPlot()
     // run over all camera poses
     for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
     {
+        // add graph for this camera
+        auto graph = ui->plot_error->addGraph();
+        QVector<double> x, y;
+
+        // generate random color
+        QColor col;
+        col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_calibration->cameras().size()), 1.0, 0.4 );
+
         // run over all poses of the camera
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
         {
@@ -124,31 +132,22 @@ void IrisCC::updateErrorPlot()
             {
                 // update more stuff
                 const iris::Pose_d& pose = camIt->second.poses[p];
-                auto graph = ui->plot_error->addGraph();
-                QVector<double> x( pose.points2D.size() );
-                QVector<double> y( pose.points2D.size() );
 
                 // run over the points
                 for( size_t i=0; i<pose.points2D.size(); i++ )
                 {
-                    x[i] = pose.projected2D[i](0) - pose.points2D[i](0);
-                    y[i] = pose.projected2D[i](1) - pose.points2D[i](1);
-
-                    // generate random color
-                    QColor col;
-                    col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_calibration->cameras().size()),
-                                 1.0,
-                                 0.2 + 0.6*(static_cast<double>(p)/static_cast<double>(camIt->second.poses.size()) ) );
-
-                    // plot the detected points
-                    graph->setData(x, y);
-                    graph->setPen( col );
-                    graph->setLineStyle(QCPGraph::lsNone);
-                    graph->setScatterStyle(QCPGraph::ssPlus);
-                    graph->setScatterSize(4);
+                    x.push_back( pose.projected2D[i](0) - pose.points2D[i](0) );
+                    y.push_back( pose.projected2D[i](1) - pose.points2D[i](1) );
                 }
             }
         }
+
+        // plot the detected points
+        graph->setData(x, y);
+        graph->setPen( col );
+        graph->setLineStyle(QCPGraph::lsNone);
+        graph->setScatterStyle(QCPGraph::ssPlus);
+        graph->setScatterSize(4);
     }
 
     // redraw

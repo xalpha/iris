@@ -145,18 +145,19 @@ void CameraCalibration::commit()
     for( auto camIt=m_filteredCameras.begin(); camIt != m_filteredCameras.end(); camIt++ )
     {
         // get the poses for the target
-        std::vector<Pose_d>& poses = m_cameras[ camIt->first ].poses;
+        std::vector<Pose_d>& srcPoses = camIt->second.poses;
+        std::vector<Pose_d>& targetPoses = m_cameras[ camIt->first ].poses;
 
         // run over all found poses and commit
-        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+        for( size_t p=0; p<srcPoses.size(); p++ )
         {
             // find the corresponding target pose
-            for( size_t tp=0; tp<poses.size(); tp++ )
+            for( size_t tp=0; tp<targetPoses.size(); tp++ )
             {
-                if( poses[tp].id == camIt->second.poses[p].id )
+                if( targetPoses[tp].id == srcPoses[p].id )
                 {
-                    camIt->second.poses[p] = poses[tp];
-                    camIt->second.poses[p].rejected = false;
+                    targetPoses[tp] = srcPoses[p];
+                    targetPoses[tp].rejected = false;
                 }
             }
         }

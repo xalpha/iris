@@ -72,6 +72,7 @@ public:
         rejected = pose.rejected;
     }
 
+
 public:
     // id
     size_t id;

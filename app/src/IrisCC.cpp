@@ -219,20 +219,20 @@ void IrisCC::updateImage( int idx )
             }
 
             // plot the detected points
-            ui->plot_image->addGraph();
-            ui->plot_image->graph(0)->setData(x, y);
-            ui->plot_image->graph(0)->setPen( QColor( Qt::green ) );
-            ui->plot_image->graph(0)->setLineStyle(QCPGraph::lsNone);
-            ui->plot_image->graph(0)->setScatterStyle(QCPGraph::ssPlus);
-            ui->plot_image->graph(0)->setScatterSize(4);
+            QCPGraph* detected = ui->plot_image->addGraph();
+            detected->setData(x, y);
+            detected->setPen( QPen( QBrush( QColor( Qt::green ) ), 2 ) );
+            detected->setLineStyle(QCPGraph::lsNone);
+            detected->setScatterStyle(QCPGraph::ssPlusCircle);
+            detected->setScatterSize(12);
 
             // plot the detected points
-            ui->plot_image->addGraph();
-            ui->plot_image->graph(1)->setData(px, py);
-            ui->plot_image->graph(1)->setPen( QColor( Qt::yellow ) );
-            ui->plot_image->graph(1)->setLineStyle(QCPGraph::lsNone);
-            ui->plot_image->graph(1)->setScatterStyle(QCPGraph::ssPlus);
-            ui->plot_image->graph(1)->setScatterSize(4);
+            QCPGraph* projected = ui->plot_image->addGraph();
+            projected->setData(px, py);
+            projected->setPen( QPen( QBrush( QColor( Qt::red ) ), 2 ) );
+            projected->setLineStyle(QCPGraph::lsNone);
+            projected->setScatterStyle(QCPGraph::ssPlus);
+            projected->setScatterSize(10);
         }
 
         // redraw

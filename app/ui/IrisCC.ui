@@ -107,11 +107,6 @@
           <widget class="QComboBox" name="select_finder">
            <item>
             <property name="text">
-             <string>None</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
              <string>Chessboard</string>
             </property>
            </item>
@@ -120,7 +115,7 @@
          <item>
           <widget class="QToolButton" name="configure_finder">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="text">
             <string/>
@@ -144,11 +139,6 @@
           <widget class="QComboBox" name="select_calibration">
            <item>
             <property name="text">
-             <string>None</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
              <string>OpenCV Single Camera</string>
             </property>
            </item>
@@ -162,7 +152,7 @@
          <item>
           <widget class="QToolButton" name="configure_calibration">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="text">
             <string/>

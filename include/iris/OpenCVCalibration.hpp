@@ -39,8 +39,6 @@ public:
     virtual ~OpenCVCalibration();
 
  protected:
-
-
     std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,
                                                   const cv::Mat& rot,
                                                   const cv::Mat& transl,

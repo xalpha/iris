@@ -58,7 +58,10 @@ size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> 
 
     // make sure the image sizes are the same
     if( m_cameras[cameraID].poses.size() == 1 )
+    {
+        m_cameras[cameraID].id = cameraID;
         m_cameras[cameraID].imageSize = imageSize;
+    }
     else
     {
         Eigen::Vector2i tmp = imageSize - m_cameras[cameraID].imageSize;
@@ -146,7 +149,7 @@ void CameraCalibration::commit()
     {
         // get the poses for the target
         std::vector<Pose_d>& srcPoses = camIt->second.poses;
-        std::vector<Pose_d>& targetPoses = m_cameras[ camIt->first ].poses;
+        std::vector<Pose_d>& targetPoses = m_cameras[ camIt->second.id ].poses;
 
         // run over all found poses and commit
         for( size_t p=0; p<srcPoses.size(); p++ )
@@ -163,8 +166,8 @@ void CameraCalibration::commit()
         }
 
         // get camera params
-        m_cameras[ camIt->first ].intrinsic = camIt->second.intrinsic;
-        m_cameras[ camIt->first ].distortion = camIt->second.distortion;
+        m_cameras[ camIt->second.id ].intrinsic = camIt->second.intrinsic;
+        m_cameras[ camIt->second.id ].distortion = camIt->second.distortion;
     }
 }
 

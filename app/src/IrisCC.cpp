@@ -51,6 +51,10 @@ IrisCC::IrisCC(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // init finder and calibration
+    on_configureFinder();
+    on_configureCalibration();
+
     // connect combo boxes
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
     connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
@@ -112,7 +116,7 @@ void IrisCC::updateErrorPlot()
     // clear the plot
     ui->plot_error->clearGraphs();
     ui->plot_error->clearPlottables();
-    //ui->plot_error->legend->setVisible(true);
+    ui->plot_error->legend->setVisible( m_calibration->cameras().size() > 0 );
 
     // run over all camera poses
     for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
@@ -148,6 +152,9 @@ void IrisCC::updateErrorPlot()
         graph->setLineStyle(QCPGraph::lsNone);
         graph->setScatterStyle(QCPGraph::ssPlus);
         graph->setScatterSize(4);
+
+        // add graph name
+        graph->setName( "Camera \"" + QString::number(camIt->first) + "\"" );
     }
 
     // redraw
@@ -159,6 +166,15 @@ void IrisCC::updateImage( int idx )
 {
     try
     {
+        // init the plot
+        ui->plot_image->clearGraphs();
+        ui->plot_image->clearPlottables();
+        ui->plot_image->setAxisBackground( QPixmap() );
+
+        // check if there are any images
+        if( m_calibration->poseCount() == 0 )
+            return;
+
         // get the image
         const iris::Pose_d pose = m_calibration->pose( m_poseIndices[idx] );
         const cimg_library::CImg<uint8_t>& image = *pose.image;
@@ -176,13 +192,8 @@ void IrisCC::updateImage( int idx )
             }
         }
 
-        // init the plot
-        ui->plot_image->clearGraphs();
-        ui->plot_image->clearPlottables();
-
         // set the images
-        ui->plot_image->setAxisBackground(QPixmap::fromImage(imageQt));
-        ui->plot_image->setAxisBackgroundScaledMode( Qt::IgnoreAspectRatio );
+        ui->plot_image->setAxisBackground(QPixmap::fromImage(imageQt), true, Qt::IgnoreAspectRatio );
         ui->plot_image->xAxis->setRange(0, imageQt.width() );
         ui->plot_image->yAxis->setRange(0, imageQt.height() );
 
@@ -265,6 +276,13 @@ void IrisCC::clear()
     // clear images
     m_poseFilenames.clear();
     m_poseIndices.clear();
+
+    // clear the calibration
+    m_calibration->clear();
+
+    // update charts
+    updateImage(0);
+    updateErrorPlot();
 }
 
 
@@ -311,12 +329,8 @@ void IrisCC::on_configureFinder()
         // choose what to do
         switch( ui->select_finder->currentIndex() )
         {
-            // nothing selected
-            case 0 :
-                break;
-
             // chessboard
-            case 1 :
+            case 0 :
             {
                 ui->configure_finder->setEnabled(true);
                 Ui::ChessboardFinder chessboardFinderUI;
@@ -355,12 +369,8 @@ void IrisCC::on_configureCalibration()
         // choose what to do
         switch( ui->select_calibration->currentIndex() )
         {
-            // nothing selected
-            case 0 :
-                break;
-
             // OpenCV
-            case 1 :
+            case 0 :
             {
                 ui->configure_calibration->setEnabled(true);
                 Ui::OpenCVSingleCalibration form;
@@ -376,7 +386,7 @@ void IrisCC::on_configureCalibration()
             }
 
             // OpenCV Stereo
-            case 2 :
+            case 1 :
             {
                 ui->configure_calibration->setEnabled(true);
                 Ui::OpenCVStereoCalibration form;

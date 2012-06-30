@@ -151,12 +151,13 @@ void OpenCVSingleCalibration::filter()
 
                 // check that the indices match with first pose
                 if( it->second.poses[p].pointIndices == pointIndices )
-                    m_filteredCameras[it->first].poses.push_back( it->second.poses[p] );
+                    m_filteredCameras[it->second.id].poses.push_back( it->second.poses[p] );
             }
         }
 
         // set image size
-        m_filteredCameras[it->first].imageSize = it->second.imageSize;
+        m_filteredCameras[it->second.id].id = it->second.id;
+        m_filteredCameras[it->second.id].imageSize = it->second.imageSize;
     }
 }
 

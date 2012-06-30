@@ -66,36 +66,58 @@ void OpenCVStereoCalibration::calibrate()
     if( m_cameras.size() != 2 )
         throw std::runtime_error("OpenCVStereoCalibration::calibrate: exactly 2 cameras are required.");
 
-    // get cameras
-    Camera_d& cam1 = m_cameras.begin()->second;
-    Camera_d& cam2 = (m_cameras.begin()++)->second;
-
-    // check that both cameras have the same number of poses
-    size_t frameCount = cam1.poses.size();
-    if( cam1.poses.size() != cam2.poses.size() )
-        throw std::runtime_error("OpenCVStereoCalibration::calibrate: cameras don't have the same number of poses.");
+    // get refs of camera
+    iris::Camera_d& cam1 = m_cameras.begin()->second;
+    iris::Camera_d& cam2 = (m_cameras.begin()++)->second;
 
     // detect correspondences over all poses
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
-        for( size_t p=0; p<it->second.poses.size(); p++ )
-            m_finder->find( it->second.poses[p] );
+    for( size_t p=0; p<cam1.poses.size(); p++ )
+    {
+        m_finder->find( cam1.poses[p] );
+        m_finder->find( cam2.poses[p] );
+    }
 
+    // filter the poses
+    filter();
+
+    // calibrate the cameras
+    stereoCalibrate( cam1, cam2 );
+
+    // commit the results
+    commit();
+}
+
+
+bool OpenCVStereoCalibration::checkFrame( const iris::Pose_d& pose1, const iris::Pose_d& pose2 )
+{
+    // check if the arrays have the same length
+    if( pose1.points2D.size() == 0 ||
+        pose1.pointIndices.size() == 0 ||
+        (pose1.points2D.size() != pose2.points2D.size() ) ||
+        (pose1.pointIndices.size() != pose2.pointIndices.size() ) )
+        return false;
+
+    // check that all the indices match
+    for( size_t i=0; i<pose1.pointIndices.size(); i++ )
+        if( pose1.pointIndices[i] != pose2.pointIndices[i] )
+            return false;
+
+    return true;
+}
+
+
+void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camera_d& cam2 )
+{
     // init stuff
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D_1;
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D_2;
     std::vector< std::vector<cv::Point3f> > cvVectorPoints3D;
+    size_t frameCount = cam1.poses.size();
 
     // run over all the poses of this camera and assemble the correspondences
     for( size_t f=0; f<frameCount; f++ )
     {
-        // check if this frame is valid
-        if( !validFrame( cam1, cam2, f ) )
-        {
-            cam1.poses[f].rejected = true;
-            cam2.poses[f].rejected = true;
-        }
-
-        // add them to the opemcv vectors
+        // add them to the opencv vectors
         cvVectorPoints2D_1.push_back( iris::eigen2cv<float>( cam1.poses[f].points2D ) );
         cvVectorPoints2D_2.push_back( iris::eigen2cv<float>( cam2.poses[f].points2D ) );
         cvVectorPoints3D.push_back( iris::eigen2cv<float>( cam1.poses[f].points3D ) );
@@ -174,27 +196,39 @@ void OpenCVStereoCalibration::calibrate()
 }
 
 
-bool OpenCVStereoCalibration::validFrame( const iris::Camera_d& cam1, const iris::Camera_d& cam2, size_t frame )
-{
-    // check if the arrays have the same length
-    if( cam1.poses[frame].points2D.size() == 0 ||
-        cam1.poses[frame].pointIndices.size() == 0 ||
-        (cam1.poses[frame].points2D.size() != cam2.poses[frame].points2D.size() ) ||
-        (cam1.poses[frame].pointIndices.size() != cam2.poses[frame].pointIndices.size() ) )
-        return false;
-
-    // check that all the indices match
-    for( size_t i=0; i<cam1.poses[frame].pointIndices.size(); i++ )
-        if( cam1.poses[frame].pointIndices[i] != cam2.poses[frame].pointIndices[i] )
-            return false;
-
-    return true;
-}
-
-
 void OpenCVStereoCalibration::filter()
 {
+    // init stuff
+    m_filteredCameras.clear();
 
+    // get refs of camera
+    iris::Camera_d& cam1 = m_cameras.begin()->second;
+    iris::Camera_d& cam2 = (m_cameras.begin()++)->second;
+
+    // check that the cameras have the same image size
+    if( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(0) != cam2.imageSize(0)) )
+        throw std::runtime_error("OpenCVStereoCalibration::filter: cameras do not have the same images size.");
+
+    // do the actual filtering
+    for( size_t p=0; p<cam1.poses.size(); p++ )
+    {
+        // guilty untill proven innocent
+        cam1.poses[p].rejected = true;
+        cam2.poses[p].rejected = true;
+
+        // check if this frame is valid
+        if( checkFrame( cam1.poses[p], cam2.poses[p] ) )
+        {
+            m_filteredCameras[cam1.id].poses.push_back( cam1.poses[p] );
+            m_filteredCameras[cam2.id].poses.push_back( cam2.poses[p] );
+        }
+    }
+
+    // set image size
+    m_filteredCameras[cam1.id].imageSize = cam1.imageSize;
+    m_filteredCameras[cam2.id].imageSize = cam2.imageSize;
+    m_filteredCameras[cam1.id].id = cam1.id;
+    m_filteredCameras[cam2.id].id = cam2.id;
 }
 
 

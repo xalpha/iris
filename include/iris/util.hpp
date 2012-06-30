@@ -112,6 +112,7 @@ public:
 
     void operator =( const Camera& cam )
     {
+        id = cam.id;
         poses = cam.poses;
         imageSize = cam.imageSize;
         intrinsic = cam.intrinsic;
@@ -121,6 +122,7 @@ public:
 
 
 public:
+    size_t id;
     std::vector< Pose<T> > poses;
     Eigen::Vector2i imageSize;
     Eigen::Matrix<T,3,3> intrinsic;

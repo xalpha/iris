@@ -39,11 +39,8 @@ CameraCalibration::CameraCalibration() :
     m_finder(0),
     m_poseCount(0)
 {
-    //std::cout << "Threads max: " << omp_get_max_threads() << std::endl;
-    //std::cout << "Threads count: " << omp_get_num_threads() << std::endl;
     // use all available threads
-    omp_set_num_threads( omp_get_max_threads() );
-    //std::cout << "Threads count: " << omp_get_num_threads() << std::endl;
+    //omp_set_num_threads( omp_get_max_threads() );
 }
 
 

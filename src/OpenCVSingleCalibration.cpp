@@ -63,16 +63,13 @@ void OpenCVSingleCalibration::calibrate()
     for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
     {
         // update stuff
-        size_t poseCount = it->second.poses.size();
         std::vector< Pose_d >& poses = it->second.poses;
+        size_t poseCount = poses.size();
 
         // run feature detection
 #       pragma omp parallel for
-        for( size_t p=0; p<it->second.poses.size(); p++ )
-        {
-            std::cout << "Threads count: " << omp_get_num_threads() << std::endl;
+        for( size_t p=0; p<poseCount; p++ )
             m_finder->find( poses[p] );
-        }
     }
 
     // filter the poses

@@ -92,7 +92,6 @@ if( Bazar_FOUND )
     list( APPEND IrisCC_LINK_LIBS ${Bazar_LIBRARY} )
 endif()
 
-
 # set include paths
 include_directories( ${IrisCC_INCLUDE_DIRS} )
 
@@ -114,6 +113,5 @@ set_target_properties(${IrisCC_Target}
     PROPERTIES
         PUBLIC_HEADER "${IrisCC_INC}"
         COMPILE_DEFINITIONS "${IrisCC_COMPILE_DEFINITIONS}"
-        COMPILE_FLAGS "${Iris_COMPILE_FLAGS}" )
-
-
+        COMPILE_FLAGS "${Iris_COMPILE_FLAGS}"
+        LINK_FLAGS "${Iris_LINK_FLAGS}" )

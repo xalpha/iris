@@ -26,6 +26,10 @@
  *      Author: duliu
  */
 
+#ifdef IRIS_OPENMP
+#include <omp.h>
+#endif
+
 
 #include <iris/OpenCVSingleCalibration.hpp>
 
@@ -57,8 +61,19 @@ void OpenCVSingleCalibration::calibrate()
 
     // run over all cameras and calibrate them
     for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    {
+        // update stuff
+        size_t poseCount = it->second.poses.size();
+        std::vector< Pose_d >& poses = it->second.poses;
+
+        // run feature detection
+#       pragma omp parallel for
         for( size_t p=0; p<it->second.poses.size(); p++ )
-            m_finder->find( it->second.poses[p] );
+        {
+            std::cout << "Threads count: " << omp_get_num_threads() << std::endl;
+            m_finder->find( poses[p] );
+        }
+    }
 
     // filter the poses
     filter();

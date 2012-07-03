@@ -41,6 +41,7 @@ include( IrisConfig.cmake )
 list( APPEND Iris_INC
     include/iris/CameraCalibration.hpp
     include/iris/ChessboardFinder.hpp
+    include/iris/DLTCalibration.hpp
     include/iris/Finder.hpp
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
@@ -52,6 +53,7 @@ list( APPEND Iris_INC
 list( APPEND Iris_SRC
     src/CameraCalibration.cpp
     src/ChessboardFinder.cpp
+    src/DLTCalibration.cpp
     src/Finder.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp

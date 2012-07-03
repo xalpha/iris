@@ -94,3 +94,12 @@ if( NOT WIN32 )
 #    endif()
 endif()
 
+# try to find OpenMP
+find_package( OpenMP )
+if(OPENMP_FOUND)
+    list( APPEND Iris_COMPILE_DEFINITIONS IRIS_OPENMP )
+    list( APPEND Iris_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} )
+    list( APPEND Iris_LINK_FLAGS ${OpenMP_EXE_LINKER_FLAGS} )
+    message( STATUS "iris: OpenMP detected, taking advantage" )
+endif()
+

@@ -68,7 +68,7 @@ void OpenCVStereoCalibration::calibrate()
 
     // get refs of camera
     iris::Camera_d& cam1 = m_cameras.begin()->second;
-    iris::Camera_d& cam2 = (m_cameras.begin()++)->second;
+    iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
 
     // detect correspondences over all poses
     for( size_t p=0; p<cam1.poses.size(); p++ )
@@ -85,24 +85,6 @@ void OpenCVStereoCalibration::calibrate()
 
     // commit the results
     commit();
-}
-
-
-bool OpenCVStereoCalibration::checkFrame( const iris::Pose_d& pose1, const iris::Pose_d& pose2 )
-{
-    // check if the arrays have the same length
-    if( pose1.points2D.size() == 0 ||
-        pose1.pointIndices.size() == 0 ||
-        (pose1.points2D.size() != pose2.points2D.size() ) ||
-        (pose1.pointIndices.size() != pose2.pointIndices.size() ) )
-        return false;
-
-    // check that all the indices match
-    for( size_t i=0; i<pose1.pointIndices.size(); i++ )
-        if( pose1.pointIndices[i] != pose2.pointIndices[i] )
-            return false;
-
-    return true;
 }
 
 
@@ -203,7 +185,7 @@ void OpenCVStereoCalibration::filter()
 
     // get refs of camera
     iris::Camera_d& cam1 = m_cameras.begin()->second;
-    iris::Camera_d& cam2 = (m_cameras.begin()++)->second;
+    iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
 
     // check that the cameras have the same image size
     if( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(0) != cam2.imageSize(0)) )
@@ -229,6 +211,24 @@ void OpenCVStereoCalibration::filter()
     m_filteredCameras[cam2.id].imageSize = cam2.imageSize;
     m_filteredCameras[cam1.id].id = cam1.id;
     m_filteredCameras[cam2.id].id = cam2.id;
+}
+
+
+bool OpenCVStereoCalibration::checkFrame( const iris::Pose_d& pose1, const iris::Pose_d& pose2 )
+{
+    // check if the arrays have the same length
+    if( pose1.points2D.size() == 0 ||
+        pose1.pointIndices.size() == 0 ||
+        (pose1.points2D.size() != pose2.points2D.size() ) ||
+        (pose1.pointIndices.size() != pose2.pointIndices.size() ) )
+        return false;
+
+    // check that all the indices match
+    for( size_t i=0; i<pose1.pointIndices.size(); i++ )
+        if( pose1.pointIndices[i] != pose2.pointIndices[i] )
+            return false;
+
+    return true;
 }
 
 

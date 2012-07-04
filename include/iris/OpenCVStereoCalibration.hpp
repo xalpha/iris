@@ -47,11 +47,11 @@ public:
     virtual void calibrate();
 
 protected:
-    bool checkFrame( const iris::Pose_d& cam1, const iris::Pose_d& cam2 );
-
     void stereoCalibrate( iris::Camera_d& cam1, iris::Camera_d& cam2 );
 
     virtual void filter();
+
+    bool checkFrame( const iris::Pose_d& cam1, const iris::Pose_d& cam2 );
 
     virtual int flags();
 

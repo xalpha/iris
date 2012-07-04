@@ -71,6 +71,7 @@ void OpenCVStereoCalibration::calibrate()
     iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
 
     // detect correspondences over all poses
+    #pragma omp parallel for
     for( size_t p=0; p<cam1.poses.size(); p++ )
     {
         m_finder->find( cam1.poses[p] );
@@ -81,7 +82,8 @@ void OpenCVStereoCalibration::calibrate()
     filter();
 
     // calibrate the cameras
-    stereoCalibrate( m_filteredCameras.begin()->second, (++(m_cameras.begin()))->second );
+    stereoCalibrate( m_filteredCameras.begin()->second,
+                 (++(m_filteredCameras.begin()))->second );
 
     // commit the results
     commit();
@@ -117,10 +119,8 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     double error = cv::stereoCalibrate( cvVectorPoints3D,
                                         cvVectorPoints2D_1,
                                         cvVectorPoints2D_2,
-                                        A_1,
-                                        dc_1,
-                                        A_2,
-                                        dc_2,
+                                        A_1, dc_1,
+                                        A_2, dc_2,
                                         cv::Size( cam1.imageSize(0), cam1.imageSize(1) ),
                                         R, T, E, F,
                                         cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6),
@@ -143,18 +143,18 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     cam1.error = error;
     cam2.error = error;
 
-    // compute the poses
-    std::vector<cv::Mat> rVec_cam1, tVec_cam1;
-    cv::solvePnP( cvVectorPoints3D, cvVectorPoints2D_1, A_1, dc_1, rVec_cam1, tVec_cam1 );
-
     // convert and save the poses
     Eigen::Matrix4d RT;
     iris::cv2eigen( R, T, RT );
     for( size_t i=0; i<frameCount; i++ )
     {
+        // compute the pose
+        cv::Mat rVec_cam1, tVec_cam1;
+        cv::solvePnP( cvVectorPoints3D[i], cvVectorPoints2D_1[i], A_1, dc_1, rVec_cam1, tVec_cam1, false );
+
         // get the extrinsics
         Eigen::Matrix4d trans_cam1;
-        iris::cv2eigen( rVec_cam1[i], tVec_cam1[i], trans_cam1 );
+        iris::cv2eigen( rVec_cam1, tVec_cam1, trans_cam1 );
         cam1.poses[i].transformation = trans_cam1;
         cam2.poses[i].transformation = trans_cam1 * RT;
 
@@ -188,7 +188,7 @@ void OpenCVStereoCalibration::filter()
     iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
 
     // check that the cameras have the same image size
-    if( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(0) != cam2.imageSize(0)) )
+    if( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(1) != cam2.imageSize(1)) )
         throw std::runtime_error("OpenCVStereoCalibration::filter: cameras do not have the same images size.");
 
     // do the actual filtering
@@ -204,6 +204,8 @@ void OpenCVStereoCalibration::filter()
             m_filteredCameras[cam1.id].poses.push_back( cam1.poses[p] );
             m_filteredCameras[cam2.id].poses.push_back( cam2.poses[p] );
         }
+        else
+            std::cout << "OpenCVStereoCalibration::filter: frame rejected." << std::endl;
     }
 
     // set image size

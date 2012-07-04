@@ -185,5 +185,16 @@ void CameraCalibration::check()
 }
 
 
+void CameraCalibration::threadID()
+{
+    int tid=omp_get_thread_num();
+    int nThreads=omp_get_num_threads();
+    #pragma omp critical
+    {
+        std::cout<<"Thread ID: "<< tid << " / " << nThreads <<std::endl;
+    }
+}
+
+
 } // end namespace iris
 

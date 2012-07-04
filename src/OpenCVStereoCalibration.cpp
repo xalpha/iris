@@ -81,7 +81,7 @@ void OpenCVStereoCalibration::calibrate()
     filter();
 
     // calibrate the cameras
-    stereoCalibrate( cam1, cam2 );
+    stereoCalibrate( m_filteredCameras.begin()->second, (++(m_cameras.begin()))->second );
 
     // commit the results
     commit();

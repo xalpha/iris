@@ -71,6 +71,8 @@ protected:
 
     void check();
 
+    void threadID();
+
 protected:
     // these two do the work
     std::shared_ptr<Finder> m_finder;

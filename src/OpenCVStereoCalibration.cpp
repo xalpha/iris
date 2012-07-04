@@ -149,14 +149,16 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     for( size_t i=0; i<frameCount; i++ )
     {
         // compute the pose
-        cv::Mat rVec_cam1, tVec_cam1;
+        cv::Mat rVec_cam1, tVec_cam1, rVec_cam2, tVec_cam2;
         cv::solvePnP( cvVectorPoints3D[i], cvVectorPoints2D_1[i], A_1, dc_1, rVec_cam1, tVec_cam1, false );
+        cv::solvePnP( cvVectorPoints3D[i], cvVectorPoints2D_2[i], A_2, dc_2, rVec_cam2, tVec_cam2, false );
 
-        // get the extrinsics
-        Eigen::Matrix4d trans_cam1;
+        // convert to eigen and store
+        Eigen::Matrix4d trans_cam1, trans_cam2;
         iris::cv2eigen( rVec_cam1, tVec_cam1, trans_cam1 );
+        iris::cv2eigen( rVec_cam2, tVec_cam2, trans_cam2 );
         cam1.poses[i].transformation = trans_cam1;
-        cam2.poses[i].transformation = trans_cam1 * RT;
+        cam2.poses[i].transformation = trans_cam2;
 
         // now the ugly part, convert back to openCV for back projection
         cv::Mat rv1, rv2, tv1, tv2;

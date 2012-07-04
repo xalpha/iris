@@ -146,6 +146,7 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     // convert and save the poses
     Eigen::Matrix4d RT;
     iris::cv2eigen( R, T, RT );
+    #pragma omp parallel for
     for( size_t i=0; i<frameCount; i++ )
     {
         // compute the pose

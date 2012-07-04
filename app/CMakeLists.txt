@@ -30,7 +30,7 @@ find_package( OpenGL REQUIRED )
 if( WIN32 )
     set( QT_QMAKE_EXECUTABLE "$ENV{Qt_DIR}/bin/qmake.exe" )
 endif()
-find_package( Qt4 COMPONENTS QtCore QtGui QtOpenGL )
+find_package( Qt4 COMPONENTS QtCore QtGui QtOpenGL QtXml )
 
 # try to find Bazar
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share" )

@@ -32,6 +32,7 @@
 #include <QProgressBar>
 #include <QStringList>
 #include <QGraphicsPixmapItem>
+#include <QDomDocument>
 
 #include "ui_IrisCC.h"
 #include "ui_ChessboardFinder.h"
@@ -63,8 +64,9 @@ IrisCC::IrisCC(QWidget *parent) :
 
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
-    connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
     connect( ui->image_list_detected, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
+    connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
+    connect( ui->save, SIGNAL(clicked(bool)), this, SLOT(on_save(void)) );
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -494,6 +496,61 @@ void IrisCC::on_clear()
 void IrisCC::on_update()
 {
     update();
+}
+
+
+void IrisCC::on_save()
+{
+    try
+    {
+        // get an output filename
+        QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration.xml", "XML (*.xml)");
+
+        // assemble the file tree
+        QDomDocument doc("CameraCalibration");
+
+        // add root
+        QDomElement root = doc.createElement("CameraCalibration");
+        doc.appendChild(root);
+
+        // run over the camers
+        QDomElement cameras = doc.createElement("Cameras");
+        root.appendChild(cameras);
+        for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
+        {
+            // run over all poses of the camera
+            QDomElement camera = doc.createElement("Camera");
+            cameras.appendChild(camera);
+            for( size_t p=0; p<camIt->second.poses.size(); p++ )
+            {
+                QDomElement pose = doc.createElement("Pose");
+                camera.appendChild( pose );
+
+                // assemble the pose
+                pose.appendChild( doc.createTextNode("iieufhiewufh") );
+
+                // add the pose
+
+            }
+
+        }
+
+
+
+        // try to save
+        QFile outFile( filename );
+        if( !outFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
+            throw std::runtime_error("IrisCC::on_save: could not open file for writing.");
+
+        // save
+        QTextStream stream( &outFile );
+        stream << doc.toString();
+        outFile.close();
+    }
+    catch( std::exception &e )
+    {
+        critical( e.what() );
+    }
 }
 
 

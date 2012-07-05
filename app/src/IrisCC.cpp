@@ -320,6 +320,24 @@ void IrisCC::check( bool complain )
 }
 
 
+QDomElement IrisCC::addElement( QDomDocument &doc,
+                                QDomNode &node,
+                                const QString &tag,
+                                const QString &value )
+{
+    QDomElement el = doc.createElement( tag );
+    node.appendChild( el );
+
+    if( !value.isNull() )
+    {
+        QDomText txt = doc.createTextNode( value );
+        el.appendChild( txt );
+    }
+
+    return el;
+}
+
+
 void IrisCC::on_configureFinder()
 {
     try
@@ -508,31 +526,46 @@ void IrisCC::on_save()
 
         // assemble the file tree
         QDomDocument doc("CameraCalibration");
+        QDomProcessingInstruction instr = doc.createProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
+        doc.appendChild(instr);
 
         // add root
-        QDomElement root = doc.createElement("CameraCalibration");
-        doc.appendChild(root);
+        QDomElement root = addElement(doc, doc, "CameraCalibration");
 
         // run over the camers
-        QDomElement cameras = doc.createElement("Cameras");
-        root.appendChild(cameras);
+        QDomElement cameras = addElement(doc,root,"Cameras");
         for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
         {
-            // run over all poses of the camera
-            QDomElement camera = doc.createElement("Camera");
-            cameras.appendChild(camera);
+            // init camera
+            QDomElement camera = addElement(doc,cameras,"Camera");
+
+            // add camera data
+            addElement(doc,camera,"Id", QString::number( camIt->second.id ) );
+            addElement(doc,camera,"ImageSize", toString( camIt->second.imageSize ) );
+            addElement(doc,camera,"Intrinsic", toString( camIt->second.intrinsic ) );
+            addElement(doc,camera,"Distortion", toString( camIt->second.distortion ) );
+            addElement(doc,camera,"Error", QString::number( camIt->second.error ) );
+
+            // run over all its poses and add them
+            QDomElement poses = addElement(doc,camera,"Poses");
             for( size_t p=0; p<camIt->second.poses.size(); p++ )
             {
-                QDomElement pose = doc.createElement("Pose");
-                camera.appendChild( pose );
-
-                // assemble the pose
-                pose.appendChild( doc.createTextNode("iieufhiewufh") );
-
                 // add the pose
+                QDomElement pose = addElement(doc,poses,"Pose");
 
+                // add pose Id
+                addElement(doc,pose,"Id", QString::number( camIt->second.poses[p].id ) );
+
+                // if not rejected, also add the rest
+                if( !camIt->second.poses[p].rejected )
+                {
+                    addElement(doc,pose,"Points2D", toString( camIt->second.poses[p].points2D ) );
+                    addElement(doc,pose,"Points3D", toString( camIt->second.poses[p].points3D ) );
+                    addElement(doc,pose,"PointIndices", toString( camIt->second.poses[p].pointIndices ) );
+                    addElement(doc,pose,"Transformation", toString( camIt->second.poses[p].transformation ) );
+                    addElement(doc,pose,"ProjectedPoints", toString( camIt->second.poses[p].projected2D ) );
+                }
             }
-
         }
 
 

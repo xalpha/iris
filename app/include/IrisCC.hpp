@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <QMainWindow>
+#include <QDomElement>
 
 #include <iris/CameraCalibration.hpp>
 
@@ -56,6 +57,20 @@ protected:
 
     void check( bool complain=false );
 
+    QDomElement addElement( QDomDocument &doc,
+                           QDomNode &node,
+                           const QString &tag,
+                           const QString &value = QString::null );
+
+    template <typename T, int Rows, int Cols>
+    QString toString( const Eigen::Matrix<T,Rows,Cols>& mat );
+
+    template <typename T>
+    QString toString( const std::vector<T>& vec );
+
+    template <typename T, int Rows, int Cols>
+    QString toString( const std::vector<Eigen::Matrix<T,Rows,Cols> >& vec );
+
 protected slots:
     void on_configureFinder();
     void on_configureCalibration();
@@ -81,3 +96,40 @@ protected:
     std::vector< size_t > m_poseIndices;
     std::vector< QString > m_poseFilenames;
 };
+
+
+
+template <typename T, int Rows, int Cols>
+inline QString IrisCC::toString( const Eigen::Matrix<T,Rows,Cols>& mat )
+{
+    QString result;
+    for( int i=0; i<Rows*Cols; i++ )
+        result.append( QString::number( mat.data()[i] ) + " " );
+
+    return result;
+}
+
+
+template <typename T>
+inline QString IrisCC::toString( const std::vector<T>& vec )
+{
+    QString result;
+    for( size_t i=0; i<vec.size(); i++ )
+        result.append( QString::number( vec[i] ) + " " );
+
+    return result;
+}
+
+
+template <typename T, int Rows, int Cols>
+inline QString IrisCC::toString( const std::vector< Eigen::Matrix<T,Rows,Cols> >& vec )
+{
+    QString result;
+    for( size_t i=0; i<vec.size(); i++ )
+    {
+        result.append( toString( vec[i] ) + "; " );
+    }
+
+    return result;
+}
+

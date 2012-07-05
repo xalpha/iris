@@ -57,10 +57,10 @@ protected:
 
     void check( bool complain=false );
 
-    QDomElement addElement( QDomDocument &doc,
-                           QDomNode &node,
-                           const QString &tag,
-                           const QString &value = QString::null );
+    QDomElement addDomElement( QDomDocument &doc,
+                               QDomNode &node,
+                               const QString &tag,
+                               const QString &value = QString::null );
 
     template <typename T, int Rows, int Cols>
     QString toString( const Eigen::Matrix<T,Rows,Cols>& mat );
@@ -70,6 +70,9 @@ protected:
 
     template <typename T, int Rows, int Cols>
     QString toString( const std::vector<Eigen::Matrix<T,Rows,Cols> >& vec );
+
+    QString toXML();
+    QString toMatlabTXT();
 
 protected slots:
     void on_configureFinder();

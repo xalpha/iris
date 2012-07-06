@@ -49,6 +49,7 @@ public:
     Pose()
     {
         id = -1;
+        relativePose = Eigen::Matrix<T,4,4>::Identity();
         transformation = Eigen::Matrix<T,4,4>::Identity();
         rejected = true;
     }
@@ -64,6 +65,7 @@ public:
     {
         id = pose.id;
         image = pose.image;
+        relativePose = pose.relativePose;
         points2D = pose.points2D;
         points3D = pose.points3D;
         pointIndices = pose.pointIndices;
@@ -78,6 +80,8 @@ public:
     size_t id;
     // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
+    // relative pose
+    Eigen::Matrix<T,4,4> relativePose;
     // correspondences
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
@@ -117,6 +121,7 @@ public:
         imageSize = cam.imageSize;
         intrinsic = cam.intrinsic;
         distortion = cam.distortion;
+        handEye = cam.handEye;
         error = cam.error;
     }
 
@@ -127,6 +132,7 @@ public:
     Eigen::Vector2i imageSize;
     Eigen::Matrix<T,3,3> intrinsic;
     std::vector<T> distortion;
+    Eigen::Matrix<T,4,4> handEye;
     T error;
 };
 typedef Camera<double> Camera_d;

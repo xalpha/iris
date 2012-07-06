@@ -360,6 +360,7 @@ QString IrisCC::toXML()
         addDomElement(doc,camera,"ImageSize", toString( camIt->second.imageSize ) );
         addDomElement(doc,camera,"Intrinsic", toString( camIt->second.intrinsic ) );
         addDomElement(doc,camera,"Distortion", toString( camIt->second.distortion ) );
+        addDomElement(doc,camera,"HandEye", toString( camIt->second.handEye ) );
         addDomElement(doc,camera,"Error", QString::number( camIt->second.error ) );
 
         // run over all its poses and add them
@@ -592,9 +593,9 @@ void IrisCC::on_save()
 
         // save
         QTextStream stream( &outFile );
-        if( QFileInfo( filename ).suffix().compare( "txt", Qt::CaseInsensitive ) )
-            stream << toMatlabTXT();
-        else
+//        if( QFileInfo( filename ).suffix().compare( "txt", Qt::CaseInsensitive ) )
+//            stream << toMatlabTXT();
+//        else
             stream << toXML();
         outFile.close();
     }

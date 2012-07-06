@@ -51,10 +51,17 @@ CameraCalibration::~CameraCalibration() {
 
 size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID )
 {
+    return addImage( image, Eigen::Matrix4d::Identity(), cameraID );
+}
+
+
+size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const Eigen::Matrix4d& relativePose, const size_t cameraID )
+{
     // assemble the pose
     Pose_d pose;
     pose.id = m_poseCount;
     pose.image = image;
+    pose.relativePose = relativePose;
 
     // add the pose
     m_cameras[cameraID].poses.push_back( pose );
@@ -146,6 +153,12 @@ void CameraCalibration::copyCameras( std::shared_ptr<CameraCalibration> cc )
 {
     if( cc.get() != 0 )
         m_cameras = cc->m_cameras;
+}
+
+
+void CameraCalibration::calibrateHandEye()
+{
+
 }
 
 

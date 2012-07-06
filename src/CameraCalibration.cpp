@@ -224,7 +224,7 @@ void CameraCalibration::calibrateHandEye( Camera_d& cam )
     Eigen::FullPivHouseholderQR<Eigen::Matrix3d> jQR(tA);
     Eigen::VectorXd tPcg_ = jQR.solve(tB);
 
-    Eigen::Vector3d Pcg( tPcg_(0), tPcg_(1), tPcg_(2) );
+    Eigen::Vector3d Pcg(tPcg_(0), tPcg_(1), tPcg_(2));
     Pcg = (2.0/sqrt(1.0+Pcg.dot(Pcg))) * Pcg;
 
     Eigen::Matrix3d R = (1.0 - 0.5*Pcg.dot(Pcg)) * Eigen::Matrix3d::Identity() +
@@ -245,7 +245,7 @@ void CameraCalibration::calibrateHandEye( Camera_d& cam )
     // Do another QR decomposition and get the translation T
     jQR = Eigen::FullPivHouseholderQR<Eigen::Matrix3d>(tA);
     Eigen::VectorXd tTcg = jQR.solve(tB);
-    Eigen::Vector3d T(tTcg[0], tTcg[1], tTcg[2]);
+    Eigen::Vector3d T( tTcg(0), tTcg(1), tTcg(2) );
 
     // set the result
     Eigen::Affine3d trans;

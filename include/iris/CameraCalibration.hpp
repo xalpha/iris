@@ -71,8 +71,9 @@ public:
 
 protected:
     virtual void filter() = 0;
-    virtual void calibrateHandEye();
     virtual void commit();
+
+    virtual void calibrateHandEye( Camera_d& cam );
 
     void check();
 

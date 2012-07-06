@@ -104,6 +104,7 @@ public:
     Camera()
     {
         intrinsic = Eigen::Matrix<T,3,3>::Identity();
+        handEye = Eigen::Matrix<T,4,4>::Identity();
         error = 0;
     }
 
@@ -230,6 +231,41 @@ inline void eigen2cv( const Eigen::Matrix<T, Rows, Cols>& trans, cv::Mat& rot, c
     // convert translation
     cv::eigen2cv( translation, transl );
 }
+
+
+/////
+// Eigen Cross Matrix
+///
+template <typename T>
+inline Eigen::Matrix<T,3,3> crossMatrix( const Eigen::Matrix<T,3,1>& v )
+{
+    Eigen::Matrix<T,3,3> result;
+    result <<   0, -v(2),  v(1),
+             v(2),     0, -v(0),
+            -v(1),  v(0),     0;
+    return result;
+}
+
+
+/////
+// Eigen Vector Product (or whatever this stupidity is called)
+///
+template <typename T>
+inline Eigen::Matrix<T,3,3> vectorProduct( const Eigen::Matrix<T,3,1>& a, const Eigen::Matrix<T,3,1>& b )
+{
+    Eigen::Matrix<T,3,3> result;
+    result(0,0) = a(0)*b(0);
+    result(0,1) = a(0)*b(1);
+    result(0,2) = a(0)*b(2);
+    result(1,0) = a(1)*b(0);
+    result(1,1) = a(1)*b(1);
+    result(1,2) = a(1)*b(2);
+    result(2,0) = a(2)*b(0);
+    result(2,1) = a(2)*b(1);
+    result(2,2) = a(2)*b(2);
+    return result;
+}
+
 
 
 /////

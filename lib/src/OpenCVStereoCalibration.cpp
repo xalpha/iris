@@ -46,17 +46,15 @@ OpenCVStereoCalibration::~OpenCVStereoCalibration() {
 }
 
 
-void OpenCVStereoCalibration::configure( bool relativeToPattern,
-                                         bool fixPrincipalPoint,
-                                         bool fixAspectRatio,
-                                         bool sameFocalLength,
-                                         bool tangentialDistortion )
+void OpenCVStereoCalibration::setRelativeToPattern( bool val )
 {
-    m_relativeToPattern = relativeToPattern;
-    m_fixPrincipalPoint = fixPrincipalPoint;
-    m_fixAspectRatio = fixAspectRatio;
-    m_sameFocalLength = sameFocalLength;
-    m_tangentialDistortion = tangentialDistortion;
+    m_relativeToPattern = val;
+}
+
+
+void OpenCVStereoCalibration::setSameFocalLength( bool val )
+{
+    m_sameFocalLength = val;
 }
 
 

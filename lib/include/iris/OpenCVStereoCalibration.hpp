@@ -38,11 +38,8 @@ public:
     OpenCVStereoCalibration();
     virtual ~OpenCVStereoCalibration();
 
-    void configure( bool relativeToPattern,
-                    bool fixPrincipalPoint,
-                    bool fixAspectRatio,
-                    bool sameFocalLength,
-                    bool tangentialDistortion );
+    void setRelativeToPattern( bool val );
+    void setSameFocalLength( bool val );
 
     virtual void calibrate();
 

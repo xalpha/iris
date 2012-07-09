@@ -46,6 +46,24 @@ OpenCVCalibration::~OpenCVCalibration() {
 }
 
 
+void OpenCVCalibration::setFixPrincipalPoint( bool val )
+{
+    m_fixPrincipalPoint = val;
+}
+
+
+void OpenCVCalibration::setFixAspectRatio( bool val )
+{
+    m_fixAspectRatio = val;
+}
+
+
+void OpenCVCalibration::setTangentialDistortion( bool val )
+{
+    m_tangentialDistortion = val;
+}
+
+
 std::vector< Eigen::Vector2d > OpenCVCalibration::projectPoints( const std::vector<cv::Point3f> points3D,
                                                                  const cv::Mat& rot,
                                                                  const cv::Mat& transl,

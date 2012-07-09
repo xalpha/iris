@@ -38,6 +38,10 @@ public:
     OpenCVCalibration();
     virtual ~OpenCVCalibration();
 
+    void setFixPrincipalPoint( bool val );
+    void setFixAspectRatio( bool val );
+    void setTangentialDistortion( bool val );
+
  protected:
     std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,
                                                   const cv::Mat& rot,

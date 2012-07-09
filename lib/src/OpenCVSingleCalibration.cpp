@@ -46,14 +46,6 @@ OpenCVSingleCalibration::~OpenCVSingleCalibration() {
 }
 
 
-void OpenCVSingleCalibration::configure( bool fixPrincipalPoint, bool fixAspectRatio, bool tangentialDistortion )
-{
-    m_fixPrincipalPoint = fixPrincipalPoint;
-    m_fixAspectRatio = fixAspectRatio;
-    m_tangentialDistortion = tangentialDistortion;
-}
-
-
 void OpenCVSingleCalibration::calibrate()
 {
     // check that all is OK

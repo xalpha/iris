@@ -32,7 +32,12 @@
 namespace iris {
 
 
-ChessboardFinder::ChessboardFinder() : Finder()
+ChessboardFinder::ChessboardFinder() :
+    Finder(),
+    m_fastCheck(true),
+    m_activeThreshold(true),
+    m_normalizeImage(true),
+    m_limitToLargeQuads(true)
 {
 }
 
@@ -71,6 +76,24 @@ void ChessboardFinder::configure( const size_t columns, const size_t rows, const
 }
 
 
+void ChessboardFinder::setFastCheck( bool use )
+{
+    m_fastCheck = use;
+}
+
+
+void ChessboardFinder::setAdaptiveThreshold( bool use )
+{
+    m_activeThreshold = use;
+}
+
+
+void ChessboardFinder::setNormalizeImage( bool use )
+{
+    m_normalizeImage = use;
+}
+
+
 bool ChessboardFinder::find( Pose_d& pose )
 {
     // check if configured
@@ -92,7 +115,7 @@ bool ChessboardFinder::find( Pose_d& pose )
                 imageCV.at<cv::Vec3b>(y,x)[c] = static_cast<unsigned char>( image( x, y, 0, c ) );
 
     // now detech the corners
-    bool found = cv::findChessboardCorners( imageCV, cv::Size( m_columns, m_rows ), corners );//, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK );
+    bool found = cv::findChessboardCorners( imageCV, cv::Size( m_columns, m_rows ), corners, flags() );
 
     // if found, refine the corners
     if( found )
@@ -117,6 +140,23 @@ bool ChessboardFinder::find( Pose_d& pose )
 
     // return
     return found;
+}
+
+
+int ChessboardFinder::flags()
+{
+    int results = 0;
+
+    if( m_fastCheck )
+        results += CV_CALIB_CB_FAST_CHECK;
+
+    if( m_activeThreshold )
+        results += CV_CALIB_CB_ADAPTIVE_THRESH;
+
+    if( m_normalizeImage )
+        results += CV_CALIB_CB_NORMALIZE_IMAGE;
+
+    return results;
 }
 
 

@@ -43,12 +43,24 @@ public:
 
     void configure( const size_t columns, const size_t rows, const double squareSize );
 
+    void setFastCheck( bool use );
+    void setAdaptiveThreshold( bool use );
+    void setNormalizeImage( bool use );
+
     virtual bool find( Pose_d& pose );
+
+protected:
+    int flags();
 
 protected:
     size_t m_columns;
     size_t m_rows;
     double m_squareSize;
+
+    bool m_fastCheck;
+    bool m_activeThreshold;
+    bool m_normalizeImage;
+    bool m_limitToLargeQuads;
 
 };
 

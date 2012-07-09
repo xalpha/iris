@@ -426,6 +426,9 @@ void IrisCC::on_configureFinder()
                 finder->configure( static_cast<size_t>( chessboardFinderUI.columns->value() ),
                                    static_cast<size_t>( chessboardFinderUI.rows->value() ),
                                    chessboardFinderUI.square_size->value() );
+                finder->setFastCheck( chessboardFinderUI.fastCheck->isChecked() );
+                finder->setAdaptiveThreshold( chessboardFinderUI.adaptiveThreshold->isChecked() );
+                finder->setNormalizeImage( chessboardFinderUI.normalizeImage->isChecked() );
                 m_finder = std::shared_ptr<iris::Finder>(finder);
                 break;
             }

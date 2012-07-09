@@ -89,6 +89,9 @@ protected:
 
     // filtered
     std::map< size_t, iris::Camera_d > m_filteredCameras;
+
+    // flags
+    bool m_handEye;
 };
 
 

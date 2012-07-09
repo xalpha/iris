@@ -85,6 +85,10 @@ void OpenCVStereoCalibration::calibrate()
     stereoCalibrate( m_filteredCameras.begin()->second,
                  (++(m_filteredCameras.begin()))->second );
 
+    // preform hand-eye calibration
+    calibrateHandEye( m_filteredCameras.begin()->second );
+    calibrateHandEye( (++(m_filteredCameras.begin()))->second );
+
     // commit the results
     commit();
 }
@@ -158,13 +162,13 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
         Eigen::Matrix4d trans_cam1, trans_cam2;
         iris::cv2eigen( rVec_cam1, tVec_cam1, trans_cam1 );
         iris::cv2eigen( rVec_cam2, tVec_cam2, trans_cam2 );
-        cam1.poses[i].transformation = trans_cam1;
-        cam2.poses[i].transformation = trans_cam2;
+        cam1.poses[i].eyeTrans = trans_cam1;
+        cam2.poses[i].eyeTrans = trans_cam2;
 
         // now the ugly part, convert back to openCV for back projection
         cv::Mat rv1, rv2, tv1, tv2;
-        iris::eigen2cv( cam1.poses[i].transformation, rv1, tv1 );
-        iris::eigen2cv( cam2.poses[i].transformation, rv2, tv2 );
+        iris::eigen2cv( cam1.poses[i].eyeTrans, rv1, tv1 );
+        iris::eigen2cv( cam2.poses[i].eyeTrans, rv2, tv2 );
 
         // reproject points from the opencv poses
         cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv1, tv1, A_1, dc_1 );
@@ -175,8 +179,8 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     for( size_t i=0; !m_relativeToPattern && i<frameCount; i++ )
     {
         // get the extrinsics
-        cam1.poses[i].transformation = Eigen::Matrix4d::Identity();
-        cam2.poses[i].transformation = RT;
+        cam1.poses[i].eyeTrans = Eigen::Matrix4d::Identity();
+        cam2.poses[i].eyeTrans = RT;
     }
 }
 

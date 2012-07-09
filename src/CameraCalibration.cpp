@@ -26,6 +26,8 @@
  *      Author: duliu
  */
 
+#include <iostream>
+
 #ifdef IRIS_OPENMP
 #include <omp.h>
 #endif
@@ -38,7 +40,8 @@ namespace iris {
 
 CameraCalibration::CameraCalibration() :
     m_finder(0),
-    m_poseCount(0)
+    m_poseCount(0),
+    m_handEye(false)
 {
     // use all available threads
     omp_set_num_threads( omp_get_max_threads() );
@@ -52,7 +55,7 @@ CameraCalibration::~CameraCalibration() {
 
 size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID )
 {
-    return addImage( image, Eigen::Matrix4d::Identity(), cameraID );
+    return addImage( image, Eigen::Matrix4d::Zero(), cameraID );
 }
 
 
@@ -62,7 +65,7 @@ size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> 
     Pose_d pose;
     pose.id = m_poseCount;
     pose.image = image;
-    pose.relativePose = relativePose;
+    pose.handTrans = relativePose;
 
     // add the pose
     m_cameras[cameraID].poses.push_back( pose );
@@ -189,22 +192,35 @@ void CameraCalibration::commit()
 void CameraCalibration::calibrateHandEye( Camera_d& cam )
 {
     // init stuff
-    size_t poseCount = cam.poses.size();
+    size_t poseCount = 0;
     Eigen::MatrixXd tA(3*poseCount,3);
     Eigen::VectorXd tB(3*poseCount);
 
     // generate rotation and translation vectors 3 everything
     std::vector< Eigen::Quaterniond > eyeR, handR;
     std::vector< Eigen::Vector3d > eyeT, handT;
-    for( size_t i=0; i<poseCount; i++)
+    for( size_t i=0; i<cam.poses.size(); i++)
     {
-        // eye
-        eyeR.push_back( Eigen::Quaterniond( Eigen::Affine3d( cam.poses[i].transformation ).rotation() ) );
-        eyeT.push_back( Eigen::Vector3d( Eigen::Affine3d( cam.poses[i].transformation ).translation() ) );
+        if( !cam.poses[i].rejected && cam.poses[i].handTrans.norm() > 1.0 )
+        {
+            // eye
+            eyeR.push_back( Eigen::Quaterniond( Eigen::Affine3d( cam.poses[i].eyeTrans ).rotation() ) );
+            eyeT.push_back( Eigen::Vector3d( Eigen::Affine3d( cam.poses[i].eyeTrans ).translation() ) );
 
-        // hand
-        handR.push_back( Eigen::Quaterniond( Eigen::Affine3d( cam.poses[i].relativePose ).rotation() ) );
-        handT.push_back( Eigen::Vector3d( Eigen::Affine3d( cam.poses[i].relativePose ).translation() ) );
+            // hand
+            handR.push_back( Eigen::Quaterniond( Eigen::Affine3d( cam.poses[i].handTrans ).rotation() ) );
+            handT.push_back( Eigen::Vector3d( Eigen::Affine3d( cam.poses[i].handTrans ).translation() ) );
+
+            poseCount++;
+        }
+    }
+
+    // check if there are enough poses
+    // TODO: how many poses is enough
+    if( poseCount < 5 )
+    {
+        std::cerr << "CameraCalibration::calibrateHandEye: not enough poses." << std::endl;
+        return;
     }
 
     // Rotation

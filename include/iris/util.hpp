@@ -49,8 +49,8 @@ public:
     Pose()
     {
         id = -1;
-        relativePose = Eigen::Matrix<T,4,4>::Identity();
-        transformation = Eigen::Matrix<T,4,4>::Identity();
+        handTrans = Eigen::Matrix<T,4,4>::Zero();
+        eyeTrans = Eigen::Matrix<T,4,4>::Identity();
         rejected = true;
     }
 
@@ -65,11 +65,11 @@ public:
     {
         id = pose.id;
         image = pose.image;
-        relativePose = pose.relativePose;
+        handTrans = pose.handTrans;
         points2D = pose.points2D;
         points3D = pose.points3D;
         pointIndices = pose.pointIndices;
-        transformation = pose.transformation;
+        eyeTrans = pose.eyeTrans;
         projected2D = pose.projected2D;
         rejected = pose.rejected;
     }
@@ -81,13 +81,13 @@ public:
     // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
     // relative pose
-    Eigen::Matrix<T,4,4> relativePose;
+    Eigen::Matrix<T,4,4> handTrans;
     // correspondences
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
     std::vector<size_t> pointIndices;
     // calibration results
-    Eigen::Matrix<T,4,4> transformation;
+    Eigen::Matrix<T,4,4> eyeTrans;
     std::vector< Eigen::Matrix<T,2,1> > projected2D;
     bool rejected;
 };

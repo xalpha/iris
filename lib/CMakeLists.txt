@@ -74,7 +74,7 @@ set_target_properties(${Iris_TARGET}
         COMPILE_FLAGS "${Iris_COMPILE_FLAGS}"
         LINK_FLAGS "${Iris_LINK_FLAGS}" )
 
-export( TARGETS ${Iris_TARGET} FILE "${CMAKE_BINARY_DIR}/Iris_Export_Depends.cmake")
+export( TARGETS ${Iris_TARGET} FILE "${CMAKE_BINARY_DIR}/Iris_Depends.cmake")
 
 # install the lib's binary and headers
 install(TARGETS ${Iris_TARGET}

@@ -27,7 +27,7 @@
 # Iris_LIBRARY - library
 
 # set path
-set( Iris_DIR ${CMAKE_CURRENT_LIST_DIR} )
+set( Iris_DIR ${CMAKE_CURRENT_LIST_DIR})
 set( ENV{Iris_DIR} ${Iris_DIR} )
 
 # add module paths
@@ -87,11 +87,11 @@ set( Iris_LINK_LIBRARIES
 
 # enable C++11 support
 if( NOT WIN32 )
-#    if( CMAKE_COMPILER_IS_GNUXX )
-        list( APPEND Iris_COMPILE_FLAGS "--\"std=c++0x\"" )
-#    else( CMAKE_COMPILER_IS_GNUXX )
-#        list( APPEND Iris_COMPILE_FLAGS "-std=c++11 -Qunused-arguments" )
-#    endif()
+    if( CMAKE_COMPILER_IS_GNUCXX )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
+    else( CMAKE_COMPILER_IS_GNUCXX )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Qunused-arguments")
+    endif()
 endif()
 
 # try to find OpenMP

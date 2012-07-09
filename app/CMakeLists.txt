@@ -21,7 +21,11 @@
 
 
 cmake_minimum_required(VERSION 2.8)
-project( IrisCC )
+project( IrisCC CXX )
+
+# find Iris
+set( Iris_DIR $ENV{Iris_DIR} )
+find_package( Iris REQUIRED )
 
 # find openGL
 find_package( OpenGL REQUIRED )
@@ -104,6 +108,15 @@ add_executable( ${IrisCC_Target}
     ${IrisCC_QT_RES_SRC}
     ${Q_CUSTOM_PLOT_INC}
     ${Q_CUSTOM_PLOT_SRC} )
+
+# enable C++11 support
+if( NOT WIN32 )
+    if( CMAKE_COMPILER_IS_GNUCXX )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
+    else( CMAKE_COMPILER_IS_GNUCXX )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Qunused-arguments")
+    endif()
+endif()
 
 # set link libraries
 target_link_libraries( ${IrisCC_Target} ${IrisCC_LINK_LIBS} )

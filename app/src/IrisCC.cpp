@@ -360,7 +360,6 @@ QString IrisCC::toXML()
         addDomElement(doc,camera,"ImageSize", toString( camIt->second.imageSize ) );
         addDomElement(doc,camera,"Intrinsic", toString( camIt->second.intrinsic ) );
         addDomElement(doc,camera,"Distortion", toString( camIt->second.distortion ) );
-        addDomElement(doc,camera,"HandEye", toString( camIt->second.handEye ) );
         addDomElement(doc,camera,"Error", QString::number( camIt->second.error ) );
 
         // run over all its poses and add them
@@ -386,9 +385,7 @@ QString IrisCC::toXML()
                 addDomElement(doc,pose,"Points2D", toString( camIt->second.poses[p].points2D ) );
                 addDomElement(doc,pose,"Points3D", toString( camIt->second.poses[p].points3D ) );
                 addDomElement(doc,pose,"PointIndices", toString( camIt->second.poses[p].pointIndices ) );
-                addDomElement(doc,pose,"EyeTrans", toString( camIt->second.poses[p].eyeTrans ) );
-                if( camIt->second.poses[p].handTrans.norm() > 1.0 )
-                    addDomElement(doc,pose,"HandTrans", toString( camIt->second.poses[p].handTrans ) );
+                addDomElement(doc,pose,"Transformation", toString( camIt->second.poses[p].transformation ) );
                 addDomElement(doc,pose,"ProjectedPoints", toString( camIt->second.poses[p].projected2D ) );
             }
         }

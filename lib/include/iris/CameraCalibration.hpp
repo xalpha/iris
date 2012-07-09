@@ -46,10 +46,6 @@ public:
     // add single image
     virtual size_t addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID=0 );
 
-    // add single image with relative pose
-    // i.e. pose up to a rigid transformation from the camera center
-    virtual size_t addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const Eigen::Matrix4d& relativePose, const size_t cameraID=0 );
-
     // clear
     void clear();
 
@@ -72,8 +68,6 @@ public:
 protected:
     virtual void filter() = 0;
     virtual void commit();
-
-    virtual void calibrateHandEye( Camera_d& cam );
 
     void check();
 

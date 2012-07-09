@@ -55,17 +55,10 @@ CameraCalibration::~CameraCalibration() {
 
 size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID )
 {
-    return addImage( image, Eigen::Matrix4d::Zero(), cameraID );
-}
-
-
-size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const Eigen::Matrix4d& relativePose, const size_t cameraID )
-{
     // assemble the pose
     Pose_d pose;
     pose.id = m_poseCount;
     pose.image = image;
-    pose.handTrans = relativePose;
 
     // add the pose
     m_cameras[cameraID].poses.push_back( pose );
@@ -186,90 +179,6 @@ void CameraCalibration::commit()
         m_cameras[ camIt->second.id ].intrinsic = camIt->second.intrinsic;
         m_cameras[ camIt->second.id ].distortion = camIt->second.distortion;
     }
-}
-
-
-void CameraCalibration::calibrateHandEye( Camera_d& cam )
-{
-    // init stuff
-    size_t poseCount = 0;
-    Eigen::MatrixXd tA(3*poseCount,3);
-    Eigen::VectorXd tB(3*poseCount);
-
-    // generate rotation and translation vectors 3 everything
-    std::vector< Eigen::Quaterniond > eyeR, handR;
-    std::vector< Eigen::Vector3d > eyeT, handT;
-    for( size_t i=0; i<cam.poses.size(); i++)
-    {
-        if( !cam.poses[i].rejected && cam.poses[i].handTrans.norm() > 1.0 )
-        {
-            // eye
-            eyeR.push_back( Eigen::Quaterniond( Eigen::Affine3d( cam.poses[i].eyeTrans ).rotation() ) );
-            eyeT.push_back( Eigen::Vector3d( Eigen::Affine3d( cam.poses[i].eyeTrans ).translation() ) );
-
-            // hand
-            handR.push_back( Eigen::Quaterniond( Eigen::Affine3d( cam.poses[i].handTrans ).rotation() ) );
-            handT.push_back( Eigen::Vector3d( Eigen::Affine3d( cam.poses[i].handTrans ).translation() ) );
-
-            poseCount++;
-        }
-    }
-
-    // check if there are enough poses
-    // TODO: how many poses is enough
-    if( poseCount < 5 )
-    {
-        std::cerr << "CameraCalibration::calibrateHandEye: not enough poses." << std::endl;
-        return;
-    }
-
-    // Rotation
-    // assemble the LSE
-    for( size_t i=0; i<poseCount; i++)
-    {
-        // update stuff
-        Eigen::Matrix3d cm = crossMatrix( Eigen::Vector3d( handR[i].vec() + eyeR[i].vec() ) );
-        Eigen::Vector3d deltaR = eyeR[i].vec() - handR[i].vec();
-
-        // assemble
-        tA.block<3,3>(3*i,0) = cm;
-        tB.block<3,1>(3*i,0) = deltaR;
-    }
-
-    // Do a QR decomposition and get the rotation R
-    Eigen::FullPivHouseholderQR<Eigen::Matrix3d> jQR(tA);
-    Eigen::VectorXd tPcg_ = jQR.solve(tB);
-
-    Eigen::Vector3d Pcg(tPcg_(0), tPcg_(1), tPcg_(2));
-    Pcg = (2.0/sqrt(1.0+Pcg.dot(Pcg))) * Pcg;
-
-    Eigen::Matrix3d R = (1.0 - 0.5*Pcg.dot(Pcg)) * Eigen::Matrix3d::Identity() +
-                        0.5 * (vectorProduct(Pcg,Pcg) + sqrt( 4.0 - Pcg.dot(Pcg)) *  crossMatrix( Pcg ) );
-
-    // Translation
-    // assemble the LSE
-    for( size_t i=0; i<poseCount; i++)
-    {
-        Eigen::Matrix3d tmpA = Eigen::Matrix3d( handR[i].matrix() ) - Eigen::Matrix3d::Identity();
-        Eigen::Vector3d tmpB = R*eyeT[i] - handT[i];
-
-        // assemble
-        tA.block<3,3>(3*i,0) = tmpA;
-        tB.block<3,1>(3*i,0) = tmpB;
-    }
-
-    // Do another QR decomposition and get the translation T
-    jQR = Eigen::FullPivHouseholderQR<Eigen::Matrix3d>(tA);
-    Eigen::VectorXd tTcg = jQR.solve(tB);
-    Eigen::Vector3d T( tTcg(0), tTcg(1), tTcg(2) );
-
-    // set the result
-    Eigen::Affine3d trans;
-    trans.translate( T );
-    trans.rotate( R );
-
-    // set the result
-    cam.handEye = trans.matrix();
 }
 
 

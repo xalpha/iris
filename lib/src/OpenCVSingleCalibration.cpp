@@ -77,10 +77,7 @@ void OpenCVSingleCalibration::calibrate()
 
     // calibrate all cameras
     for( auto it = m_filteredCameras.begin(); it != m_filteredCameras.end(); it++ )
-    {
         calibrateCamera( it->second, flags() );
-        calibrateHandEye( it->second );
-    }
 
     // commit the calibration calibrated frames
     commit();
@@ -129,7 +126,7 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
     for( size_t i=0; i<rotationVectors.size(); i++ )
     {
         // store the transformation
-        iris::cv2eigen( rotationVectors[i], translationVectors[i], cam.poses[i].eyeTrans );
+        iris::cv2eigen( rotationVectors[i], translationVectors[i], cam.poses[i].transformation );
 
         // reproject points from the opencv poses
         cam.poses[i].projected2D = projectPoints( cvVectorPoints3D[i],

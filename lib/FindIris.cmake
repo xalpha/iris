@@ -22,7 +22,7 @@ find_path( Iris_INCLUDE_DIR
         iris )
         
 # find the path to the exported lib files
-find_file( Iris_TARGETS Iris_Depends.cmake
+find_file( Iris_DEPENDS Iris.cmake
     PATHS
         %{CMAKE_INSTALL_PREFIX}/share
         /usr/share
@@ -31,30 +31,22 @@ find_file( Iris_TARGETS Iris_Depends.cmake
         /opt/local/share )
 
 # load all the targets
-if( Iris_TARGETS )
-    include( "${Iris_TARGETS}" )
+if( Iris_DEPENDS )
+    include( "${Iris_DEPENDS}" )
 else()
     MESSAGE( FATAL_ERROR "Iris: not installed.")
 endif()
 
-# handle components
-if( Iris_FIND_COMPONENTS )
-    foreach(comp ${Iris_FIND_COMPONENTS})
-        # assemble target name
-        set( temp_target_name  )
-        string( TOLOWER "Iris_${comp}" temp_target_name )
-        # check if this is a valid component
-        if( TARGET ${temp_target_name} )
-            # include the component
-            list( APPEND Iris_LIBRARIES ${temp_target_name} )
-            MESSAGE( STATUS "Iris ${comp} found.")
-        else()
-            MESSAGE( FATAL_ERROR "Iris: ${comp} not available.")
-        endif()
-    endforeach()
+# check if this is a valid component
+set( Iris_TARGET_NAME "iris" )
+if( TARGET ${Iris_TARGET_NAME} )
+    # include the component
+    list( APPEND Iris_LIBRARIES ${Iris_TARGET_NAME} )
+    MESSAGE( STATUS "Iris found.")
 else()
-    message( FATAL_ERROR "Iris: no components specified" )
-endif() 
+    MESSAGE( FATAL_ERROR "Iris target not available.")
+endif()
+
 
 # set the include dirs
 set( Iris_INCLUDE_DIRS ${Iris_INCLUDE_DIR} )

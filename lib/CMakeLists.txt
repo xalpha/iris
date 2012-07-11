@@ -87,3 +87,6 @@ install(TARGETS ${Iris_TARGET}
 # install targets
 install(EXPORT Iris DESTINATION share )
 
+# install module finder
+install(FILES "${CMAKE_CURRENT_LIST_DIR}/FindIris.cmake" DESTINATION share )
+

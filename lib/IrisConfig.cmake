@@ -69,20 +69,20 @@ endif()
 
 
 # set library paths
-set( Iris_LIBRARY ${Iris_TARGET} )
+set( Iris_LIBRARY ${Iris_TARGET} CACHE INTERNAL "the iris lib" )
 
 # set include directories
 set( Iris_INCLUDE_DIRS
     ${Iris_INCLUDE_DIR}
     ${Iris_DIR}/extern/include
     ${EIGEN3_INCLUDE_DIR}
-    ${OpenCV_INCLUDE_DIRS} )
+    ${OpenCV_INCLUDE_DIRS} CACHE INTERNAL "all include directories iris needs" )
 
 # link libraries
 set( Iris_LINK_LIBRARIES
     -lm
     -lc
-    ${OpenCV_LIBS} )
+    ${OpenCV_LIBS} CACHE INTERNAL "all libs iris needs" )
 
 
 # enable C++11 support

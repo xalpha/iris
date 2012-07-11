@@ -23,10 +23,6 @@
 cmake_minimum_required(VERSION 2.8)
 project( IrisCC CXX )
 
-# find Iris
-set( Iris_DIR $ENV{Iris_DIR} )
-find_package( Iris REQUIRED )
-
 # find openGL
 find_package( OpenGL REQUIRED )
 

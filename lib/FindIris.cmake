@@ -2,7 +2,7 @@
 #
 #  Iris_FOUND - System has Iris
 #  Iris_INCLUDE_DIRS - The Iris include directories
-#  Iris_LIBRARIES - The libraries needed to use Iris
+#  Iris_LIBRARY - The libraries needed to use Iris
 #  Iris_DEFINITIONS - Compiler switches required for using Iris
 
 
@@ -38,10 +38,10 @@ else()
 endif()
 
 # check if this is a valid component
-set( Iris_TARGET_NAME "iris" )
-if( TARGET ${Iris_TARGET_NAME} )
+set( Iris_LIBRARY iris )
+if( TARGET ${Iris_LIBRARY} )
     # include the component
-    list( APPEND Iris_LIBRARIES ${Iris_TARGET_NAME} )
+    list( APPEND Iris_LIBRARIES ${Iris_LIBRARY} )
     MESSAGE( STATUS "Iris found.")
 else()
     MESSAGE( FATAL_ERROR "Iris target not available.")
@@ -49,7 +49,11 @@ endif()
 
 
 # set the include dirs
-set( Iris_INCLUDE_DIRS ${Iris_INCLUDE_DIR} )
+set( Iris_INCLUDE_DIRS 
+    ${Iris_INCLUDE_DIR}
+    ${Iris_INCLUDE_DIR}/iris )
+    
+    
 
 
 #####

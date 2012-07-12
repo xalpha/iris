@@ -120,6 +120,10 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
         // store the transformation
         iris::cv2eigen( rotationVectors[i], translationVectors[i], cam.poses[i].transformation );
 
+        // flip coordinate system
+        cam.poses[i].transformation.col(1) *= -1;
+        cam.poses[i].transformation.col(2) *= -1;
+
         // reproject points from the opencv poses
         cam.poses[i].projected2D = projectPoints( cvVectorPoints3D[i],
                                                   rotationVectors[i],

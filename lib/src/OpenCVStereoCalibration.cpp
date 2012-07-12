@@ -164,6 +164,12 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
         iris::eigen2cv( cam1.poses[i].transformation, rv1, tv1 );
         iris::eigen2cv( cam2.poses[i].transformation, rv2, tv2 );
 
+        // flip coordinate system
+        cam1.poses[i].transformation.col(1) *= -1;
+        cam1.poses[i].transformation.col(2) *= -1;
+        cam2.poses[i].transformation.col(1) *= -1;
+        cam2.poses[i].transformation.col(2) *= -1;
+
         // reproject points from the opencv poses
         cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv1, tv1, A_1, dc_1 );
         cam2.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv2, tv2, A_2, dc_2 );

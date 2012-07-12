@@ -183,6 +183,7 @@ void OpenCVStereoCalibration::filter()
 {
     // init stuff
     m_filteredCameras.clear();
+    size_t framesAdded = 0;
 
     // get refs of camera
     iris::Camera_d& cam1 = m_cameras.begin()->second;
@@ -204,16 +205,20 @@ void OpenCVStereoCalibration::filter()
         {
             m_filteredCameras[cam1.id].poses.push_back( cam1.poses[p] );
             m_filteredCameras[cam2.id].poses.push_back( cam2.poses[p] );
+            framesAdded++;
         }
         else
             std::cout << "OpenCVStereoCalibration::filter: frame rejected." << std::endl;
     }
 
     // set image size
-    m_filteredCameras[cam1.id].imageSize = cam1.imageSize;
-    m_filteredCameras[cam2.id].imageSize = cam2.imageSize;
-    m_filteredCameras[cam1.id].id = cam1.id;
-    m_filteredCameras[cam2.id].id = cam2.id;
+    if( framesAdded > 0 )
+    {
+        m_filteredCameras[cam1.id].imageSize = cam1.imageSize;
+        m_filteredCameras[cam2.id].imageSize = cam2.imageSize;
+        m_filteredCameras[cam1.id].id = cam1.id;
+        m_filteredCameras[cam2.id].id = cam2.id;
+    }
 }
 
 

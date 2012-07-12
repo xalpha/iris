@@ -140,6 +140,7 @@ void OpenCVSingleCalibration::filter()
     {
         // update stuff
         std::vector<size_t> pointIndices;
+        size_t posesAdded = 0;
 
         for( size_t p=0; p<it->second.poses.size(); p++ )
         {
@@ -155,13 +156,19 @@ void OpenCVSingleCalibration::filter()
 
                 // check that the indices match with first pose
                 if( it->second.poses[p].pointIndices == pointIndices )
+                {
                     m_filteredCameras[it->second.id].poses.push_back( it->second.poses[p] );
+                    posesAdded++;
+                }
             }
         }
 
         // set image size
-        m_filteredCameras[it->second.id].id = it->second.id;
-        m_filteredCameras[it->second.id].imageSize = it->second.imageSize;
+        if( posesAdded > 0 )
+        {
+            m_filteredCameras[it->second.id].id = it->second.id;
+            m_filteredCameras[it->second.id].imageSize = it->second.imageSize;
+        }
     }
 }
 

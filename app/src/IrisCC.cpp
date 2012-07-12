@@ -422,7 +422,7 @@ void IrisCC::on_configureFinder()
                 iris::ChessboardFinder* finder = new iris::ChessboardFinder();
                 finder->configure( static_cast<size_t>( chessboardFinderUI.columns->value() ),
                                    static_cast<size_t>( chessboardFinderUI.rows->value() ),
-                                   chessboardFinderUI.square_size->value() );
+                                   0.001 * chessboardFinderUI.square_size->value() );
                 finder->setFastCheck( chessboardFinderUI.fastCheck->isChecked() );
                 finder->setAdaptiveThreshold( chessboardFinderUI.adaptiveThreshold->isChecked() );
                 finder->setNormalizeImage( chessboardFinderUI.normalizeImage->isChecked() );

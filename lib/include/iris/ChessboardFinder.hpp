@@ -52,6 +52,8 @@ public:
 protected:
     int flags();
 
+    size_t devideFactor( const cimg_library::CImg<uint8_t>& image );
+
 protected:
     size_t m_columns;
     size_t m_rows;

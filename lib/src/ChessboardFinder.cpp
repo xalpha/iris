@@ -102,20 +102,46 @@ bool ChessboardFinder::find( Pose_d& pose )
 
     // init stuff
     cimg_library::CImg<uint8_t>& image = *(pose.image);
-    cv::Mat imageCV( image.height(), image.width(), CV_8UC3 );
+    cv::Mat imageCV;
     std::vector< cv::Point2f > corners;
+    cv::Size patternSize( m_columns, m_rows );
+    bool found = false;
     pose.points2D.clear();
     pose.points3D.clear();
     pose.pointIndices.clear();
 
     // convert it to the openCV internal format
-    for( int y=0; y<image.height(); y++ )
-        for( int x=0; x<image.width(); x++ )
-            for( int c=0; c<3; c++ )
-                imageCV.at<cv::Vec3b>(y,x)[c] = static_cast<unsigned char>( image( x, y, 0, c ) );
+    iris::cimg2cv( image, imageCV );
 
-    // now detech the corners
-    bool found = cv::findChessboardCorners( imageCV, cv::Size( m_columns, m_rows ), corners, flags() );
+    // determine scale factor for the image
+    size_t divFac = devideFactor( image );
+
+    // check if the image needs scaling and detect corners
+    if( 1 == divFac )
+        found = cv::findChessboardCorners( imageCV, patternSize, corners, flags() );
+    else
+    {
+        // scale down untill targets are met
+        cimg_library::CImg<uint8_t> imageNew = image.get_resize_halfXY();
+        for( size_t f=divFac/2; f>1; f=f/2 )
+            imageNew.resize_halfXY();
+
+        // convert to openCV
+        cv::Mat imageNewCV;
+        iris::cimg2cv( imageNew, imageNewCV );
+
+        // now detect the corners
+        found = cv::findChessboardCorners( imageNewCV, patternSize, corners, flags() );
+
+        // if anything found, scale the points back
+        float facX = static_cast<float>(image.width())/static_cast<float>(imageNew.width());
+        float facY = static_cast<float>(image.height())/static_cast<float>(imageNew.height());
+        for( size_t i=0; i<corners.size(); i++ )
+        {
+            corners[i].x *= facX;
+            corners[i].y *= facY;
+        }
+    }
 
     // if found, refine the corners
     if( found )
@@ -157,6 +183,30 @@ int ChessboardFinder::flags()
         results += CV_CALIB_CB_NORMALIZE_IMAGE;
 
     return results;
+}
+
+
+size_t ChessboardFinder::devideFactor( const cimg_library::CImg<uint8_t>& image )
+{
+    // init stuff
+    size_t f = 1;
+    size_t mapPix = 2000000;
+    size_t slack = 1000000;
+    size_t width = static_cast<size_t>(image.width());
+    size_t height = static_cast<size_t>(image.height());
+    size_t pixelCount = width*height;
+
+    // determine the best scale factor
+    while( (pixelCount > (mapPix + slack)) &&
+           ( abs( pixelCount - mapPix ) > slack ) )
+    {
+        pixelCount = pixelCount / 4;
+        f *= 2;
+    }
+
+    std::cout << "ChessboardFinder::devideFactor: width: " << width << ", height: " << height << ", MP: " << static_cast<double>(pixelCount)/1000000.0 << ", f: " << f << std::endl;
+
+    return f;
 }
 
 

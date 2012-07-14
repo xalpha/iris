@@ -226,6 +226,90 @@ inline void eigen2cv( const Eigen::Matrix<T, Rows, Cols>& trans, cv::Mat& rot, c
 }
 
 
+
+/////
+// OpenCV Image to CImg
+///
+template <typename T, int Ch>
+inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
+{
+    // some runtime checks
+    if( Ch != src.spectrum() )
+        throw std::runtime_error( "iris::cimg2cv: channel count of source image does not match template parameter." );
+
+    // init result
+    typedef cv::Vec<T,Ch> Pix;
+    cv::Mat_<Pix> result( src.height(), src.width() ); // don't forget cv::Mat works on rows and columns and not width and height ;)
+
+    // convert
+    for( int y=0; y<src.height(); y++ )
+        for( int x=0; x<src.width(); x++ )
+            for( int c=0; c<Ch; c++ )
+                result(y,x)[c] = src( x, y, 0, c );
+
+//    // init result
+//    typedef cv::Vec<T,Ch> Pix;
+//    cv::Mat_<Pix> result( src.width(), src.height() );
+
+//    // convert
+//    for( int y=0; y<src.height(); y++ )
+//        for( int x=0; x<src.width(); x++ )
+//            for( int c=0; c<Ch; c++ )
+//                result(x,y)[c] = src( x, y, 0, c );
+
+    // pass the result
+    dst = result;
+}
+
+
+template <typename T>
+inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
+{
+    switch( src.spectrum() )
+    {
+        case 1 : cimg2cv<T, 1>(src, dst); break;
+        case 2 : cimg2cv<T, 2>(src, dst); break;
+        case 3 : cimg2cv<T, 3>(src, dst); break;
+        case 4 : cimg2cv<T, 4>(src, dst); break;
+        default:
+            throw std::runtime_error( "iris::cimg2cv: unsupported number of channels." );
+    }
+}
+
+
+template <typename T, int Ch>
+inline void cv2cimg( const cv::Mat& src, cimg_library::CImg<T>& dst )
+{
+    // init result
+    typedef cv::Vec<T,Ch> Pix;
+    cimg_library::CImg<uint8_t> result( src.cols, src.rows, 1, Ch );
+
+    // convert
+    for( int y=0; y<src.rows; y++ )
+        for( int x=0; x<src.cols; x++ )
+            for( int c=0; c<Ch; c++ )
+                result( x, y, 0, c ) = src.at<Pix>(y,x)[c];
+
+    // pass the result
+    dst = result;
+}
+
+
+template <typename T>
+inline void cv2cimg( const cv::Mat& src, cimg_library::CImg<T>& dst )
+{
+    switch( src.depth() )
+    {
+        case 1 : cv2cimg<T, 1>(src, dst); break;
+        case 2 : cv2cimg<T, 2>(src, dst); break;
+        case 3 : cv2cimg<T, 3>(src, dst); break;
+        case 4 : cv2cimg<T, 4>(src, dst); break;
+        default:
+            throw std::runtime_error( "iris::cv2cimg: unsupported number of channels." );
+    }
+}
+
+
 /////
 // Eigen Cross Matrix
 ///

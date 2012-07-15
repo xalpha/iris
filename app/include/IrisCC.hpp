@@ -24,6 +24,9 @@
 #include <cstdint>
 #include <memory>
 
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
 #include <QMainWindow>
 #include <QDomElement>
 
@@ -49,6 +52,8 @@ protected:
 
     void updateErrorPlot();
     void updateImage( int idx );
+
+    void addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name );
 
     void critical( const std::string& message );
     void warning( const std::string& message );
@@ -83,11 +88,20 @@ protected slots:
     void on_update();
     void on_save();
 
+    void on_inputChanged( int page );
+
+    void on_cameraOpen();
+    void on_cameraClose();
+    void on_capture();
+
     void on_detectedImageChanged( int idx );
 
 protected:
     // ui's
     Ui::IrisCC *ui;
+
+    // camera capture
+    cv::VideoCapture m_videoCapture;
 
     // finder
     std::shared_ptr<iris::Finder> m_finder;

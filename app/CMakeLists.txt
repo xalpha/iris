@@ -32,9 +32,14 @@ if( WIN32 )
 endif()
 find_package( Qt4 COMPONENTS QtCore QtGui QtOpenGL QtXml )
 
-# try to find Bazar
-#list( APPEND CMAKE_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share" )
-#find_package( Bazar )
+# find openCV
+if( APPLE )
+    set( OpenCV_DIR "/opt/local/lib/cmake" )
+endif()
+if( WIN32 )
+    set( OpenCV_DIR $ENV{OpenCV_DIR} )
+endif()
+find_package( OpenCV REQUIRED )
 
 # some more qt stuff
 include(${QT_USE_FILE})

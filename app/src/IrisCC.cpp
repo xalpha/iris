@@ -57,6 +57,9 @@ IrisCC::IrisCC(QWidget *parent) :
     on_configureCalibration();
 
     // connect combo boxes
+    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
+    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
+
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
     connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
     connect( ui->configure_finder, SIGNAL(clicked(bool)), this, SLOT(on_configureFinder(void)) );
@@ -244,6 +247,17 @@ void IrisCC::updateImage( int idx )
     {
         critical( e.what() );
     }
+}
+
+
+void IrisCC::addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name )
+{
+    size_t id = m_calibration->addImage( image, static_cast<size_t>( ui->cameraID->value() ) );
+    m_poseIndices.push_back( id );
+    m_poseFilenames.push_back( name );
+
+    // update list
+    ui->image_list_detected->addItem( name );
 }
 
 
@@ -541,12 +555,7 @@ void IrisCC::on_load()
             }
 
             // add image
-            size_t id = m_calibration->addImage( image, static_cast<size_t>( ui->cameraID->value() ) );
-            m_poseIndices.push_back( id );
-            m_poseFilenames.push_back( QFileInfo( imagePaths[i] ).fileName() );
-
-            // update list
-            ui->image_list_detected->addItem( QFileInfo( imagePaths[i] ).fileName() );
+            addImage( image, QFileInfo( imagePaths[i] ).fileName() );
 
             // update progress
             progress.setValue(i);
@@ -612,6 +621,56 @@ void IrisCC::on_save()
     {
         critical( e.what() );
     }
+}
+
+
+void IrisCC::on_inputChanged( int page )
+{
+    if( 1 == page )
+        on_cameraOpen();
+    else
+        on_cameraClose();
+}
+
+
+void IrisCC::on_cameraOpen()
+{
+    if( !m_videoCapture.isOpened() )
+    {
+        m_videoCapture = cv::VideoCapture(0);
+        if( !m_videoCapture.isOpened() )
+            critical("IrisCC::on_cameraOpen: could not open camera.");
+    }
+    else
+        warning("IrisCC::on_cameraOpen: camera already open.");
+}
+
+
+void IrisCC::on_cameraClose()
+{
+    if( !m_videoCapture.isOpened() )
+    {
+        m_videoCapture = cv::VideoCapture();
+    }
+    else
+        warning("IrisCC::on_cameraClose: camera not open.");
+}
+
+
+void IrisCC::on_capture()
+{
+    if( !m_videoCapture.isOpened() )
+    {
+        cv::Mat imageCV;
+        m_videoCapture >> imageCV;
+
+        std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
+        iris::cv2cimg( imageCV, *image );
+
+        addImage( image, "frame" );
+    }
+    else
+        warning("IrisCC::on_capture: camera not open.");
 }
 
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>280</width>
-    <height>309</height>
+    <height>337</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -119,6 +119,16 @@
        <widget class="QCheckBox" name="normalizeImage">
         <property name="text">
          <string>Normalize Image</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="subpixel_corner">
+        <property name="text">
+         <string>Subpixel Corner Refinement</string>
         </property>
         <property name="checked">
          <bool>true</bool>

@@ -118,6 +118,9 @@ void IrisCC::update()
 
 void IrisCC::updateErrorPlot()
 {
+    // init stuff
+    double error = 0;
+
     // clear the plot
     ui->plot_error->clearGraphs();
     ui->plot_error->clearPlottables();
@@ -126,6 +129,10 @@ void IrisCC::updateErrorPlot()
     // run over all camera poses
     for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
     {
+        // update error
+        if( camIt->second.error > error )
+            error = camIt->second.error;
+
         // add graph for this camera
         auto graph = ui->plot_error->addGraph();
         QVector<double> x, y;
@@ -161,6 +168,9 @@ void IrisCC::updateErrorPlot()
         // add graph name
         graph->setName( "Camera \"" + QString::number(camIt->first) + "\"" );
     }
+
+    ui->plot_error->xAxis->setRange(-error, error);
+    ui->plot_error->yAxis->setRange(-error, error);
 
     // redraw
     ui->plot_error->replot();
@@ -440,6 +450,7 @@ void IrisCC::on_configureFinder()
                 finder->setFastCheck( chessboardFinderUI.fastCheck->isChecked() );
                 finder->setAdaptiveThreshold( chessboardFinderUI.adaptiveThreshold->isChecked() );
                 finder->setNormalizeImage( chessboardFinderUI.normalizeImage->isChecked() );
+                finder->setSubpixelCorner( chessboardFinderUI.subpixel_corner->isChecked() );
                 m_finder = std::shared_ptr<iris::Finder>(finder);
                 break;
             }

@@ -46,6 +46,7 @@ public:
     void setFastCheck( bool use );
     void setAdaptiveThreshold( bool use );
     void setNormalizeImage( bool use );
+    void setSubpixelCorner( bool val );
 
     virtual bool find( Pose_d& pose );
 
@@ -63,6 +64,7 @@ protected:
     bool m_activeThreshold;
     bool m_normalizeImage;
     bool m_limitToLargeQuads;
+    bool m_subpixelCorner;
 
 };
 

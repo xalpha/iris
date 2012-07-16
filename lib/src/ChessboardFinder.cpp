@@ -37,7 +37,8 @@ ChessboardFinder::ChessboardFinder() :
     m_fastCheck(true),
     m_activeThreshold(true),
     m_normalizeImage(true),
-    m_limitToLargeQuads(true)
+    m_limitToLargeQuads(true),
+    m_subpixelCorner(true)
 {
 }
 
@@ -91,6 +92,12 @@ void ChessboardFinder::setAdaptiveThreshold( bool use )
 void ChessboardFinder::setNormalizeImage( bool use )
 {
     m_normalizeImage = use;
+}
+
+
+void ChessboardFinder::setSubpixelCorner( bool val )
+{
+    m_subpixelCorner = val;
 }
 
 
@@ -151,9 +158,12 @@ bool ChessboardFinder::find( Pose_d& pose )
             throw std::runtime_error("ChessboardFinder::find: found less corners then the grid should have.");
 
         // try to refine the corners (example from the opencv doc)
-        cv::Mat grayImage;
-        cv::cvtColor(imageCV, grayImage, CV_RGB2GRAY);
-        cv::cornerSubPix(grayImage, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 0.1 ));
+        if( m_subpixelCorner )
+        {
+            cv::Mat grayImage;
+            cv::cvtColor(imageCV, grayImage, CV_RGB2GRAY);
+            cv::cornerSubPix(grayImage, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 0.1 ));
+        }
 
         // convert to eigen
         for( size_t i=0; i<corners.size(); i++ )

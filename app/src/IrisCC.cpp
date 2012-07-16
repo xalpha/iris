@@ -637,7 +637,7 @@ void IrisCC::on_cameraOpen()
 {
     if( !m_videoCapture.isOpened() )
     {
-        m_videoCapture = cv::VideoCapture(0);
+        m_videoCapture.open(0);
         if( !m_videoCapture.isOpened() )
         {
             ui->capture_frame->setEnabled(false);
@@ -654,9 +654,7 @@ void IrisCC::on_cameraOpen()
 void IrisCC::on_cameraClose()
 {
     if( !m_videoCapture.isOpened() )
-    {
-        m_videoCapture = cv::VideoCapture();
-    }
+        m_videoCapture.release();
     else
         warning("IrisCC::on_cameraClose: camera not open.");
 }
@@ -668,6 +666,7 @@ void IrisCC::on_capture()
     {
         cv::Mat imageCV;
         m_videoCapture >> imageCV;
+        cv::cvtColor(imageCV, imageCV, cv::COLOR_BGR2RGB);
 
         std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
         iris::cv2cimg<uint8_t,3>( imageCV, *image );

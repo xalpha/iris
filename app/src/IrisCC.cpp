@@ -639,7 +639,12 @@ void IrisCC::on_cameraOpen()
     {
         m_videoCapture = cv::VideoCapture(0);
         if( !m_videoCapture.isOpened() )
+        {
+            ui->capture_frame->setEnabled(false);
             critical("IrisCC::on_cameraOpen: could not open camera.");
+        }
+        else
+            ui->capture_frame->setEnabled(true);
     }
     else
         warning("IrisCC::on_cameraOpen: camera already open.");
@@ -659,13 +664,13 @@ void IrisCC::on_cameraClose()
 
 void IrisCC::on_capture()
 {
-    if( !m_videoCapture.isOpened() )
+    if( m_videoCapture.isOpened() )
     {
         cv::Mat imageCV;
         m_videoCapture >> imageCV;
 
         std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
-        iris::cv2cimg( imageCV, *image );
+        iris::cv2cimg<uint8_t,3>( imageCV, *image );
 
         addImage( image, "frame" );
     }

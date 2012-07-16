@@ -70,7 +70,7 @@ void OpenCVStereoCalibration::calibrate()
 
     // detect correspondences over all poses
     #pragma omp parallel for
-    for( size_t p=0; p<cam1.poses.size(); p++ )
+    for( int p=0; p<cam1.poses.size(); p++ )
     {
         m_finder->find( cam1.poses[p] );
         m_finder->find( cam2.poses[p] );
@@ -145,7 +145,7 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     Eigen::Matrix4d RT;
     iris::cv2eigen( R, T, RT );
     #pragma omp parallel for
-    for( size_t i=0; i<frameCount; i++ )
+    for( int i=0; i<frameCount; i++ )
     {
         // compute the pose
         cv::Mat rVec_cam1, tVec_cam1, rVec_cam2, tVec_cam2;

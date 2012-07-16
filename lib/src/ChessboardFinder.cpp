@@ -186,15 +186,13 @@ int ChessboardFinder::flags()
 }
 
 
-size_t ChessboardFinder::devideFactor( const cimg_library::CImg<uint8_t>& image )
+int ChessboardFinder::devideFactor( const cimg_library::CImg<uint8_t>& image )
 {
     // init stuff
-    size_t f = 1;
-    size_t mapPix = 2000000;
-    size_t slack = 1000000;
-    size_t width = static_cast<size_t>(image.width());
-    size_t height = static_cast<size_t>(image.height());
-    size_t pixelCount = width*height;
+    int f = 1;
+    int mapPix = 2000000;
+    int slack = 1000000;
+    int pixelCount = image.width()*image.height();
 
     // determine the best scale factor
     while( (pixelCount > (mapPix + slack)) &&
@@ -204,7 +202,7 @@ size_t ChessboardFinder::devideFactor( const cimg_library::CImg<uint8_t>& image 
         f *= 2;
     }
 
-    std::cout << "ChessboardFinder::devideFactor: width: " << width << ", height: " << height << ", MP: " << static_cast<double>(pixelCount)/1000000.0 << ", f: " << f << std::endl;
+    std::cout << "ChessboardFinder::devideFactor: width: " << image.width() << ", height: " << image.height() << ", MP: " << static_cast<double>(pixelCount)/1000000.0 << ", f: " << f << std::endl;
 
     return f;
 }

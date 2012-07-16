@@ -60,7 +60,7 @@ void DLTCalibration::calibrate()
 
         // run feature detection
 #       pragma omp parallel for
-        for( size_t p=0; p<poseCount; p++ )
+        for( int p=0; p<poseCount; p++ )
             m_finder->find( poses[p] );
     }
 
@@ -76,7 +76,7 @@ void DLTCalibration::calibrate()
 
         // run feature detection
 #       pragma omp parallel for
-        for( size_t p=0; p<poseCount; p++ )
+        for( int p=0; p<poseCount; p++ )
             calibratePose( poses[p] );
     }
 

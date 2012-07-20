@@ -41,7 +41,7 @@ list( APPEND Iris_INC
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
     include/iris/util.hpp
-    extern/include/CImg.h )
+    extern/CImg/CImg.h )
 
 # add the source files
 list( APPEND Iris_SRC

@@ -55,6 +55,7 @@ protected:
     bool m_fixPrincipalPoint;
     bool m_fixAspectRatio;
     bool m_tangentialDistortion;
+    size_t m_minPoseCorrespondences;
 
 };
 

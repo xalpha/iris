@@ -143,7 +143,6 @@ void OpenCVSingleCalibration::filter()
     for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
     {
         // update stuff
-        std::vector<size_t> pointIndices;
         size_t posesAdded = 0;
 
         for( size_t p=0; p<it->second.poses.size(); p++ )
@@ -152,18 +151,10 @@ void OpenCVSingleCalibration::filter()
             it->second.poses[p].rejected = true;
 
             // check that all is well
-            if( it->second.poses[p].pointIndices.size() > 0 )
+            if( it->second.poses[p].pointIndices.size() > m_minPoseCorrespondences )
             {
-                // get the point indices of first pose
-                if( pointIndices.size() == 0 )
-                    pointIndices = it->second.poses[p].pointIndices;
-
-                // check that the indices match with first pose
-                if( it->second.poses[p].pointIndices == pointIndices )
-                {
-                    m_filteredCameras[it->second.id].poses.push_back( it->second.poses[p] );
-                    posesAdded++;
-                }
+                m_filteredCameras[it->second.id].poses.push_back( it->second.poses[p] );
+                posesAdded++;
             }
         }
 

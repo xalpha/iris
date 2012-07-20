@@ -247,16 +247,6 @@ inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
             for( int c=0; c<Ch; c++ )
                 result(y,x)[c] = src( x, y, 0, c );
 
-//    // init result
-//    typedef cv::Vec<T,Ch> Pix;
-//    cv::Mat_<Pix> result( src.width(), src.height() );
-
-//    // convert
-//    for( int y=0; y<src.height(); y++ )
-//        for( int x=0; x<src.width(); x++ )
-//            for( int c=0; c<Ch; c++ )
-//                result(x,y)[c] = src( x, y, 0, c );
-
     // pass the result
     dst = result;
 }

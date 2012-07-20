@@ -44,7 +44,9 @@ CameraCalibration::CameraCalibration() :
     m_handEye(false)
 {
     // use all available threads
+#ifdef IRIS_OPENMP
     omp_set_num_threads( omp_get_max_threads() );
+#endif
 }
 
 
@@ -191,12 +193,14 @@ void CameraCalibration::check()
 
 void CameraCalibration::threadID()
 {
-    int tid=omp_get_thread_num();
+#ifdef IRIS_OPENMP
+     int tid=omp_get_thread_num();
     int nThreads=omp_get_num_threads();
     #pragma omp critical
     {
         std::cout<<"Thread ID: "<< tid << " / " << nThreads <<std::endl;
     }
+#endif
 }
 
 

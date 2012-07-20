@@ -36,7 +36,8 @@ OpenCVCalibration::OpenCVCalibration() :
     CameraCalibration(),
     m_fixPrincipalPoint( false ),
     m_fixAspectRatio( true ),
-    m_tangentialDistortion( true )
+    m_tangentialDistortion( true ),
+    m_minPoseCorrespondences( 8 )
 {
 }
 

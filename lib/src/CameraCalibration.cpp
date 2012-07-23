@@ -114,9 +114,7 @@ void CameraCalibration::save( const std::string& filename )
     tinyxml2::XMLDocument doc;
 
     // add root
-    //QDomElement root = addDomElement(doc, doc, "CameraCalibration");
     tinyxml2::XMLNode* root = doc.InsertEndChild( doc.NewElement( "CameraCalibration" ) );
-
 
     // run over the camers
     tinyxml2::XMLNode* cameras = root->InsertEndChild( doc.NewElement( "Cameras" ) );

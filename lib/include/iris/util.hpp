@@ -24,6 +24,8 @@
 #include <cstdint>
 #include <list>
 #include <memory>
+#include <string>
+#include <sstream>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -63,6 +65,7 @@ public:
     void operator =( const Pose& pose )
     {
         id = pose.id;
+        name = pose.name;
         image = pose.image;
         points2D = pose.points2D;
         points3D = pose.points3D;
@@ -76,6 +79,7 @@ public:
 public:
     // id
     size_t id;
+    std::string name;
     // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
     // correspondences
@@ -113,6 +117,7 @@ public:
     void operator =( const Camera& cam )
     {
         id = cam.id;
+        name = cam.name;
         poses = cam.poses;
         imageSize = cam.imageSize;
         intrinsic = cam.intrinsic;
@@ -123,6 +128,7 @@ public:
 
 public:
     size_t id;
+    std::string name;
     std::vector< Pose<T> > poses;
     Eigen::Vector2i imageSize;
     Eigen::Matrix<T,3,3> intrinsic;
@@ -331,6 +337,52 @@ inline Eigen::Matrix<T,3,3> vectorProduct( const Eigen::Matrix<T,3,1>& a, const 
     result(2,1) = a(2)*b(1);
     result(2,2) = a(2)*b(2);
     return result;
+}
+
+
+/////
+// from Eigen to String (with love)
+///
+template <typename T>
+inline std::string toString( const T val )
+{
+    std::stringstream ss;
+    ss << val;
+
+    return ss.str();
+}
+
+
+template <typename T, int Rows, int Cols>
+inline std::string toString( const Eigen::Matrix<T,Rows,Cols>& mat )
+{
+    std::stringstream ss;
+    for( int i=0; i<Rows*Cols; i++ )
+        ss << mat.data()[i] << " ";
+
+    return ss.str();
+}
+
+
+template <typename T>
+inline std::string toString( const std::vector<T>& vec )
+{
+    std::stringstream ss;
+    for( size_t i=0; i<vec.size(); i++ )
+        ss << vec[i] << " ";
+
+    return ss.str();
+}
+
+
+template <typename T, int Rows, int Cols>
+inline std::string toString( const std::vector< Eigen::Matrix<T,Rows,Cols> >& vec )
+{
+    std::stringstream ss;
+    for( size_t i=0; i<vec.size(); i++ )
+        ss << toString( vec[i] ) << "; ";
+
+    return ss.str();
 }
 
 

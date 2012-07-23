@@ -41,6 +41,7 @@ public:
     void setFixPrincipalPoint( bool val );
     void setFixAspectRatio( bool val );
     void setTangentialDistortion( bool val );
+    void setMinCorrespondences( size_t val );
 
  protected:
     std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,

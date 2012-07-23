@@ -34,6 +34,8 @@
 
 #include <Eigen/Geometry>
 
+#include <tinyxml2.h>
+
 #include <iris/CameraCalibration.hpp>
 
 namespace iris {
@@ -93,6 +95,87 @@ void CameraCalibration::clear()
     m_cameras.clear();
 }
 
+
+template<typename C>
+inline void appendTextElement( tinyxml2::XMLDocument& doc,
+                               tinyxml2::XMLNode& node,
+                               std::basic_string<C> name,
+                               std::basic_string<C> val )
+{
+    tinyxml2::XMLNode* tmp = node.InsertEndChild( doc.NewElement( name.c_str() ) );
+    tmp->InsertEndChild( doc.NewText( val.c_str() ));
+}
+
+
+void CameraCalibration::save( const std::string& filename )
+{
+    // init stuff
+    tinyxml2::XMLDocument doc;
+
+    // add root
+    //QDomElement root = addDomElement(doc, doc, "CameraCalibration");
+    tinyxml2::XMLNode* root = doc.InsertEndChild( doc.NewElement( "CameraCalibration" ) );
+
+
+    // run over the camers
+    tinyxml2::XMLNode* cameras = root->InsertEndChild( doc.NewElement( "Cameras" ) );
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+    {
+        // init camera
+        tinyxml2::XMLNode* camera = cameras->InsertEndChild( doc.NewElement( "Camera" ) );
+
+        // add camera properties
+        appendTextElement( doc, *camera, std::string("Id"), toString(camIt->second.id) );
+        appendTextElement( doc, *camera, std::string("ImageSize"), toString( camIt->second.imageSize ) );
+        appendTextElement( doc, *camera, std::string("Intrinsic"), toString( camIt->second.intrinsic ) );
+        appendTextElement( doc, *camera, std::string("Distortion"), toString( camIt->second.distortion ) );
+        appendTextElement( doc, *camera, std::string("Error"), toString( camIt->second.error ) );
+
+        // run over all its poses and add them
+        tinyxml2::XMLNode* poses = camera->InsertEndChild( doc.NewElement( "Poses" ) );
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+        {
+            // add the pose
+            tinyxml2::XMLNode* pose = poses->InsertEndChild( doc.NewElement( "Pose" ) );
+
+//            // add pose Id and the filename
+//            for( size_t pid=0; pid<m_poseIndices.size(); pid++ )
+//            {
+//                if( m_poseIndices[pid] == camIt->second.poses[p].id )
+//                {
+//                    addDomElement(doc,pose,"Id", m_poseFilenames[pid] );
+//                    break;
+//                }
+//            }
+
+            // if not rejected, also add the rest
+            if( !camIt->second.poses[p].rejected )
+            {
+                appendTextElement( doc, *pose, std::string("Points2D"), toString( camIt->second.poses[p].points2D ) );
+                appendTextElement( doc, *pose, std::string("Points3D"), toString( camIt->second.poses[p].points3D ) );
+                appendTextElement( doc, *pose, std::string("PointIndices"), toString( camIt->second.poses[p].pointIndices ) );
+                appendTextElement( doc, *pose, std::string("Transformation"), toString( camIt->second.poses[p].transformation ) );
+                appendTextElement( doc, *pose, std::string("ProjectedPoints"), toString( camIt->second.poses[p].projected2D ) );
+            }
+        }
+    }
+
+//    tinyxml2::XMLDocument* doc = new tinyxml2::XMLDocument();
+//    tinyxml2::XMLNode* element = doc->InsertEndChild( doc->NewElement( "element" ) );
+
+//    tinyxml2::XMLElement* sub[3] = { doc->NewElement( "sub" ), doc->NewElement( "sub" ), doc->NewElement( "sub" ) };
+//    for( int i=0; i<3; ++i ) {
+//        sub[i]->SetAttribute( "attrib", i );
+//    }
+//    element->InsertEndChild( sub[2] );
+//    tinyxml2::XMLNode* comment = element->InsertFirstChild( doc->NewComment( "comment" ) );
+//    element->InsertAfterChild( comment, sub[0] );
+//    element->InsertAfterChild( sub[0], sub[1] );
+//    sub[2]->InsertFirstChild( doc->NewText( "& Text!" ));
+
+    // save to disk
+    doc.SaveFile( filename.c_str() );
+}
 
 
 void CameraCalibration::setFinder( std::shared_ptr<Finder> finder )

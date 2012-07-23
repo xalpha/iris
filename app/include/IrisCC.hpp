@@ -76,9 +76,6 @@ protected:
     template <typename T, int Rows, int Cols>
     QString toString( const std::vector<Eigen::Matrix<T,Rows,Cols> >& vec );
 
-    QString toXML();
-    QString toMatlabTXT();
-
 protected slots:
     void on_configureFinder();
     void on_configureCalibration();

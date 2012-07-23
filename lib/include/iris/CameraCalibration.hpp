@@ -49,6 +49,9 @@ public:
     // clear
     void clear();
 
+    // save to disk
+    void save( const std::string& filename );
+
     // run the calibration
     virtual void calibrate() = 0;
 

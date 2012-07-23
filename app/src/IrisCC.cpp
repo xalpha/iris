@@ -362,67 +362,67 @@ QDomElement IrisCC::addDomElement( QDomDocument &doc,
 }
 
 
-QString IrisCC::toXML()
-{
-    // assemble the file tree
-    QDomDocument doc("CameraCalibration");
-    QDomProcessingInstruction instr = doc.createProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
-    doc.appendChild(instr);
+//QString IrisCC::toXML()
+//{
+//    // assemble the file tree
+//    QDomDocument doc("CameraCalibration");
+//    QDomProcessingInstruction instr = doc.createProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
+//    doc.appendChild(instr);
 
-    // add root
-    QDomElement root = addDomElement(doc, doc, "CameraCalibration");
+//    // add root
+//    QDomElement root = addDomElement(doc, doc, "CameraCalibration");
 
-    // run over the camers
-    QDomElement cameras = addDomElement(doc,root,"Cameras");
-    for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
-    {
-        // init camera
-        QDomElement camera = addDomElement(doc,cameras,"Camera");
+//    // run over the camers
+//    QDomElement cameras = addDomElement(doc,root,"Cameras");
+//    for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
+//    {
+//        // init camera
+//        QDomElement camera = addDomElement(doc,cameras,"Camera");
 
-        // add camera data
-        addDomElement(doc,camera,"Id", QString::number( camIt->second.id ) );
-        addDomElement(doc,camera,"ImageSize", toString( camIt->second.imageSize ) );
-        addDomElement(doc,camera,"Intrinsic", toString( camIt->second.intrinsic ) );
-        addDomElement(doc,camera,"Distortion", toString( camIt->second.distortion ) );
-        addDomElement(doc,camera,"Error", QString::number( camIt->second.error ) );
+//        // add camera data
+//        addDomElement(doc,camera,"Id", QString::number( camIt->second.id ) );
+//        addDomElement(doc,camera,"ImageSize", toString( camIt->second.imageSize ) );
+//        addDomElement(doc,camera,"Intrinsic", toString( camIt->second.intrinsic ) );
+//        addDomElement(doc,camera,"Distortion", toString( camIt->second.distortion ) );
+//        addDomElement(doc,camera,"Error", QString::number( camIt->second.error ) );
 
-        // run over all its poses and add them
-        QDomElement poses = addDomElement(doc,camera,"Poses");
-        for( size_t p=0; p<camIt->second.poses.size(); p++ )
-        {
-            // add the pose
-            QDomElement pose = addDomElement(doc,poses,"Pose");
+//        // run over all its poses and add them
+//        QDomElement poses = addDomElement(doc,camera,"Poses");
+//        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+//        {
+//            // add the pose
+//            QDomElement pose = addDomElement(doc,poses,"Pose");
 
-            // add pose Id and the filename
-            for( size_t pid=0; pid<m_poseIndices.size(); pid++ )
-            {
-                if( m_poseIndices[pid] == camIt->second.poses[p].id )
-                {
-                    addDomElement(doc,pose,"Id", m_poseFilenames[pid] );
-                    break;
-                }
-            }
+//            // add pose Id and the filename
+//            for( size_t pid=0; pid<m_poseIndices.size(); pid++ )
+//            {
+//                if( m_poseIndices[pid] == camIt->second.poses[p].id )
+//                {
+//                    addDomElement(doc,pose,"Id", m_poseFilenames[pid] );
+//                    break;
+//                }
+//            }
 
-            // if not rejected, also add the rest
-            if( !camIt->second.poses[p].rejected )
-            {
-                addDomElement(doc,pose,"Points2D", toString( camIt->second.poses[p].points2D ) );
-                addDomElement(doc,pose,"Points3D", toString( camIt->second.poses[p].points3D ) );
-                addDomElement(doc,pose,"PointIndices", toString( camIt->second.poses[p].pointIndices ) );
-                addDomElement(doc,pose,"Transformation", toString( camIt->second.poses[p].transformation ) );
-                addDomElement(doc,pose,"ProjectedPoints", toString( camIt->second.poses[p].projected2D ) );
-            }
-        }
-    }
+//            // if not rejected, also add the rest
+//            if( !camIt->second.poses[p].rejected )
+//            {
+//                addDomElement(doc,pose,"Points2D", toString( camIt->second.poses[p].points2D ) );
+//                addDomElement(doc,pose,"Points3D", toString( camIt->second.poses[p].points3D ) );
+//                addDomElement(doc,pose,"PointIndices", toString( camIt->second.poses[p].pointIndices ) );
+//                addDomElement(doc,pose,"Transformation", toString( camIt->second.poses[p].transformation ) );
+//                addDomElement(doc,pose,"ProjectedPoints", toString( camIt->second.poses[p].projected2D ) );
+//            }
+//        }
+//    }
 
-    return doc.toString();
-}
+//    return doc.toString();
+//}
 
 
-QString IrisCC::toMatlabTXT()
-{
-    return QString();
-}
+//QString IrisCC::toMatlabTXT()
+//{
+//    return QString();
+//}
 
 
 void IrisCC::on_configureFinder()
@@ -491,6 +491,7 @@ void IrisCC::on_configureCalibration()
                 calib->setFixPrincipalPoint( form.fixed_principal_point->isChecked() );
                 calib->setFixAspectRatio( form.fixed_aspect_ratio->isChecked() );
                 calib->setTangentialDistortion( form.tangential_distortion->isChecked() );
+                calib->setMinCorrespondences( static_cast<size_t>( form.minCorrespondences->value() ) );
                 calib->copyCameras( m_calibration );
                 m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
@@ -509,6 +510,7 @@ void IrisCC::on_configureCalibration()
                 calib->setTangentialDistortion( form.tangential_distortion->isChecked() );
                 calib->setRelativeToPattern( form.relative_to_pattern->isChecked() );
                 calib->setSameFocalLength( form.same_focal_length->isChecked() );
+                calib->setMinCorrespondences( static_cast<size_t>( form.minCorrespondences->value() ) );
                 calib->copyCameras( m_calibration );
                 m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
@@ -611,22 +613,25 @@ void IrisCC::on_save()
         //QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration", "Iris Camera Calibration XML (*.xml);; Matlab Camera Clibration Toolbox TXT (*.txt)");
         QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration.xml", "Iris Camera Calibration XML (*.xml)");
 
-        // return fi nothing there
-        if( filename.size() == 0 )
-            return;
+//        // return fi nothing there
+//        if( filename.size() == 0 )
+//            return;
 
-        // try to save
-        QFile outFile( filename );
-        if( !outFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-            throw std::runtime_error("IrisCC::on_save: could not open file for writing.");
+//        // try to save
+//        QFile outFile( filename );
+//        if( !outFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
+//            throw std::runtime_error("IrisCC::on_save: could not open file for writing.");
 
-        // save
-        QTextStream stream( &outFile );
-//        if( QFileInfo( filename ).suffix().compare( "txt", Qt::CaseInsensitive ) )
-//            stream << toMatlabTXT();
-//        else
-            stream << toXML();
-        outFile.close();
+//        // save
+//        QTextStream stream( &outFile );
+////        if( QFileInfo( filename ).suffix().compare( "txt", Qt::CaseInsensitive ) )
+////            stream << toMatlabTXT();
+////        else
+//            stream << toXML();
+//        outFile.close();
+
+
+        m_calibration->save( filename.toStdString() );
     }
     catch( std::exception &e )
     {

@@ -65,6 +65,12 @@ void OpenCVCalibration::setTangentialDistortion( bool val )
 }
 
 
+void OpenCVCalibration::setMinCorrespondences( size_t val )
+{
+    m_minPoseCorrespondences = val;
+}
+
+
 std::vector< Eigen::Vector2d > OpenCVCalibration::projectPoints( const std::vector<cv::Point3f> points3D,
                                                                  const cv::Mat& rot,
                                                                  const cv::Mat& transl,

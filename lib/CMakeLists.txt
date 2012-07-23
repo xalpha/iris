@@ -41,7 +41,8 @@ list( APPEND Iris_INC
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
     include/iris/util.hpp
-    extern/CImg/CImg.h )
+    extern/cimg/CImg.h
+    extern/tinyxml2/tinyxml2.h )
 
 # add the source files
 list( APPEND Iris_SRC
@@ -51,7 +52,8 @@ list( APPEND Iris_SRC
     src/Finder.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp
-    src/OpenCVStereoCalibration.cpp )
+    src/OpenCVStereoCalibration.cpp
+    extern/tinyxml2/tinyxml2.cpp )
 
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )

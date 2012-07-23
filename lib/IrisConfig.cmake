@@ -74,7 +74,8 @@ set( Iris_LIBRARY ${Iris_TARGET} CACHE INTERNAL "the iris lib" )
 # set include directories
 set( Iris_INCLUDE_DIRS
     ${Iris_INCLUDE_DIR}
-    ${Iris_DIR}/extern/CImg
+    ${Iris_DIR}/extern/cimg
+    ${Iris_DIR}/extern/tinyxml2
     ${EIGEN3_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS} CACHE INTERNAL "all include directories iris needs" )
 

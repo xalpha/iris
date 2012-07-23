@@ -44,7 +44,7 @@ public:
     virtual ~CameraCalibration();
 
     // add single image
-    virtual size_t addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID=0 );
+    virtual size_t addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const std::string& name, const size_t cameraID=0 );
 
     // clear
     void clear();

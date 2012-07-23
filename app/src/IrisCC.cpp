@@ -262,9 +262,8 @@ void IrisCC::updateImage( int idx )
 
 void IrisCC::addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name )
 {
-    size_t id = m_calibration->addImage( image, static_cast<size_t>( ui->cameraID->value() ) );
+    size_t id = m_calibration->addImage( image, name.toStdString(), static_cast<size_t>( ui->cameraID->value() ) );
     m_poseIndices.push_back( id );
-    m_poseFilenames.push_back( name );
 
     // update list
     ui->image_list_detected->addItem( name );
@@ -300,7 +299,6 @@ void IrisCC::clear()
     ui->image_list_detected->clear();
 
     // clear images
-    m_poseFilenames.clear();
     m_poseIndices.clear();
 
     // clear the calibration

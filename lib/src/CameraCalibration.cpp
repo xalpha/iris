@@ -57,11 +57,12 @@ CameraCalibration::~CameraCalibration() {
 }
 
 
-size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const size_t cameraID )
+size_t CameraCalibration::addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const std::string& name, const size_t cameraID )
 {
     // assemble the pose
     Pose_d pose;
     pose.id = m_poseCount;
+    pose.name = name;
     pose.image = image;
 
     // add the pose
@@ -138,15 +139,9 @@ void CameraCalibration::save( const std::string& filename )
             // add the pose
             tinyxml2::XMLNode* pose = poses->InsertEndChild( doc.NewElement( "Pose" ) );
 
-//            // add pose Id and the filename
-//            for( size_t pid=0; pid<m_poseIndices.size(); pid++ )
-//            {
-//                if( m_poseIndices[pid] == camIt->second.poses[p].id )
-//                {
-//                    addDomElement(doc,pose,"Id", m_poseFilenames[pid] );
-//                    break;
-//                }
-//            }
+            // pose identification
+            appendTextElement( doc, *pose, std::string("Id"), toString(camIt->second.poses[p].id) );
+            appendTextElement( doc, *pose, std::string("Name"), camIt->second.poses[p].name );
 
             // if not rejected, also add the rest
             if( !camIt->second.poses[p].rejected )
@@ -159,19 +154,6 @@ void CameraCalibration::save( const std::string& filename )
             }
         }
     }
-
-//    tinyxml2::XMLDocument* doc = new tinyxml2::XMLDocument();
-//    tinyxml2::XMLNode* element = doc->InsertEndChild( doc->NewElement( "element" ) );
-
-//    tinyxml2::XMLElement* sub[3] = { doc->NewElement( "sub" ), doc->NewElement( "sub" ), doc->NewElement( "sub" ) };
-//    for( int i=0; i<3; ++i ) {
-//        sub[i]->SetAttribute( "attrib", i );
-//    }
-//    element->InsertEndChild( sub[2] );
-//    tinyxml2::XMLNode* comment = element->InsertFirstChild( doc->NewComment( "comment" ) );
-//    element->InsertAfterChild( comment, sub[0] );
-//    element->InsertAfterChild( sub[0], sub[1] );
-//    sub[2]->InsertFirstChild( doc->NewText( "& Text!" ));
 
     // save to disk
     doc.SaveFile( filename.c_str() );

@@ -108,7 +108,6 @@ protected:
 
     // images
     std::vector< size_t > m_poseIndices;
-    std::vector< QString > m_poseFilenames;
 };
 
 

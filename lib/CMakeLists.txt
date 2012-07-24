@@ -40,11 +40,7 @@ list( APPEND Iris_INC
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
-    include/iris/util.hpp
-    extern/cimg/CImg.h
-    extern/tinyxml2/tinyxml2.h )
-
-# add the source files
+    include/iris/util.hpp )
 list( APPEND Iris_SRC
     src/CameraCalibration.cpp
     src/ChessboardFinder.cpp
@@ -52,14 +48,19 @@ list( APPEND Iris_SRC
     src/Finder.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp
-    src/OpenCVStereoCalibration.cpp
+    src/OpenCVStereoCalibration.cpp )
+
+# external dependencies of iris
+list( APPEND Iris_EXTERN_INC
+    extern/cimg/CImg.h )
+list( APPEND Iris_EXTERN_SRC
     extern/tinyxml2/tinyxml2.cpp )
 
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )
 
 # add release library
-add_library( ${Iris_TARGET} ${Iris_INC} ${Iris_SRC} ${LIBPPM_SRC} )
+add_library( ${Iris_TARGET} ${Iris_INC} ${Iris_SRC} ${Iris_EXTERN_INC} ${Iris_EXTERN_SRC} )
 target_link_libraries( ${Iris_TARGET} ${Iris_LINK_LIBRARIES} )
 
 # configure target
@@ -85,4 +86,7 @@ install(EXPORT Iris DESTINATION share )
 
 # install module finder
 install(FILES "${CMAKE_CURRENT_LIST_DIR}/FindIris.cmake" DESTINATION share )
+
+# install extern headers
+install(FILES ${Iris_EXTERN_INC} DESTINATION "include" )
 

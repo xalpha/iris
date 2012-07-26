@@ -40,6 +40,8 @@ list( APPEND Iris_INC
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
+    include/iris/RandomFeatureDescriptor.hpp
+    include/iris/RandomFeatureFinder.hpp
     include/iris/util.hpp )
 list( APPEND Iris_SRC
     src/CameraCalibration.cpp
@@ -48,7 +50,8 @@ list( APPEND Iris_SRC
     src/Finder.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp
-    src/OpenCVStereoCalibration.cpp )
+    src/OpenCVStereoCalibration.cpp
+    src/RandomFeatureFinder.cpp )
 
 # external dependencies of iris
 list( APPEND Iris_EXTERN_INC

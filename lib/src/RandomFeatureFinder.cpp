@@ -39,7 +39,7 @@ RandomFeatureFinder::RandomFeatureFinder() :
     Finder(),
     m_minPoints(8),
     m_mserMaxRadiusRatio( 3.0),
-    m_mserMinDiameter( 10.0)
+    m_mserMinRadius( 10.0)
 {
 }
 
@@ -65,6 +65,18 @@ void RandomFeatureFinder::configure( const std::vector< Eigen::Vector2d >& point
 void RandomFeatureFinder::setMinPoints( size_t minPoints )
 {
     m_minPoints = minPoints;
+}
+
+
+void RandomFeatureFinder::setMaxRadiusRatio( double val )
+{
+    m_mserMaxRadiusRatio = val;
+}
+
+
+void RandomFeatureFinder::setMinRadius( double val )
+{
+    m_mserMinRadius = val;
 }
 
 
@@ -125,7 +137,7 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
 
         // filter the elipses
         ok = ok & ((rMax/rMin) <= m_mserMaxRadiusRatio);
-        ok = ok & rMax > m_mserMinDiameter;
+        ok = ok & rMax > m_mserMinRadius;
 
         // if all is well keep it
         if( ok )

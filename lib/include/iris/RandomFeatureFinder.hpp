@@ -47,6 +47,8 @@ public:
     void configure( const std::vector< Eigen::Vector2d >& points );
 
     void setMinPoints( size_t minPoints );
+    void setMaxRadiusRatio( double val );
+    void setMinRadius( double val );
 
     virtual bool find( Pose_d& pose );
 
@@ -60,7 +62,7 @@ protected:
 
     // MSER elipse detector
     double m_mserMaxRadiusRatio;
-    double m_mserMinDiameter;
+    double m_mserMinRadius;
 };
 
 } // end namespace iris

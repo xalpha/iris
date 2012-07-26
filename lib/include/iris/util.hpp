@@ -384,6 +384,32 @@ inline std::string toString( const std::vector< Eigen::Matrix<T,Rows,Cols> >& ve
 }
 
 
+/////
+// limit an image to a certain pixel count
+///
+template<typename T>
+inline cimg_library::CImg<T> pixelLimit( const cimg_library::CImg<T>& image, const size_t maxPix=2000000, const size_t slack=1000000 )
+{
+    // init stuff
+    cimg_library::CImg<T> result = image;
+    int pixelCount = image.width()*image.height();
+    size_t times = 0;
+
+    // determine the best scale factor
+    while( (pixelCount > (maxPix + slack)) &&
+           ( abs( pixelCount - maxPix ) > slack ) )
+    {
+        result.resize_halfXY();
+        pixelCount = result.width()*result.height();
+        times++;
+    }
+
+    std::cout << "iris::pixelLimit: width: " << image.width() << ", height: " << image.height() << ", MP: " << static_cast<double>(pixelCount)/1000000.0 << "(" << times << "x)" << std::endl;
+
+    return result;
+}
+
+
 
 /////
 // OpenCV Matrix Access

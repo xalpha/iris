@@ -42,6 +42,9 @@
 #include <IrisCC.hpp>
 
 #include <iris/ChessboardFinder.hpp>
+#ifdef UCHIYAMA_FOUND
+#include <iris/UchiyamaFinder.hpp>
+#endif
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
 
@@ -118,6 +121,10 @@ void IrisCC::update()
 
 void IrisCC::updateErrorPlot()
 {
+    // check if there is any calibration
+    if( !m_calibration )
+        return;
+
     // init stuff
     double error = 0;
 
@@ -187,7 +194,7 @@ void IrisCC::updateImage( int idx )
         ui->plot_image->setAxisBackground( QPixmap() );
 
         // check if there are any images
-        if( m_calibration->poseCount() == 0 )
+        if( !m_calibration || m_calibration->poseCount() == 0 )
             return;
 
         // get the image
@@ -302,7 +309,8 @@ void IrisCC::clear()
     m_poseIndices.clear();
 
     // clear the calibration
-    m_calibration->clear();
+    if( 0 != m_calibration.get() )
+        m_calibration->clear();
 
     // update charts
     updateImage(0);
@@ -360,69 +368,6 @@ QDomElement IrisCC::addDomElement( QDomDocument &doc,
 }
 
 
-//QString IrisCC::toXML()
-//{
-//    // assemble the file tree
-//    QDomDocument doc("CameraCalibration");
-//    QDomProcessingInstruction instr = doc.createProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
-//    doc.appendChild(instr);
-
-//    // add root
-//    QDomElement root = addDomElement(doc, doc, "CameraCalibration");
-
-//    // run over the camers
-//    QDomElement cameras = addDomElement(doc,root,"Cameras");
-//    for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
-//    {
-//        // init camera
-//        QDomElement camera = addDomElement(doc,cameras,"Camera");
-
-//        // add camera data
-//        addDomElement(doc,camera,"Id", QString::number( camIt->second.id ) );
-//        addDomElement(doc,camera,"ImageSize", toString( camIt->second.imageSize ) );
-//        addDomElement(doc,camera,"Intrinsic", toString( camIt->second.intrinsic ) );
-//        addDomElement(doc,camera,"Distortion", toString( camIt->second.distortion ) );
-//        addDomElement(doc,camera,"Error", QString::number( camIt->second.error ) );
-
-//        // run over all its poses and add them
-//        QDomElement poses = addDomElement(doc,camera,"Poses");
-//        for( size_t p=0; p<camIt->second.poses.size(); p++ )
-//        {
-//            // add the pose
-//            QDomElement pose = addDomElement(doc,poses,"Pose");
-
-//            // add pose Id and the filename
-//            for( size_t pid=0; pid<m_poseIndices.size(); pid++ )
-//            {
-//                if( m_poseIndices[pid] == camIt->second.poses[p].id )
-//                {
-//                    addDomElement(doc,pose,"Id", m_poseFilenames[pid] );
-//                    break;
-//                }
-//            }
-
-//            // if not rejected, also add the rest
-//            if( !camIt->second.poses[p].rejected )
-//            {
-//                addDomElement(doc,pose,"Points2D", toString( camIt->second.poses[p].points2D ) );
-//                addDomElement(doc,pose,"Points3D", toString( camIt->second.poses[p].points3D ) );
-//                addDomElement(doc,pose,"PointIndices", toString( camIt->second.poses[p].pointIndices ) );
-//                addDomElement(doc,pose,"Transformation", toString( camIt->second.poses[p].transformation ) );
-//                addDomElement(doc,pose,"ProjectedPoints", toString( camIt->second.poses[p].projected2D ) );
-//            }
-//        }
-//    }
-
-//    return doc.toString();
-//}
-
-
-//QString IrisCC::toMatlabTXT()
-//{
-//    return QString();
-//}
-
-
 void IrisCC::on_configureFinder()
 {
     try
@@ -434,8 +379,12 @@ void IrisCC::on_configureFinder()
         // choose what to do
         switch( ui->select_finder->currentIndex() )
         {
+            // none
+            case 0:
+                break;
+
             // chessboard
-            case 0 :
+            case 1 :
             {
                 ui->configure_finder->setEnabled(true);
                 Ui::ChessboardFinder chessboardFinderUI;
@@ -452,6 +401,20 @@ void IrisCC::on_configureFinder()
                 m_finder = std::shared_ptr<iris::Finder>(finder);
                 break;
             }
+
+            // uchiyama
+#           ifdef UCHIYAMA_FOUND
+            case 2 :
+            {
+                ui->configure_finder->setEnabled(true);
+                QString patternPath = QFileDialog::getOpenFileName(this, "Load Uchiyama Pattern Descriptor", ".", "Text Files (*.txt)");
+                iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
+                if( patternPath.size() > 0 )
+                    finder->configure( patternPath.toStdString() );
+                m_finder = std::shared_ptr<iris::Finder>(finder);
+                break;
+            }
+#           endif
 
             // not supported finder
             default:
@@ -478,8 +441,12 @@ void IrisCC::on_configureCalibration()
         // choose what to do
         switch( ui->select_calibration->currentIndex() )
         {
-            // OpenCV
+            // none
             case 0 :
+                break;
+
+            // OpenCV
+            case 1 :
             {
                 ui->configure_calibration->setEnabled(true);
                 Ui::OpenCVSingleCalibration form;
@@ -496,7 +463,7 @@ void IrisCC::on_configureCalibration()
             }
 
             // OpenCV Stereo
-            case 1 :
+            case 2 :
             {
                 ui->configure_calibration->setEnabled(true);
                 Ui::OpenCVStereoCalibration form;

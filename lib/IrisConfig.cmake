@@ -31,7 +31,7 @@ set( Iris_DIR ${CMAKE_CURRENT_LIST_DIR})
 set( ENV{Iris_DIR} ${Iris_DIR} )
 
 # add module paths
-list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake )
+list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share )
 
 # find Eigen3
 if( WIN32 )
@@ -55,7 +55,7 @@ set( Iris_INCLUDE_DIR "${Iris_DIR}/include")
 set( Iris_TARGET iris )
 
 # set compile definitions
-set( Iris_COMPILE_DEFINITIONS IRIS )
+set( Iris_COMPILE_DEFINITIONS IRIS CACHE INTERNAL "all compile definitions iris needs"  )
 
 # if this is 32-bit, disable alignment
 if( NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
@@ -95,8 +95,9 @@ if( NOT WIN32 )
     endif()
 endif()
 
+
 # try to find OpenMP
-find_package( OpenMP )
+#find_package( OpenMP )
 if(OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -106,4 +107,16 @@ if(OPENMP_FOUND)
     #list( APPEND Iris_LINK_FLAGS ${OpenMP_EXE_LINKER_FLAGS} )
     message( STATUS "iris: OpenMP detected, taking advantage" )
 endif()
+
+
+# try to find Uchiyama
+find_package( Uchiyama QUIET )
+if( Uchiyama_FOUND )
+    list( APPEND Iris_INCLUDE_DIRS ${Uchiyama_INCLUDE_DIRS} )
+    list( APPEND Iris_LINK_LIBRARIES ${Uchiyama_LIBRARY} )
+    #list( APPEND Iris_COMPILE_DEFINITIONS UCHIYAMA_FOUND  )
+    set( Iris_COMPILE_DEFINITIONS "${Iris_COMPILE_DEFINITIONS} -DUCHIYAMA_FOUND" CACHE INTERNAL "all compile definitions iris needs" )
+endif()
+
+
 

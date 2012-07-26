@@ -38,7 +38,7 @@ namespace iris
 
 class RandomFeatureFinder : public Finder
 {
-    typedef RandomFeatureDescriptor<8,6,4> RDF;
+    typedef RandomFeatureDescriptor<8,6,4> RFD;
 
 public:
     RandomFeatureFinder();
@@ -55,7 +55,7 @@ protected:
 
 protected:
     // config
-    RDF m_patternRFD;
+    RFD m_patternRFD;
     size_t m_minPoints;
 
     // MSER elipse detector

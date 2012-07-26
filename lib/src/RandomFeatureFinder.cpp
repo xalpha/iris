@@ -52,7 +52,13 @@ RandomFeatureFinder::~RandomFeatureFinder() {
 void RandomFeatureFinder::configure( const std::vector< Eigen::Vector2d >& points )
 {
     // compute the descriptor for the points
-    m_patternRFD( points );
+    if( points.size() > m_minPoints )
+    {
+        m_patternRFD( points );
+        m_configured = true;
+    }
+    else
+        throw std::runtime_error("RandomFeatureFinder::configure: insufficient points.");
 }
 
 
@@ -64,7 +70,33 @@ void RandomFeatureFinder::setMinPoints( size_t minPoints )
 
 bool RandomFeatureFinder::find( Pose_d& pose )
 {
+    if( !m_configured )
+        throw std::runtime_error("RandomFeatureFinder::find: not configured.");
 
+    // find circles in pose
+    std::vector<Eigen::Vector2d> posePoints = findCircles( *pose.image );
+    if( posePoints.size() < m_minPoints )
+        return false;
+
+    // generate descriptors for detected points
+    RFD poseRFD;
+    poseRFD( posePoints );
+
+    // compare the resulting descriptors with the configured
+    Pose_d matchedPose = m_patternRFD & poseRFD;
+
+    // assemble the result
+    if( matchedPose.pointIndices.size() >= m_minPoints )
+    {
+        pose.pointIndices = matchedPose.pointIndices;
+        pose.points2D = matchedPose.points2D;
+        pose.points3D = matchedPose.points3D;
+
+        // we are happy
+        return true;
+    }
+    else
+        return false;
 }
 
 

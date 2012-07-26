@@ -47,9 +47,10 @@ public:
 
     void operator() ( const std::vector<Eigen::Vector2d>& points );
 
-    std::vector<Eigen::Vector2d> operator & ( const RandomFeatureDescriptor& rfd );
+    Pose_d operator& ( const RandomFeatureDescriptor& rfd ) const;
 
 protected:
+    std::vector<Eigen::Vector2d> m_points;
 
 };
 
@@ -79,7 +80,7 @@ inline void RandomFeatureDescriptor<N,M,K>::operator() ( const std::vector<Eigen
 
 
 template <size_t N, size_t M, size_t K>
-inline std::vector<Eigen::Vector2d> RandomFeatureDescriptor<N,M,K>::operator & ( const RandomFeatureDescriptor<N,M,K>& rfd )
+inline Pose_d RandomFeatureDescriptor<N,M,K>::operator& ( const RandomFeatureDescriptor<N,M,K>& rfd ) const
 {
 
 }

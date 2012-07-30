@@ -45,7 +45,7 @@ RandomFeatureFinder::RandomFeatureFinder() :
 
 
 RandomFeatureFinder::~RandomFeatureFinder() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 

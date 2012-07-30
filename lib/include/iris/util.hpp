@@ -32,8 +32,9 @@
 
 using std::ptrdiff_t;
 
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
+#include <opencv2/flann/flann.hpp>
 
 #define cimg_display 0
 #include <CImg.h>
@@ -139,8 +140,8 @@ typedef Camera<double> Camera_d;
 /////
 // OpenCV Points
 ///
-template <typename To>
-inline std::vector<cv::Point_<To> > eigen2cv( const std::vector<Eigen::Vector2d >& points2D )
+template <typename To, typename Te>
+inline std::vector<cv::Point_<To> > eigen2cv( const std::vector<Eigen::Matrix<Te,2,1> >& points2D )
 {
     // init stuff
     std::vector<cv::Point_<To> > cvPoints2D;
@@ -155,8 +156,8 @@ inline std::vector<cv::Point_<To> > eigen2cv( const std::vector<Eigen::Vector2d 
 }
 
 
-template <typename To>
-inline std::vector<cv::Point3_<To> > eigen2cv( const std::vector<Eigen::Vector3d>& points3D )
+template <typename To, typename Te>
+inline std::vector<cv::Point3_<To> > eigen2cv( const std::vector<Eigen::Matrix<Te,3,1> >& points3D )
 {
     // init stuff
     std::vector<cv::Point3_<To> > cvPoints3D;
@@ -410,201 +411,137 @@ inline cimg_library::CImg<T> pixelLimit( const cimg_library::CImg<T>& image, con
 }
 
 
-
 /////
-// OpenCV Matrix Access
+// angle comparisson operator
 ///
 
-//template<typename T> T get( const cv::Mat &mat, int row, int col)
-//{
-//    switch( mat.type() )
-//    {
-//        case CV_8U :
-//            return static_cast<T>( mat.at<uint8_t>(row,col) );
+// thanks to Ben Voigt and Tom Sirgedas for putting me on the right track
+// http://stackoverflow.com/questions/7774241/sort-points-by-angle-from-given-axis
 
-//        case CV_8S :
-//            return static_cast<T>( mat.at<int8_t>(row,col) );
+template<typename T>
+class counter_clockwise_comparisson
+{
+    typedef Eigen::Matrix<T,2,1> Point;
 
-//        case CV_16U :
-//            return static_cast<T>( mat.at<uint16_t>(row,col) );
+public:
+    counter_clockwise_comparisson(const Point& origin, const Point& direction)
+    {
+        m_origin = origin;
+        m_direction = direction;
+    }
 
-//        case CV_16S :
-//            return static_cast<T>( mat.at<int16_t>(row,col) );
+    bool operator()(const Point& a, const Point& b) const
+    {
+        // init stuff
+        Point dirA = a - m_origin;
+        Point dirB = b - m_origin;
 
-//        case CV_32S :
-//            return static_cast<T>( mat.at<int32_t>(row,col) );
+        // check A
+        T detB = det(m_direction, dirB);
+        T dotB = dot(m_direction, dirB);
+        if( (0==detB) && (0==dotB) )
+            return false;
 
-//        case CV_32F :
-//            return static_cast<T>( mat.at<float>(row,col) );
+        // check B
+        T detA = det(m_direction, dirA);
+        T dotA = dot(m_direction, dirA);
+        if( (0==detA) && (0==dotA) )
+            return true;
 
-//        case CV_64F :
-//            return static_cast<T>( mat.at<double>(row,col) );
+        // a&b on the same side
+        if (detA * detB > 0)
+            return det(dirA, dirB) > 0;
+        else
+            return detA > 0;
+    }
 
-//        default:
-//            throw std::runtime_error("vision::get: unsupported OpenCV type.");
-//    }
-//}
+private:
+    // determinant of 2x2 matrix [a b]
+    double det( Point& a, Point& b){ return a(0)*b(1) - a(1)*b(0); }
+    double dot( Point& a, Point& b){ return a(0)*b(0) + a(1)*b(1); }
 
-//template<typename T> void set( cv::Mat &mat, int row, int col, T val)
-//{
-//    switch( mat.type() )
-//    {
-//        case CV_8U :
-//            mat.at<uint8_t>(row,col) = static_cast<uint8_t>(val);
-//            break;
-
-//        case CV_8S :
-//            mat.at<int8_t>(row,col) = static_cast<int8_t>(val);
-//            break;
-
-//        case CV_16U :
-//            mat.at<uint16_t>(row,col) = static_cast<uint16_t>(val);
-//            break;
-
-//        case CV_16S :
-//            mat.at<int16_t>(row,col) = static_cast<int16_t>(val);
-//            break;
-
-//        case CV_32S :
-//            mat.at<int32_t>(row,col) = static_cast<int32_t>(val);
-//            break;
-
-//        case CV_32F :
-//            mat.at<float>(row,col) = static_cast<float>(val);
-//            break;
-
-//        case CV_64F :
-//            mat.at<double>(row,col) = static_cast<double>(val);
-//            break;
-
-//        default:
-//            throw std::runtime_error("vision::set: unsupported OpenCV type.");
-//    }
-//}
+private:
+    Point m_origin;
+    Point m_direction;
+};
 
 
 /////
-// convert images
+// count bits in an integer
 ///
+template <typename T>
+inline size_t count_bits( const T number )
+{
+    // init stuff
+    size_t c; // c accumulates the total bits set in v
+    size_t n = static_cast<size_t>(number);
 
-//// convert image from eos to openCV
-//template< typename T>
-//inline void convert( const eos::util::image<T> &image, cv::Mat& imageCV )
-//{
-//    // init output
-//    imageCV.create( image.height(), image.width(), CV_8UC3 );
+    // count
+    for( c=0; n; c++)
+        n &= n - 1; // clear the least significant bit set
 
-//    // convert it to the openCV internal format
-//    for( size_t y=0; y<image.height(); y++ )
-//        for( size_t x=0; x<image.width(); x++ )
-//            for( size_t i=0; i<3; i++ )
-//                imageCV.at<unsigned char[3]>(y,x)[i] = static_cast<unsigned char>( image( x, y, i ) );
-//}
-
-//// convert image from openCV to eos
-//template< typename T>
-//inline void convert( const cv::Mat& imageCV, eos::util::image<T> &image )
-//{
-//    // check if the opencv image is stored continuously
-//    if( !imageCV.isContinuous() )
-//        throw std::runtime_error( "vision::convert: the openCV image is not stored continuously." );
-
-//    // determine the image format
-//    int channels = imageCV.channels();
-//    int format;
-//    switch( channels )
-//    {
-//        case 1 : format = eos::util::image<T>::intensity; break;
-//        case 2 : format = eos::util::image<T>::intensity_alpha; break;
-//        case 3 : format = eos::util::image<T>::RGB; break;
-//        case 4 : format = eos::util::image<T>::RGBA; break;
-//        default :
-//            throw std::runtime_error( "vision::convert: unsupported openCV image format." );
-//    }
-
-//    // init output
-//    image.set_pixels( imageCV.data, format, imageCV.size().width, imageCV.size().height );
-//}
+    // return
+    return c;
+}
 
 
-///////
-//// 3D Calibration
 /////
+// compute all possible combinations of K out of N elements
+///
+template<size_t N, size_t K>
+inline std::vector< std::vector<size_t> > possible_combinations()
+{
+    // compute the maximum number of N combinations
+    uint64_t maxC = 1;
+    maxC = maxC << N;
+    std::vector<uint64_t> bits;
+    std::vector< std::vector<size_t> > result;
 
-//template< typename T>
-//inline bool findChessboardCorners( const cv::Mat &image,
-//                                   size_t columns,
-//                                   size_t rows   ,
-//                                   std::vector< cv::Point2f > &corners )
-//{
-//    bool found = cv::findChessboardCorners( image, cv::Size( columns, rows ), corners );//, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK );
+    // run over all possibilities
+    for( uint64_t i=0; i<maxC; i++ )
+        if( count_bits(i) == K )
+            bits.push_back( i );
 
-//    if( found )
-//    {
-//        // try to refine the corners (example from the opencv doc)
-//        cv::Mat grayImage;
-//        cv::cvtColor(image, grayImage, CV_RGB2GRAY);
-//        cv::cornerSubPix(grayImage, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 0.1 ));
-//    }
+    // run over all recovered combinations and extract the indices
+    for( size_t i=0; i<bits.size(); i++ )
+    {
+        // update stuff
+        uint64_t x = static_cast<uint64_t>(bits[i]);
+        std::vector<uint64_t> indices;
 
-//    // return result
-//    return found;
-//}
+        // run over all bits and store their positions
+        for (uint64_t z = 0; z < 64; z++)
+            if( (x>>z) & 0x1 )
+                indices.push_back(z);
 
+        // add the indices to the result
+        result.push_back( indices );
+    }
 
-//// TODO: convert to blas types as soon as template aliasing is available
-//template< typename T >
-//inline void projectPoints( const Eigen::Matrix<T,3,3> &K,
-//                           const Eigen::Matrix<T,4,4> &Rt,
-//                           const std::vector< Eigen::Matrix<T,3,1> > &points,
-//                           std::vector< Eigen::Matrix<T,2,1> > &projectedPoints )
-//{
-//    // init stuff
-//    Eigen::Matrix<T,3,1> X;
-//    Eigen::Matrix<T,4,1> Xcam;
-//    Eigen::Matrix<T,3,4> I = Eigen::Matrix<T,3,4>::Identity();
-
-//    // transform points
-//    projectedPoints.clear();
-//    for( size_t i=0; i<points.size(); i++ )
-//    {
-//        // bring to camera space
-//        Xcam = Rt * Eigen::Matrix<T,4,1>( points[i].x(),
-//                                          points[i].y(),
-//                                          points[i].z(),
-//                                          1 );
-
-//        // bring to image space
-//        X = K * I * Xcam;
-
-//        // push back the homogenized result
-//        projectedPoints.push_back( Eigen::Matrix<T,2,1>( X.x()/X.z(), X.y()/X.z() ) );
-//    }
-//}
+    // return
+    return result;
+}
 
 
-//template< typename T >
-//inline void projectPoints( const Eigen::Matrix<T,4,4> &P,
-//                           const std::vector< Eigen::Matrix<T,3,1> > &points,
-//                           std::vector< Eigen::Matrix<T,2,1> > &projectedPoints )
-//{
-//    // init stuff
-//    Eigen::Matrix<T,4,1> X;
+/////
+// generate all shift permutations of the vector
+///
+template <typename T>
+inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& vec )
+{
+    // init stuff
+    std::vector< std::vector<T> > result;
 
-//    // transform points
-//    projectedPoints.clear();
-//    for( size_t i=0; i<points.size(); i++ )
-//    {
-//        // bring to image space
-//        X = P * Eigen::Matrix<T,4,1>( points[i].x(),
-//                                      points[i].y(),
-//                                      points[i].z(),
-//                                      1 );
+    for( size_t i=0; i<vec.size(); i++ )
+    {
+        std::vector<T> line;
+        for( size_t j=0; j<vec.size(); j++ )
+            line.push_back( vec[ (i+j) % vec.size() ] );
+    }
 
-//        // push back the homogenized result
-//        projectedPoints.push_back( Eigen::Matrix<T,2,1>( X.x()/X.z(), X.y()/X.z() ) );
-//    }
-//}
+    return result;
+}
+
 
 
 

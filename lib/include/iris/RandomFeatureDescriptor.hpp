@@ -115,7 +115,7 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
 
     // init flann
     std::vector<cv::Point2d> pointsCV = eigen2cv<double>( m_points ) ;
-    cv::flann::GenericIndex< cv::flann::L2<double> > flann( cv::Mat(pointsCV), m_flannIndexParams);
+    //cv::flann::GenericIndex< cv::flann::L2<double> > flann( cv::Mat(pointsCV), m_flannIndexParams);
 
     // generate the descriptor tree for each point
     for( size_t p=0; p<m_points.size(); p++ )
@@ -125,7 +125,7 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
         pCV.push_back( pointsCV[p] );
         std::vector<int> nearestM;
         std::vector<cv::Point2d> dists;
-        flann.knnSearch( pCV, nearestM, dists, M, m_flannSearchParams );
+        //flann.knnSearch( pCV, nearestM, dists, M, m_flannSearchParams );
 
         // check if the returned points are at least as M
         if( nearestM.size() < M )

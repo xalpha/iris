@@ -421,20 +421,20 @@ inline cimg_library::CImg<T> pixelLimit( const cimg_library::CImg<T>& image, con
 template<typename T>
 class counter_clockwise_comparisson
 {
-    typedef Eigen::Matrix<T,2,1> Point;
+    typedef Eigen::Matrix<T,2,1> Vec2;
 
 public:
-    counter_clockwise_comparisson(const Point& origin, const Point& direction)
+    counter_clockwise_comparisson(const Vec2& origin, const Vec2& direction)
     {
         m_origin = origin;
         m_direction = direction;
     }
 
-    bool operator()(const Point& a, const Point& b) const
+    bool operator()(const Vec2& a, const Vec2& b) const
     {
         // init stuff
-        Point dirA = a - m_origin;
-        Point dirB = b - m_origin;
+        Vec2 dirA = a - m_origin;
+        Vec2 dirB = b - m_origin;
 
         // check A
         T detB = det(m_direction, dirB);
@@ -457,12 +457,12 @@ public:
 
 private:
     // determinant of 2x2 matrix [a b]
-    double det( Point& a, Point& b){ return a(0)*b(1) - a(1)*b(0); }
-    double dot( Point& a, Point& b){ return a(0)*b(0) + a(1)*b(1); }
+    double det( Vec2& a, Vec2& b){ return a(0)*b(1) - a(1)*b(0); }
+    double dot( Vec2& a, Vec2& b){ return a(0)*b(0) + a(1)*b(1); }
 
 private:
-    Point m_origin;
-    Point m_direction;
+    Vec2 m_origin;
+    Vec2 m_direction;
 };
 
 

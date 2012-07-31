@@ -115,36 +115,27 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
 
     // init flann
     std::vector<cv::Point2d> pointsCV = eigen2cv<double>( m_points ) ;
-    //cv::flann::GenericIndex< cv::flann::L2<double> > flann( cv::Mat(pointsCV), m_flannIndexParams);
+    cv::flann::GenericIndex< cv::flann::L2_Simple<double> > flann( cv::Mat(pointsCV), m_flannIndexParams);
 
     // generate the descriptor tree for each point
     for( size_t p=0; p<m_points.size(); p++ )
     {
         // get the M nearest neighbors of point
-        std::vector<cv::Point2d> pCV;
-        pCV.push_back( pointsCV[p] );
-        std::vector<int> nearestM;
-        std::vector<cv::Point2d> dists;
-        //flann.knnSearch( pCV, nearestM, dists, M, m_flannSearchParams );
-
-        // check if the returned points are at least as M
-        if( nearestM.size() < M )
-        {
-            std::cout << "RandomFeatureDescriptor::operator(): fewer than M nearest... skipping." << std::endl;
-            continue;
-        }
+        cv::Mat_<float> nearestM;
+        cv::Mat_<int> dists;
+        flann.knnSearch( cv::Mat(pointsCV[p]), nearestM, dists, M, m_flannSearchParams );
 
         // copy points
         std::vector<Eigen::Vector2d> nearestPoints(M);
         for( size_t m=0; m<M; m++ )
-            nearestPoints[m] = m_points[nearestM[m]];
+            nearestPoints[m] = m_points[ nearestM.at<int>(m) ];
 
         // sort counter clockwise
         counter_clockwise_comparisson<double> ccc( m_points[p], up );
         std::sort( nearestPoints.begin(), nearestPoints.end(), ccc );
 
         /////
-        // WARNING: we are leaving Kansas
+        // WARNING: we are now leaving Kansas
         ///
 
         // initialize the point

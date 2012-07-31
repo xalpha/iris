@@ -543,6 +543,21 @@ inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& v
 }
 
 
+/////
+// Area of a triangle
+///
+template<typename T>
+inline T area( const Eigen::Matrix<T,2,1>& A,
+               const Eigen::Matrix<T,2,1>& B,
+               const Eigen::Matrix<T,2,1>& C )
+{
+    Eigen::Matrix<T,2,1> AB = B-A;
+    Eigen::Matrix<T,2,1> AC = C-A;
+    double dotABAC = AB.dot(AC);
+    return static_cast<T>(0.5) * sqrt( AB.squaredNorm() * AC.squaredNorm() - (dotABAC*dotABAC) );
+}
+
+
 
 
 } // end namespace iris

@@ -52,6 +52,8 @@ public:
 
     struct Point
     {
+        Eigen::Vector2d pos;
+        size_t index;
         std::vector<Eigen::Vector2d> neighbors;
         std::vector<Descriptor> descriptors;
     };
@@ -67,6 +69,8 @@ public:
 protected:
     void describePoint( Point& point );
 
+    double computeDescriptor( const Eigen::Vector2d& c, const std::vector<Eigen::Vector2d>& n ); // center & neighbors
+
 protected:
     // params
     cvflann::IndexParams m_flannIndexParams;
@@ -78,6 +82,9 @@ protected:
     // point descriptors
     std::vector<Point> m_pd;
 
+    // prebacked combinations
+    std::vector< std::vector<size_t> > m_mCn;
+    std::vector< std::vector<size_t> > m_nCk;
 };
 
 
@@ -89,7 +96,8 @@ template <size_t M, size_t N, size_t K>
 inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor() :
     m_flannSearchParams( 128 )
 {
-
+    m_mCn = possible_combinations<M,N>();
+    m_nCk = possible_combinations<N,K>();
 }
 
 
@@ -108,10 +116,6 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
     Eigen::Vector2d up(0,1);
     m_pd.clear();
     m_pd.reserve( m_points.size() );
-
-    // generate the combinations
-    std::vector< std::vector<size_t> > mCn = possible_combinations<M,N>();
-    std::vector< std::vector<size_t> > nCk = possible_combinations<N,K>();
 
     // init flann
     std::vector<cv::Point2d> pointsCV = eigen2cv<double>( m_points ) ;
@@ -134,12 +138,10 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
         counter_clockwise_comparisson<double> ccc( m_points[p], up );
         std::sort( nearestPoints.begin(), nearestPoints.end(), ccc );
 
-        /////
-        // WARNING: we are now leaving Kansas
-        ///
-
         // initialize the point
         Point point;
+        point.pos = m_points[p];
+        point.index = p;
         point.neighbors = nearestPoints;
 
         // compute the descriptor vectors for this point
@@ -161,7 +163,42 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
 template <size_t M, size_t N, size_t K>
 inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point )
 {
+    // run over all N combinations
+    for( size_t n=0; n<m_mCn.size(); n++ )
+    {
+        // run over all combinations of K elements from mCn
+        for( size_t k=0; k<m_nCk.size(); k++ )
+        {
+            /////
+            // WARNING: we are now leaving Kansas
+            ///
 
+            // assemble the points
+            std::vector<Eigen::Vector2d> points;
+            points.reserve( K );
+            for( size_t i=0; i<K; i++ )
+                points.push_back( point.neighbors[ m_mCn[n][ m_nCk[k][i] ] ] );
+
+            // generate shift combinations
+            std::vector< std::vector<Eigen::Vector2d> > shift_points = shift_combinations( points );
+
+            // run over all shift combinations and generate descriptors
+            std::vector<double> descriptors;
+            for( size_t i=0; i<K; i++ )
+                descriptors.push_back( computeDescriptor( point.pos, shift_points[i] ) );
+        }
+    }
+}
+
+
+template <size_t M, size_t N, size_t K>
+inline double RandomFeatureDescriptor<M,N,K>::computeDescriptor( const Eigen::Vector2d& c, const std::vector<Eigen::Vector2d>& n )
+{
+    // compute the cross ratio of five coplanar points
+    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
+
+    return ( area( c, n[0], n[1] ) * area( c, n[2], n[3] ) ) /
+           ( area( c, n[0], n[2] ) * area( c, n[1], n[3] ) );
 }
 
 

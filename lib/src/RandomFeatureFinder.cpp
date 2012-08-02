@@ -144,15 +144,17 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
 {
     // init stuff
     cv::Mat img;
+    cv::Mat gray;
     cimg2cv( image, img );
-    cv::Mat mask( img.rows, img.cols, img.type(), 255 );
+    cvtColor(img, gray, CV_RGB2GRAY);
+    cv::Mat mask( img.rows, img.cols, gray.type(), 255 );
     std::vector<std::vector<cv::Point> > contours;
     std::vector<Eigen::Vector2d> centers;
     std::vector<cv::RotatedRect> ellipses;
 
     // detect blobs
     cv::MSER mser;
-    mser( img, contours, mask );
+    mser( gray, contours, mask );
 
     // fit ellipses
     for( size_t c = 0; c < contours.size(); c++ )

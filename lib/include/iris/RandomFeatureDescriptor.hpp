@@ -171,6 +171,7 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
 
     // match the feature vectors
     cv::FlannBasedMatcher matcher;
+    //cv::BruteForceMatcher<cv::Hamming> matcher;
     std::vector< cv::DMatch > matches;
     matcher.match( descriptors_1, descriptorsGuest, matches );
 

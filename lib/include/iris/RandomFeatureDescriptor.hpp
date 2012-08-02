@@ -157,7 +157,46 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
 template <size_t M, size_t N, size_t K>
 inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDescriptor<M,N,K>& rfd ) const
 {
-    // gen a flan data structure for the current
+    // addemble the descriptors
+    cv::Mat_<double> descriptors_1( m_featureVectors.size(), m_featureVectors[0].size() );
+    cv::Mat_<double> descriptorsGuest( rfd.m_featureVectors.size(), rfd.m_featureVectors[0].size() );
+
+    // convert
+    for( size_t i=0; i<m_featureVectors.size(); i++ )
+        for( size_t j=0; j<m_featureVectors[i].size(); j++ )
+            descriptors_1( i, j ) = m_featureVectors[i][j];
+    for( size_t i=0; i<rfd.m_featureVectors.size(); i++ )
+        for( size_t j=0; j<rfd.m_featureVectors[i].size(); j++ )
+            descriptorsGuest( i, j ) = rfd.m_featureVectors[i][j];
+
+    // match the feature vectors
+    cv::FlannBasedMatcher matcher;
+    std::vector< cv::DMatch > matches;
+    matcher.match( descriptors_1, descriptorsGuest, matches );
+
+    double max_dist = 0; double min_dist = 100;
+
+    //-- Quick calculation of max and min distances between keypoints
+    for( int i = 0; i < descriptors_1.rows; i++ )
+    { double dist = matches[i].distance;
+      if( dist < min_dist ) min_dist = dist;
+      if( dist > max_dist ) max_dist = dist;
+    }
+
+    printf("-- Max dist : %f \n", max_dist );
+    printf("-- Min dist : %f \n", min_dist );
+
+    //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist )
+    //-- PS.- radiusMatch can also be used here.
+    std::vector< cv::DMatch > good_matches;
+
+    for( int i = 0; i < descriptors_1.rows; i++ )
+    { if( matches[i].distance < 2*min_dist )
+      { good_matches.push_back( matches[i]); }
+    }
+
+    for( int i = 0; i < good_matches.size(); i++ )
+    { printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); }
 }
 
 

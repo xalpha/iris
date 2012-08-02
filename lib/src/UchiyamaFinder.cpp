@@ -131,9 +131,6 @@ inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double fx, double fy 
                                                   0.1*static_cast<double>(p3dy),
                                                   0.1*static_cast<double>(p3dz) ) );
         pose.points2D.push_back( Eigen::Vector2d( fx*p2dx, fy*p2dy ) );
-
-        // test
-        std::cout << idx << " " << p3dx << " " << p3dy << " " << p3dz << " " << p2dx << " " << p2dy << std::endl;
     }
 }
 

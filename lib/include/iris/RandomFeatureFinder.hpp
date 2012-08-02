@@ -45,6 +45,7 @@ public:
     virtual ~RandomFeatureFinder();
 
     void configure( const std::vector< Eigen::Vector2d >& points );
+    void configure( const std::string& points );
 
     void setMinPoints( size_t minPoints );
     void setMaxRadiusRatio( double val );

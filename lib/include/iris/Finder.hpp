@@ -45,10 +45,13 @@ public:
     Finder();
     virtual ~Finder();
 
+    void setScale( double scale );
+
     virtual bool find( Pose_d& pose ) = 0;
 
 protected:
     bool m_configured;
+    double m_scale;
     std::vector<Eigen::Vector3d> m_points3D;
     std::vector<size_t> m_indices;
 };

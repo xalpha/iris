@@ -27,6 +27,7 @@
  */
 
 #include <iostream>
+#include <strstream>
 
 #include <opencv/cv.h>
 
@@ -59,6 +60,33 @@ void RandomFeatureFinder::configure( const std::vector< Eigen::Vector2d >& point
     }
     else
         throw std::runtime_error("RandomFeatureFinder::configure: insufficient points.");
+}
+
+
+void RandomFeatureFinder::configure( const std::string& points )
+{
+    // init stuff
+    std::stringstream ss;
+    double x, y;
+    std::vector< Eigen::Vector2d > points2D;
+
+    // convert to stringstram
+    ss << points;
+    ss.seekg( 0, std::ios::beg );
+
+    // parse the points
+    while( !ss.eof() )
+    {
+        ss >> x;
+        ss >> y;
+
+        points2D.push_back( Eigen::Vector2d(x,y) );
+
+        std::cout << x << "\t" << y << std::endl;
+    }
+
+    // configure
+    configure( points2D );
 }
 
 

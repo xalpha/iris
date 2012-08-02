@@ -36,6 +36,7 @@
 
 #include "ui_IrisCC.h"
 #include "ui_ChessboardFinder.h"
+#include "ui_RandomFeatureFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
 #include "ui_OpenCVStereoCalibration.h"
 
@@ -45,6 +46,8 @@
 #ifdef UCHIYAMA_FOUND
 #include <iris/UchiyamaFinder.hpp>
 #endif
+#include <iris/RandomFeatureFinder.hpp>
+
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
 
@@ -415,6 +418,22 @@ void IrisCC::on_configureFinder()
                 break;
             }
 #           endif
+
+            // random feature descriptor
+            case 3 :
+            {
+                ui->configure_finder->setEnabled(true);
+                Ui::RandomFeatureFinder rffFinderUI;
+                rffFinderUI.setupUi( &dialog );
+                dialog.exec();
+                iris::RandomFeatureFinder* finder = new iris::RandomFeatureFinder();
+                finder->configure( rffFinderUI.points->toPlainText().toStdString() );
+                finder->setScale( rffFinderUI.scale->value() );
+                finder->setMaxRadiusRatio( rffFinderUI.max_radius_ratio->value() );
+                finder->setMinRadius( rffFinderUI.min_radius->value() );
+                m_finder = std::shared_ptr<iris::Finder>(finder);
+                break;
+            }
 
             // not supported finder
             default:

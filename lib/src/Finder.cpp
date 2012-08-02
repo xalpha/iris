@@ -33,13 +33,20 @@ namespace iris {
 
 
 Finder::Finder() :
-    m_configured(false)
+    m_configured(false),
+    m_scale( 1.0 )
 {
 }
 
 
 Finder::~Finder() {
 	// TODO Auto-generated destructor stub
+}
+
+
+void Finder::setScale( double scale )
+{
+    m_scale = scale;
 }
 
 

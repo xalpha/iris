@@ -64,10 +64,6 @@ protected:
     double computeDescriptor( const Eigen::Vector2d& c, const std::vector<Eigen::Vector2d>& n ); // center & neighbors
 
 protected:
-    // params
-    cvflann::IndexParams m_flannIndexParams;
-    cvflann::SearchParams m_flannSearchParams;
-
     // input data
     std::vector<Eigen::Vector2d> m_points;
 
@@ -87,8 +83,7 @@ protected:
 ///
 
 template <size_t M, size_t N, size_t K>
-inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor() :
-    m_flannSearchParams( 128 )
+inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor()
 {
     m_mCn = possible_combinations<M,N>();
     m_nCk = possible_combinations<N,K>();
@@ -117,16 +112,21 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
     m_featureVectors.reserve( m_points.size() * m_featureVectorsPerPoint );
 
     // init flann
-    std::vector<cv::Point2d> pointsCV = eigen2cv<double>( m_points ) ;
-    cv::flann::GenericIndex< cv::flann::L2_Simple<double> > pointsFlann( cv::Mat(pointsCV), m_flannIndexParams);
+    cv::Mat_<double> pointsCV( static_cast<int>(points.size()), 2 );
+    for( size_t i=0; i<points.size(); i++ )
+    {
+        pointsCV( i, 0 ) = points[i](0);
+        pointsCV( i, 1 ) = points[i](1);
+    }
+    cv::flann::GenericIndex< cv::flann::L2_Simple<double> > pointsFlann( pointsCV, cvflann::KDTreeIndexParams(5) );
 
     // generate the descriptor tree for each point
     for( size_t p=0; p<m_points.size(); p++ )
     {
         // get the M nearest neighbors of point
-        cv::Mat_<int> nearestM;
-        cv::Mat_<float> dists;
-        pointsFlann.knnSearch( cv::Mat(pointsCV[p]), nearestM, dists, M, m_flannSearchParams );
+        cv::Mat_<int> nearestM( 1, M );
+        cv::Mat_<double> distsM( 1, M );
+        pointsFlann.knnSearch( pointsCV.row(p).clone(), nearestM, distsM, M, cvflann::SearchParams(128) );
 
         // copy points
         std::vector<Eigen::Vector2d> nearestPoints(M);

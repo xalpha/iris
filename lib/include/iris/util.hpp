@@ -173,6 +173,24 @@ inline std::vector<cv::Point3_<To> > eigen2cv( const std::vector<Eigen::Matrix<T
 }
 
 
+//template <typename To, typename Te>
+//inline cv::Mat_<To> eigen2cv( const std::vector<Eigen::Matrix<Te,2,1> >& points2D )
+//{
+//    // init stuff
+//    cv::Mat_<To> result( static_cast<int>(points2D.size()), 2 );
+
+//    // convert the points
+//    for( size_t i=0; i<points2D.size(); i++ )
+//    {
+//        result( static_cast<int>(i), 0 ) = static_cast<To>( points2D[i](0) );
+//        result( static_cast<int>(i), 1 ) = static_cast<To>( points2D[i](1) );
+//    }
+
+//    // return
+//    return result;
+//}
+
+
 
 /////
 // OpenCV Transformation

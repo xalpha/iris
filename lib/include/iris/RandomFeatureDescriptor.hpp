@@ -124,14 +124,14 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
     for( size_t p=0; p<m_points.size(); p++ )
     {
         // get the M nearest neighbors of point
-        cv::Mat_<int> nearestM( 1, M );
-        cv::Mat_<double> distsM( 1, M );
-        pointsFlann.knnSearch( pointsCV.row(p).clone(), nearestM, distsM, M, cvflann::SearchParams(128) );
+        cv::Mat_<int> nearestM( 1, M+1 );
+        cv::Mat_<double> distsM( 1, M+1 );
+        pointsFlann.knnSearch( pointsCV.row(p).clone(), nearestM, distsM, M+1, cvflann::SearchParams(128) );
 
         // copy points
         std::vector<Eigen::Vector2d> nearestPoints(M);
         for( size_t m=0; m<M; m++ )
-            nearestPoints[m] = m_points[ nearestM.at<int>(m) ];
+            nearestPoints[m] = m_points[ nearestM(m+1) ];
 
         // sort counter clockwise
         counter_clockwise_comparisson<double> ccc( m_points[p], up );

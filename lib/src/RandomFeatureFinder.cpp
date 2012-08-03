@@ -55,7 +55,15 @@ void RandomFeatureFinder::configure( const std::vector< Eigen::Vector2d >& point
     // compute the descriptor for the points
     if( points.size() > m_minPoints )
     {
-        m_patternRFD( points );
+        // generate feature vectors
+        m_patternRFD( points, true );
+
+        // set the 3d points
+        m_points3D.clear();
+        for( size_t i=0; i<points.size(); i++ )
+            m_points3D.push_back( Eigen::Vector3d( points[i](0), points[i](1), 0 ) );
+
+        // we are happy
         m_configured = true;
     }
     else
@@ -80,10 +88,9 @@ void RandomFeatureFinder::configure( const std::string& points )
         ss >> x;
         ss >> y;
 
-        points2D.push_back( Eigen::Vector2d(x,y) );
-
-        std::cout << x << "\t" << y << std::endl;
+        points2D.push_back( Eigen::Vector2d( m_scale*x, m_scale*y) );
     }
+    points2D.pop_back();
 
     // configure
     configure( points2D );
@@ -130,7 +137,7 @@ bool RandomFeatureFinder::find( Pose_d& pose )
     {
         pose.pointIndices = matchedPose.pointIndices;
         pose.points2D = matchedPose.points2D;
-        pose.points3D = matchedPose.points3D;
+        pose.points3D = m_points3D;
 
         // we are happy
         return true;
@@ -167,12 +174,12 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
 
         // filter the elipses
         ok = ok & ((rMax/rMin) <= m_mserMaxRadiusRatio);
-        ok = ok & rMax > m_mserMinRadius;
+        ok = ok & rMin > m_mserMinRadius;
 
         // if all is well keep it
         if( ok )
         {
-            centers.push_back( Eigen::Vector2d( ell.center.x, ell.center.x ) );
+            centers.push_back( Eigen::Vector2d( ell.center.x, ell.center.y ) );
             ellipses.push_back( ell );
         }
     }

@@ -173,6 +173,23 @@ inline std::vector<cv::Point3_<To> > eigen2cv( const std::vector<Eigen::Matrix<T
 }
 
 
+/////
+// OpenCV Matrices
+///
+template <typename To, typename Ti>
+inline cv::Mat_<To> vector2cv( const std::vector< std::vector<Ti> >& dat )
+{
+    // init stuff
+    cv::Mat_<float> result( dat.size(), dat[0].size() );
+
+    for( size_t i=0; i<dat.size(); i++ )
+        for( size_t j=0; j<dat[i].size(); j++ )
+            result( i, j ) = static_cast<To>(dat[i][j]);
+
+    // return
+    return result;
+}
+
 //template <typename To, typename Te>
 //inline cv::Mat_<To> eigen2cv( const std::vector<Eigen::Matrix<Te,2,1> >& points2D )
 //{
@@ -555,6 +572,7 @@ inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& v
         std::vector<T> line;
         for( size_t j=0; j<vec.size(); j++ )
             line.push_back( vec[ (i+j) % vec.size() ] );
+        result.push_back( line );
     }
 
     return result;
@@ -569,10 +587,25 @@ inline T area( const Eigen::Matrix<T,2,1>& A,
                const Eigen::Matrix<T,2,1>& B,
                const Eigen::Matrix<T,2,1>& C )
 {
-    Eigen::Matrix<T,2,1> AB = B-A;
-    Eigen::Matrix<T,2,1> AC = C-A;
-    double dotABAC = AB.dot(AC);
-    return static_cast<T>(0.5) * sqrt( AB.squaredNorm() * AC.squaredNorm() - (dotABAC*dotABAC) );
+    Eigen::Matrix<T,2,1> a = B-A;
+    Eigen::Matrix<T,2,1> b = C-A;
+
+    return static_cast<T>(0.5) * (a(0)*b(1) - a(1)*b(0));
+}
+
+
+/////
+// Find duplicates
+///
+template<typename T>
+inline bool duplicates( const std::vector<T>& vec )
+{
+    for( size_t i=0; i<vec.size(); i++ )
+        for( size_t j=0; j<vec.size(); j++ )
+            if( i != j && vec[i] == vec[j] )
+                return true;
+
+    return false;
 }
 
 

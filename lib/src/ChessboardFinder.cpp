@@ -61,7 +61,7 @@ void ChessboardFinder::configure( const size_t columns, const size_t rows, const
 
     // generate the points
     // compute the coordinates of the corners in 3D
-    float ss = static_cast<float>( m_squareSize );
+    double ss = static_cast<double>( m_squareSize ) * m_scale;
 
     // compute the positions of the points
     for( size_t i=0; i<m_columns*m_rows; i++ )

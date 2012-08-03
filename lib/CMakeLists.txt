@@ -68,7 +68,7 @@ endif()
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )
 
-# add release library
+# add library
 add_library( ${Iris_TARGET} ${Iris_INC} ${Iris_SRC} ${Iris_EXTERN_INC} ${Iris_EXTERN_SRC} )
 target_link_libraries( ${Iris_TARGET} ${Iris_LINK_LIBRARIES} )
 
@@ -98,4 +98,9 @@ install(FILES "${CMAKE_CURRENT_LIST_DIR}/FindIris.cmake" DESTINATION share )
 
 # install extern headers
 install(FILES ${Iris_EXTERN_INC} DESTINATION "include" )
+
+
+# add test app
+add_executable( irisTest test/test.cpp )
+target_link_libraries( irisTest ${Iris_TARGET} )
 

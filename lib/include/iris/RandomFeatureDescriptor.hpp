@@ -29,6 +29,7 @@
  */
 
 #include <algorithm>
+#include <limits>
 
 #include <iris/util.hpp>
 #include <Eigen/Core>
@@ -87,7 +88,7 @@ inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor()
 {
     m_mCn = possible_combinations<M,N>();
     m_nCk = possible_combinations<N,K>();
-    m_featureVectorsPerPoint = m_mCn.size() * m_nCk.size();
+    m_featureVectorsPerPoint = m_mCn.size();
 }
 
 
@@ -143,14 +144,12 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
         point.index = p;
         point.neighbors = nearestPoints;
 
-        // compute the descriptor vectors for this point
+        // compute the feature vectors for this point
         describePoint( point, generateShiftPermutations );
 
         // add the point
         m_pd.push_back( point );
     }
-
-
 }
 
 
@@ -158,29 +157,31 @@ template <size_t M, size_t N, size_t K>
 inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDescriptor<M,N,K>& rfd ) const
 {
     // addemble the descriptors
-    cv::Mat_<double> descriptors_1( m_featureVectors.size(), m_featureVectors[0].size() );
-    cv::Mat_<double> descriptorsGuest( rfd.m_featureVectors.size(), rfd.m_featureVectors[0].size() );
+    cv::Mat_<float> queryFVs = vector2cv<float>(m_featureVectors);
+    cv::Mat_<float> trainFVs = vector2cv<float>(rfd.m_featureVectors);
 
-    // convert
-    for( size_t i=0; i<m_featureVectors.size(); i++ )
-        for( size_t j=0; j<m_featureVectors[i].size(); j++ )
-            descriptors_1( i, j ) = m_featureVectors[i][j];
-    for( size_t i=0; i<rfd.m_featureVectors.size(); i++ )
-        for( size_t j=0; j<rfd.m_featureVectors[i].size(); j++ )
-            descriptorsGuest( i, j ) = rfd.m_featureVectors[i][j];
+//    cv::flann::GenericIndex< cv::flann::L2<double> > flann( trainFVs, cvflann::KDTreeIndexParams(5) );
+
+//    // get the M nearest neighbors of point
+//    cv::Mat_<int> nearestM( int(m_featureVectors.size()), 1 );
+//    cv::Mat_<double> distsM( int(m_featureVectors.size()), 1 );
+//    flann.knnSearch( queryFVs, nearestM, distsM, 1, cvflann::SearchParams(128) );
+
+//    std::cout << std::setprecision(2) << queryFVs << std::endl << std::endl << std::endl;
+//    std::cout << std::setprecision(2) << trainFVs << std::endl << std::endl << std::endl;
 
     // match the feature vectors
     cv::FlannBasedMatcher matcher;
-    //cv::BruteForceMatcher<cv::Hamming> matcher;
+    //cv::BruteForceMatcher<cv::L2<float> > matcher;
     std::vector< cv::DMatch > matches;
-    matcher.match( descriptors_1, descriptorsGuest, matches );
+    matcher.match( queryFVs, trainFVs, matches );
 
     double max_dist = 0; double min_dist = 100;
 
     //-- Quick calculation of max and min distances between keypoints
-    for( int i = 0; i < descriptors_1.rows; i++ )
+    for( int i = 0; i < queryFVs.rows; i++ )
     { double dist = matches[i].distance;
-      if( dist < min_dist ) min_dist = dist;
+      if( dist > 0 && dist < min_dist ) min_dist = dist;
       if( dist > max_dist ) max_dist = dist;
     }
 
@@ -191,13 +192,21 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
     //-- PS.- radiusMatch can also be used here.
     std::vector< cv::DMatch > good_matches;
 
-    for( int i = 0; i < descriptors_1.rows; i++ )
-    { if( matches[i].distance < 2*min_dist )
+    for( int i = 0; i < queryFVs.rows; i++ )
+    { if( matches[i].distance > 0 && matches[i].distance < 2*min_dist )
       { good_matches.push_back( matches[i]); }
     }
 
+    if( good_matches.size() == 0 )
+        std::cout << "RandomFeatureDescriptor: NO good Matches." << std::endl;
+
     for( int i = 0; i < good_matches.size(); i++ )
     { printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); }
+
+    // assemble the pose
+    Pose_d pose;
+
+    return pose;
 }
 
 
@@ -237,8 +246,7 @@ inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool ge
                     fvs[i].push_back( computeDescriptor( point.pos, shift_points[i] ) );
             }
             else
-                for( size_t i=0; i<K; i++ )
-                    fvs[0].push_back( computeDescriptor( point.pos, points ) );
+                fvs[0].push_back( computeDescriptor( point.pos, points ) );
         }
 
         // add the feature vector(s)
@@ -254,8 +262,12 @@ inline double RandomFeatureDescriptor<M,N,K>::computeDescriptor( const Eigen::Ve
     // compute the cross ratio of five coplanar points
     // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
 
-    return ( area( c, n[0], n[1] ) * area( c, n[2], n[3] ) ) /
-           ( area( c, n[0], n[2] ) * area( c, n[1], n[3] ) );
+    double result = area( c, n[0], n[2] ) * area( c, n[1], n[3] );
+
+    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
+        return 0;
+    else
+        return ( area( c, n[0], n[1] ) * area( c, n[2], n[3] ) ) / result;
 }
 
 

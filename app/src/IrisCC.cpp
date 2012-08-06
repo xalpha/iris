@@ -114,6 +114,9 @@ void IrisCC::update()
 
         // update the error plot
         updateErrorPlot();
+
+        // update current view
+        updateImage( ui->image_list_detected->currentRow() );
     }
     catch( std::exception &e )
     {
@@ -210,9 +213,9 @@ void IrisCC::updateImage( int idx )
         {
             for( int x=0; x<image.width(); x++ )
             {
-                QColor col( image(x,y,0,0),
-                            image(x,y,0,1),
-                            image(x,y,0,2) );
+                QColor col( (255+ image(x,y,0,0)) / 2,
+                            (255+ image(x,y,0,1)) / 2,
+                            (255+ image(x,y,0,2)) / 2 );
                 imageQt.setPixel( x, y, col.rgb() );
             }
         }

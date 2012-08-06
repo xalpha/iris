@@ -609,6 +609,77 @@ inline bool duplicates( const std::vector<T>& vec )
 }
 
 
+/////
+// Sum
+//
+template<typename T>
+inline T sum( const std::vector<T> &x )
+{
+    // init stuff
+    T s = 0;
+    for( size_t i=0; i<x.size(); i++ )
+        s += x[i];
+
+    return s;
+}
+
+
+/////
+// Mean
+///
+template<typename T>
+inline T mean( const std::vector<T> &x )
+{
+    // init stuff
+    T sum = 0;
+    T fac = 1.0 / static_cast<T>(x.size());
+    for( size_t i=0; i<x.size(); i++ )
+        sum += fac * x[i];
+
+    return sum;
+}
+
+
+/////
+// Covariance
+///
+template<typename T>
+inline T cov( const std::vector<T> &x, const std::vector<T> &y, bool is_subset=false )
+{
+    // init stuff
+    T mX = mean(x);
+    T mY = mean(y);
+    T c = 0;
+    T fac = static_cast<T>( x.size() - (is_subset ? 1 : 0 ) );
+
+    // add everything up
+    for( size_t i=0; i<x.size(); i++ )
+        c += (x[i] - mX) * (y[i] - mY) * fac;
+
+    return c;
+}
+
+
+/////
+// Variance
+///
+template<typename T>
+inline T var( const std::vector<T> &x, bool is_subset=false )
+{
+    return cov(x,x,is_subset);
+}
+
+
+/////
+// Standard Deviation
+///
+template<typename T>
+inline T std_dev( const std::vector<T> &x, bool is_subset=false )
+{
+    return sqrt( var(x, is_subset) );
+}
+
+
 
 
 } // end namespace iris

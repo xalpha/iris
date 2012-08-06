@@ -59,6 +59,8 @@ public:
 
     Pose_d operator& ( const RandomFeatureDescriptor& rfd ) const;
 
+    void operator =( const RandomFeatureDescriptor& pose );
+
 protected:
     void describePoint( Point& point, bool generateShiftPermutations );
 
@@ -176,37 +178,74 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
     std::vector< cv::DMatch > matches;
     matcher.match( queryFVs, trainFVs, matches );
 
-    double max_dist = 0; double min_dist = 100;
+//    double max_dist = 0; double min_dist = 100;
 
-    //-- Quick calculation of max and min distances between keypoints
-    for( int i = 0; i < queryFVs.rows; i++ )
-    { double dist = matches[i].distance;
-      if( dist > 0 && dist < min_dist ) min_dist = dist;
-      if( dist > max_dist ) max_dist = dist;
-    }
+//    //-- Quick calculation of max and min distances between keypoints
+//    for( int i = 0; i < queryFVs.rows; i++ )
+//    { double dist = matches[i].distance;
+//      if( dist > 0 && dist < min_dist ) min_dist = dist;
+//      if( dist > max_dist ) max_dist = dist;
+//    }
 
-    printf("-- Max dist : %f \n", max_dist );
-    printf("-- Min dist : %f \n", min_dist );
+//    printf("-- Max dist : %f \n", max_dist );
+//    printf("-- Min dist : %f \n", min_dist );
 
-    //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist )
-    //-- PS.- radiusMatch can also be used here.
-    std::vector< cv::DMatch > good_matches;
+//    //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist )
+//    //-- PS.- radiusMatch can also be used here.
+//    std::vector< cv::DMatch > good_matches;
 
-    for( int i = 0; i < queryFVs.rows; i++ )
-    { if( matches[i].distance > 0 && matches[i].distance < 2*min_dist )
-      { good_matches.push_back( matches[i]); }
-    }
+//    for( int i = 0; i < queryFVs.rows; i++ )
+//    { if( matches[i].distance > 0 && matches[i].distance <= 2*min_dist )
+//      { good_matches.push_back( matches[i]); }
+//    }
 
-    if( good_matches.size() == 0 )
-        std::cout << "RandomFeatureDescriptor: NO good Matches." << std::endl;
+//    if( good_matches.size() == 0 )
+//        std::cout << "RandomFeatureDescriptor: NO good Matches." << std::endl;
 
-    for( int i = 0; i < good_matches.size(); i++ )
-    { printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); }
+//    for( int i = 0; i < good_matches.size(); i++ )
+//    { printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); }
+
+    // init vector of best matches
+    std::vector< cv::DMatch > minMatches( m_points.size() );
+
+    // run over the matches and choose the best one
+    int fvspp = static_cast<int>(m_featureVectorsPerPoint);
+    for( size_t i=0; i<matches.size(); i++ )
+        if( matches[i].distance < minMatches[ matches[i].queryIdx / fvspp ].distance )
+            minMatches[ matches[i].queryIdx / fvspp ] = matches[i];
+
+    // extract the distances
+    std::vector<float> dists;
+    for( size_t i=0; i<minMatches.size(); i++ )
+        dists.push_back( minMatches[i].distance );
+
+    // analyse a bit
+    float m = mean( dists );
 
     // assemble the pose
     Pose_d pose;
+    for( size_t i=0; i<minMatches.size(); i++ )
+    {
+        if( minMatches[i].distance < m )
+        {
+            pose.pointIndices.push_back( static_cast<size_t>(minMatches[i].queryIdx / fvspp) );
+            pose.points2D.push_back( rfd.m_points[ minMatches[i].trainIdx / static_cast<int>(rfd.m_featureVectorsPerPoint) ] );
+        }
+    }
 
     return pose;
+}
+
+
+template <size_t M, size_t N, size_t K>
+inline void RandomFeatureDescriptor<M,N,K>::operator =( const RandomFeatureDescriptor<M,N,K>& rfd )
+{
+    m_points = rfd.m_points;
+    m_pd = rfd.m_pd;
+    m_featureVectors = rfd.m_featureVectors;
+    m_mCn = rfd.m_mCn;
+    m_nCk = rfd.m_nCk;
+    m_featureVectorsPerPoint = rfd.m_featureVectorsPerPoint;
 }
 
 

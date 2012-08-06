@@ -135,9 +135,14 @@ bool RandomFeatureFinder::find( Pose_d& pose )
     // assemble the result
     if( matchedPose.pointIndices.size() >= m_minPoints )
     {
+        // set the indices and 2D points
         pose.pointIndices = matchedPose.pointIndices;
         pose.points2D = matchedPose.points2D;
-        pose.points3D = m_points3D;
+
+        // run over the indices and set the 3D points
+        pose.points3D.clear();
+        for( size_t i=0; i<pose.pointIndices.size(); i++ )
+            pose.points3D.push_back( m_points3D[pose.pointIndices[i] ] );
 
         // we are happy
         return true;
@@ -158,23 +163,38 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
     std::vector<std::vector<cv::Point> > contours;
     std::vector<Eigen::Vector2d> centers;
     std::vector<cv::RotatedRect> ellipses;
+    std::vector<float> areas;
 
     // detect blobs
     cv::MSER mser;
     mser( gray, contours, mask );
 
     // fit ellipses
+    float pi = std::acos(-1.0);
     for( size_t c = 0; c < contours.size(); c++ )
+    {
+        // fit ellipse
+        cv::RotatedRect ell = cv::fitEllipse( contours[c] );
+        ellipses.push_back( ell );
+
+        // get area of ellipse
+        areas.push_back( pi * ell.size.width * ell.size.height );
+    }
+
+    // filter ellipses
+    float mean_area = mean( areas );
+    for( size_t e = 0; e < ellipses.size(); e++ )
     {
         // fit the elipse
         bool ok = true;
-        cv::RotatedRect ell = cv::fitEllipse( contours[c] );
+        cv::RotatedRect ell = ellipses[e];
         double rMax = std::max( ell.size.width, ell.size.height );
         double rMin = std::min( ell.size.width, ell.size.height );
 
         // filter the elipses
         ok = ok & ((rMax/rMin) <= m_mserMaxRadiusRatio);
         ok = ok & rMin > m_mserMinRadius;
+        ok = ok & fabs( areas[e] - mean_area ) < 0.5*mean_area;
 
         // if all is well keep it
         if( ok )

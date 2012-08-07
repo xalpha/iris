@@ -229,9 +229,6 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::removeIntersectingEllipses( co
 {
     // init stuff
     std::vector<cv::RotatedRect> result;
-    std::vector<double> ell_dists;
-    ell_dists.reserve( ellipses.size() * 5 );
-    std::vector<bool> ell_skip( ellipses.size() );
 
     // init flann
     cv::Mat_<double> centersCV( static_cast<int>(ellipses.size()), 2 );
@@ -255,27 +252,11 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::removeIntersectingEllipses( co
         // if not first point in a "dense cluster", skip
         double rMax = std::max( ellipses[i].size.width, ellipses[i].size.height );
         for( size_t n=1; n<=5; n++ )
-        {
-            ell_dists.push_back( dists(n) );
             if( dists(n) < rMax && neighbors(n) < i )
                 skip = true;
-        }
-
-        ell_skip[i] = skip;
 
         // if all went well, add the ellipse
         if( !skip )
-            result.push_back( ellipses[i] );
-    }
-
-//    // compute mean distance of ell's to neighbors
-//    double mean_dist = mean( ell_dists );
-
-    // add ellipses not marked to be skiped
-    for( size_t i=0; i<ellipses.size(); i++ )
-    {
-//        double dif = fabs( mean_dist - ell_dists[i] );
-        if( !ell_skip[i] /*&& dif < 1.5*mean_dist && dif > 0.1*mean_dist*/ )
             result.push_back( ellipses[i] );
     }
 

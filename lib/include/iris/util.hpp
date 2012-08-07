@@ -632,22 +632,19 @@ inline double affineInvariant( const Eigen::Matrix<T,2,1>& A,
 }
 
 template<size_t K>
-inline double descriptor( const Eigen::Vector2d& center,
-                          const std::vector<Eigen::Vector2d>& n );
+inline double descriptor( const std::vector<Eigen::Vector2d>& n );
 
 template<>
-inline double descriptor<5>( const Eigen::Vector2d& center,
-                             const std::vector<Eigen::Vector2d>& neighbors )
+inline double descriptor<5>( const std::vector<Eigen::Vector2d>& points )
 {
-    return crossRatio( center, neighbors[0], neighbors[1], neighbors[2], neighbors[3] );
+    return crossRatio( points[0], points[1], points[2], points[3], points[4] );
 }
 
 
 template<>
-inline double descriptor<4>( const Eigen::Vector2d& center,
-                             const std::vector<Eigen::Vector2d>& neighbors )
+inline double descriptor<4>( const std::vector<Eigen::Vector2d>& points )
 {
-    return affineInvariant( center, neighbors[0], neighbors[1], neighbors[2] );
+    return affineInvariant( points[0], points[1], points[2], points[3] );
 }
 
 

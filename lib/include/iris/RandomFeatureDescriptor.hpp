@@ -280,10 +280,10 @@ inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool ge
 
                 // run over all shift combinations and generate descriptors
                 for( size_t i=0; i<K; i++ )
-                    fvs[i].push_back( descriptor<K>( point.pos, shift_points[i] ) );
+                    fvs[i].push_back( descriptor<K>( shift_points[i] ) );
             }
             else
-                fvs[0].push_back( descriptor<K>( point.pos, points ) );
+                fvs[0].push_back( descriptor<K>( points ) );
         }
 
         // add the feature vector(s)

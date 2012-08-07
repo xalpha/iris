@@ -595,6 +595,62 @@ inline T area( const Eigen::Matrix<T,2,1>& A,
 }
 
 
+template <typename T>
+inline double crossRatio( const Eigen::Matrix<T,2,1>& A,
+                          const Eigen::Matrix<T,2,1>& B,
+                          const Eigen::Matrix<T,2,1>& C,
+                          const Eigen::Matrix<T,2,1>& D,
+                          const Eigen::Matrix<T,2,1>& E )
+{
+    // compute the cross ratio of five coplanar points
+    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
+
+    double result = area( A, B, D ) * area( A, C, E );
+
+    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
+        return std::numeric_limits<double>::max();
+    else
+        return ( area( A, B, C ) * area( A, D, E ) ) / result;
+}
+
+
+template <typename T>
+inline double affineInvariant( const Eigen::Matrix<T,2,1>& A,
+                               const Eigen::Matrix<T,2,1>& B,
+                               const Eigen::Matrix<T,2,1>& C,
+                               const Eigen::Matrix<T,2,1>& D )
+{
+    // compute the ratio of triangle areas
+    // area(A,C,D) / area(A,B,C)
+
+    double result = area( A, B, C );
+
+    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
+        return std::numeric_limits<double>::max();
+    else
+        return area( A, C, D ) / result;
+}
+
+template<size_t K>
+inline double descriptor( const Eigen::Vector2d& center,
+                          const std::vector<Eigen::Vector2d>& n );
+
+template<>
+inline double descriptor<5>( const Eigen::Vector2d& center,
+                             const std::vector<Eigen::Vector2d>& neighbors )
+{
+    return crossRatio( center, neighbors[0], neighbors[1], neighbors[2], neighbors[3] );
+}
+
+
+template<>
+inline double descriptor<4>( const Eigen::Vector2d& center,
+                             const std::vector<Eigen::Vector2d>& neighbors )
+{
+    return affineInvariant( center, neighbors[0], neighbors[1], neighbors[2] );
+}
+
+
 /////
 // Find duplicates
 ///

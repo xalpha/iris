@@ -64,8 +64,6 @@ public:
 protected:
     void describePoint( Point& point, bool generateShiftPermutations );
 
-    double computeDescriptor( const Eigen::Vector2d& c, const std::vector<Eigen::Vector2d>& n ); // center & neighbors
-
 protected:
     // input data
     std::vector<Eigen::Vector2d> m_points;
@@ -282,31 +280,16 @@ inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool ge
 
                 // run over all shift combinations and generate descriptors
                 for( size_t i=0; i<K; i++ )
-                    fvs[i].push_back( computeDescriptor( point.pos, shift_points[i] ) );
+                    fvs[i].push_back( descriptor<K>( point.pos, shift_points[i] ) );
             }
             else
-                fvs[0].push_back( computeDescriptor( point.pos, points ) );
+                fvs[0].push_back( descriptor<K>( point.pos, points ) );
         }
 
         // add the feature vector(s)
         for( size_t i=0; i<fvs.size(); i++ )
             m_featureVectors.push_back(fvs[i]);
     }
-}
-
-
-template <size_t M, size_t N, size_t K>
-inline double RandomFeatureDescriptor<M,N,K>::computeDescriptor( const Eigen::Vector2d& c, const std::vector<Eigen::Vector2d>& n )
-{
-    // compute the cross ratio of five coplanar points
-    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
-
-    double result = area( c, n[0], n[2] ) * area( c, n[1], n[3] );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return 0;
-    else
-        return ( area( c, n[0], n[1] ) * area( c, n[2], n[3] ) ) / result;
 }
 
 

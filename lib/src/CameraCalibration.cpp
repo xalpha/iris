@@ -158,6 +158,12 @@ void CameraCalibration::save( const std::string& filename )
 }
 
 
+void CameraCalibration::load( const std::string& filename )
+{
+
+}
+
+
 void CameraCalibration::setFinder( std::shared_ptr<Finder> finder )
 {
     m_finder = finder;

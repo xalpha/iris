@@ -52,6 +52,9 @@ public:
     // save to disk
     void save( const std::string& filename );
 
+    // load from disk
+    void load( const std::string& filename );
+
     // run the calibration
     virtual void calibrate() = 0;
 

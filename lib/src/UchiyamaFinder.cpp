@@ -153,7 +153,7 @@ bool UchiyamaFinder::find( Pose_d& pose )
     // add the pattern descriptor
     // TODO: should be in the configure function
     m_patternDescriptorStream.seekg( 0, std::ios::beg );
-    llah.AddPaper( m_patternDescriptorStream );
+    llah.AddPaper( m_patternDescriptorStream, m_scale );
 
     // comvert image to myimage (cimg -> cv::Mat -> IplImage -> MyImage)
     MyImage imageMy;

@@ -59,9 +59,15 @@ void OpenCVSingleCalibration::calibrate()
         size_t poseCount = poses.size();
 
         // run feature detection
-        #pragma omp parallel for
-        for( int p=0; p<poseCount; p++ )
-            m_finder->find( poses[p] );
+        if( m_finder->useOpenMP() )
+        {
+            #pragma omp parallel for
+            for( int p=0; p<poseCount; p++ )
+                m_finder->find( poses[p] );
+        }
+        else
+            for( int p=0; p<poseCount; p++ )
+                m_finder->find( poses[p] );
     }
 
     // filter the poses

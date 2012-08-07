@@ -34,6 +34,7 @@ namespace iris {
 
 Finder::Finder() :
     m_configured(false),
+    m_useOpenMP(true),
     m_scale( 1.0 )
 {
 }
@@ -41,6 +42,12 @@ Finder::Finder() :
 
 Finder::~Finder() {
 	// TODO Auto-generated destructor stub
+}
+
+
+bool Finder::useOpenMP() const
+{
+    return m_useOpenMP;
 }
 
 

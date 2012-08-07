@@ -69,12 +69,21 @@ void OpenCVStereoCalibration::calibrate()
     iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
 
     // detect correspondences over all poses
-    #pragma omp parallel for
-    for( int p=0; p<cam1.poses.size(); p++ )
+    if( m_finder->useOpenMP() )
     {
-        m_finder->find( cam1.poses[p] );
-        m_finder->find( cam2.poses[p] );
+        #pragma omp parallel for
+        for( int p=0; p<cam1.poses.size(); p++ )
+        {
+            m_finder->find( cam1.poses[p] );
+            m_finder->find( cam2.poses[p] );
+        }
     }
+    else
+        for( int p=0; p<cam1.poses.size(); p++ )
+        {
+            m_finder->find( cam1.poses[p] );
+            m_finder->find( cam2.poses[p] );
+        }
 
     // filter the poses
     filter();

@@ -45,6 +45,7 @@ namespace iris {
 
 UchiyamaFinder::UchiyamaFinder() :
     Finder(),
+    m_useOpenMP(false),	
     m_adaptiveExtract(false),
     m_minPoints(8)
 {

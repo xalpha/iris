@@ -51,14 +51,15 @@ public:
     UchiyamaFinder();
     virtual ~UchiyamaFinder();
 
-    void configure( const std::string& patternPath );
+    void configure( const std::string& patternDescriptor );
     void setAdaptiveExtract( bool val );
     void setMinPoints( size_t minPoints );
 
     virtual bool find( Pose_d& pose );
 
 protected:
-    std::string m_patternPath;
+    std::string m_patternDescriptor;
+    std::stringstream m_patternDescriptorStream;
     size_t m_minPoints;
     bool m_adaptiveExtract;
 

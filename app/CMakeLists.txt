@@ -63,6 +63,11 @@ set( IrisCC_QT_UI
     ui/RandomFeatureFinder.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
+# check if Uchiyama was found
+if( Uchiyama_FOUND )
+    list( APPEND IrisCC_QT_UI ui/UchiyamaFinder.ui )
+endif()
+
 # set include directories
 set( IrisCC_INCLUDE_DIRS
     include
@@ -91,12 +96,6 @@ QT4_WRAP_CPP( IrisCC_QT_HPP_MOC
     ${IrisCC_INC}
     ${Q_CUSTOM_PLOT_INC} )
 QT4_WRAP_UI( IrisCC_QT_UI_UIC ${IrisCC_QT_UI} )
-
-# if Bazar
-if( Bazar_FOUND )
-    list( APPEND IrisCC_INCLUDE_DIRS ${Bazar_INCLUDE_DIR} )
-    list( APPEND IrisCC_LINK_LIBS ${Bazar_LIBRARY} )
-endif()
 
 # set include paths
 include_directories( ${IrisCC_INCLUDE_DIRS} )

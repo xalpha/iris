@@ -45,10 +45,10 @@ namespace iris {
 
 UchiyamaFinder::UchiyamaFinder() :
     Finder(),
-    m_useOpenMP(false),	
     m_adaptiveExtract(false),
     m_minPoints(8)
 {
+    m_useOpenMP = false;
 }
 
 
@@ -57,9 +57,11 @@ UchiyamaFinder::~UchiyamaFinder() {
 }
 
 
-void UchiyamaFinder::configure( const std::string& patternPath )
+void UchiyamaFinder::configure( const std::string& patternDescriptor )
 {
-    m_patternPath = patternPath;
+    m_patternDescriptor = patternDescriptor;
+    m_patternDescriptorStream.clear();
+    m_patternDescriptorStream << m_patternDescriptor;
     m_configured = true;
 }
 
@@ -150,7 +152,8 @@ bool UchiyamaFinder::find( Pose_d& pose )
 
     // add the pattern descriptor
     // TODO: should be in the configure function
-    llah.AddPaper( m_patternPath.c_str() );
+    m_patternDescriptorStream.seekg( 0, std::ios::beg );
+    llah.AddPaper( m_patternDescriptorStream );
 
     // comvert image to myimage (cimg -> cv::Mat -> IplImage -> MyImage)
     MyImage imageMy;

@@ -45,6 +45,7 @@
 #include <iris/ChessboardFinder.hpp>
 #ifdef UCHIYAMA_FOUND
 #include <iris/UchiyamaFinder.hpp>
+#include "ui_UchiyamaFinder.h"
 #endif
 #include <iris/RandomFeatureFinder.hpp>
 
@@ -414,10 +415,12 @@ void IrisCC::on_configureFinder()
             case 2 :
             {
                 ui->configure_finder->setEnabled(true);
-                QString patternPath = QFileDialog::getOpenFileName(this, "Load Uchiyama Pattern Descriptor", ".", "Text Files (*.txt)");
+                Ui::UchiyamaFinder uchiyamaFinderUI;
+                uchiyamaFinderUI.setupUi( &dialog );
+                dialog.exec();
                 iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
-                if( patternPath.size() > 0 )
-                    finder->configure( patternPath.toStdString() );
+                finder->configure( uchiyamaFinderUI.points->toPlainText().toStdString() );
+                finder->setScale( uchiyamaFinderUI.scale->value() );
                 m_finder = std::shared_ptr<iris::Finder>(finder);
                 break;
             }

@@ -11,6 +11,34 @@
 #include <iris/OpenCVStereoCalibration.hpp>
 
 
+void showPose( const iris::Pose_d& pose )
+{
+    // get the image
+    cv::Mat img;
+    iris::cimg2cv( *pose.image, img );
+    cv::cvtColor( img, img, CV_BGR2GRAY );
+    cv::cvtColor( img, img, CV_GRAY2RGB );
+
+    // get the name
+    std::stringstream ss;
+    ss << pose.id;
+    std::string name = ss.str();
+
+    // render the points
+    for( size_t i=0; i<pose.detected2D.size(); i++ )
+        cv::circle( img, cv::Point( pose.detected2D[i](0), pose.detected2D[i](1) ), 7, cv::Scalar(0,128,255), -1, 8, 0 );
+    for( size_t i=0; i<pose.points2D.size(); i++ )
+        cv::circle( img, cv::Point( pose.points2D[i](0), pose.points2D[i](1) ), 5, cv::Scalar(0,255,0), -1, 8, 0 );
+    for( size_t i=0; i<pose.projected2D.size(); i++ )
+        cv::circle( img, cv::Point( pose.projected2D[i](0), pose.projected2D[i](1) ), 3, cv::Scalar(0,0,255), -1, 8, 0 );
+
+    // show the image
+    cv::namedWindow( name, 0 );
+    cv::imshow( name, img );
+    cvResizeWindow( name.c_str(), 800, 600 );
+}
+
+
 int main(int argc, char** argv)
 {
     // check
@@ -48,8 +76,22 @@ int main(int argc, char** argv)
         // perform the calibration
         cc->calibrate();
 
+        // run over all poses
+        const std::map< size_t, iris::Camera_d >& cameras = cc->cameras();
+        for( auto camIt = cameras.begin(); camIt != cameras.end(); camIt++ )
+            for( size_t p=0; p<camIt->second.poses.size(); p++ )
+                showPose( camIt->second.poses[p] );
+
         // save results
         cc->save( "test.xml" );
+
+        while( true )
+        {
+            //Handle pause/unpause and ESC
+            int c = cv::waitKey(15);
+            if(c == 'q')
+                break;
+        }
     }
     catch( std::exception& e )
     {

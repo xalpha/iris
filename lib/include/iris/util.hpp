@@ -83,6 +83,7 @@ public:
     std::string name;
     // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
+    std::vector< Eigen::Matrix<T,2,1> > detected2D;
     // correspondences
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;

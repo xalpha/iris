@@ -56,6 +56,10 @@ public:
 protected:
     std::vector< Eigen::Vector2d > findCircles( const cimg_library::CImg<uint8_t>& image );
 
+    std::vector<cv::RotatedRect> filterEllipses( const std::vector<cv::RotatedRect>& ellipses );
+
+    std::vector<cv::RotatedRect> removeIntersectingEllipses( const std::vector<cv::RotatedRect>& ellipses );
+
 protected:
     // config
     RFD m_patternRFD;

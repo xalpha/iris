@@ -160,6 +160,12 @@ void CameraCalibration::save( const std::string& filename )
 
 void CameraCalibration::load( const std::string& filename )
 {
+    // load the document
+    tinyxml2::XMLDocument doc;
+    int loadStatus = doc.LoadFile( filename.c_str() );
+    if( tinyxml2::XML_SUCCESS != loadStatus )
+        throw std::runtime_error( "CameraCalibration::load: " + std::string( doc.GetErrorStr1() ) );
+
 
 }
 

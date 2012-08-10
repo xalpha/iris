@@ -34,6 +34,7 @@ include( IrisConfig.cmake )
 # add the include files
 list( APPEND Iris_INC
     include/iris/CameraCalibration.hpp
+    include/iris/CameraSet.hpp
     include/iris/ChessboardFinder.hpp
     include/iris/DLTCalibration.hpp
     include/iris/Finder.hpp

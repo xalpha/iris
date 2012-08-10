@@ -58,15 +58,15 @@ void OpenCVStereoCalibration::setSameFocalLength( bool val )
 }
 
 
-void OpenCVStereoCalibration::calibrate()
+void OpenCVStereoCalibration::calibrate( CameraSet_d& cs )
 {
     // assuming there are only two cameras
-    if( m_cameras.size() != 2 )
+    if( cs.cameras().size() != 2 )
         throw std::runtime_error("OpenCVStereoCalibration::calibrate: exactly 2 cameras are required.");
 
     // get refs of camera
-    iris::Camera_d& cam1 = m_cameras.begin()->second;
-    iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
+    iris::Camera_d& cam1 = cs.cameras().begin()->second;
+    iris::Camera_d& cam2 = (++(cs.cameras().begin()))->second;
 
     // detect correspondences over all poses
     if( m_finder->useOpenMP() )
@@ -86,14 +86,14 @@ void OpenCVStereoCalibration::calibrate()
         }
 
     // filter the poses
-    filter();
+    filter( cs );
 
     // calibrate the cameras
     stereoCalibrate( m_filteredCameras.begin()->second,
                  (++(m_filteredCameras.begin()))->second );
 
     // commit the results
-    commit();
+    commit( cs );
 }
 
 
@@ -194,15 +194,15 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
 }
 
 
-void OpenCVStereoCalibration::filter()
+void OpenCVStereoCalibration::filter( CameraSet_d& cs )
 {
     // init stuff
     m_filteredCameras.clear();
     size_t framesAdded = 0;
 
     // get refs of camera
-    iris::Camera_d& cam1 = m_cameras.begin()->second;
-    iris::Camera_d& cam2 = (++(m_cameras.begin()))->second;
+    iris::Camera_d& cam1 = cs.cameras().begin()->second;
+    iris::Camera_d& cam2 = (++(cs.cameras().begin()))->second;
 
     // check that the cameras have the same image size
     if( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(1) != cam2.imageSize(1)) )

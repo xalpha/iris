@@ -46,13 +46,13 @@ OpenCVSingleCalibration::~OpenCVSingleCalibration() {
 }
 
 
-void OpenCVSingleCalibration::calibrate()
+void OpenCVSingleCalibration::calibrate( CameraSet_d &cs )
 {
     // check that all is OK
     check();
 
     // run over all cameras and calibrate them
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
         // update stuff
         std::vector< Pose_d >& poses = it->second.poses;
@@ -71,14 +71,14 @@ void OpenCVSingleCalibration::calibrate()
     }
 
     // filter the poses
-    filter();
+    filter( cs );
 
     // calibrate all cameras
     for( auto it = m_filteredCameras.begin(); it != m_filteredCameras.end(); it++ )
         calibrateCamera( it->second, flags() );
 
     // commit the calibration calibrated frames
-    commit();
+    commit( cs );
 }
 
 
@@ -140,13 +140,13 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
 }
 
 
-void OpenCVSingleCalibration::filter()
+void OpenCVSingleCalibration::filter( CameraSet_d& cs )
 {
     // init stuff
     m_filteredCameras.clear();
 
     // run over all the poses and only
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
         // update stuff
         size_t posesAdded = 0;

@@ -46,13 +46,13 @@ DLTCalibration::~DLTCalibration() {
 }
 
 
-void DLTCalibration::calibrate()
+void DLTCalibration::calibrate( CameraSet_d& cs )
 {
     // check that all is OK
     check();
 
     // run over all cameras and find correspondences
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
         // update stuff
         std::vector< Pose_d >& poses = it->second.poses;
@@ -65,10 +65,10 @@ void DLTCalibration::calibrate()
     }
 
     // filter the poses
-    filter();
+    filter( cs );
 
     // run over all cameras and calibrate the poses
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
         // update stuff
         std::vector< Pose_d >& poses = it->second.poses;
@@ -81,7 +81,7 @@ void DLTCalibration::calibrate()
     }
 
     // commit the calibration calibrated frames
-    commit();
+    commit( cs );
 }
 
 
@@ -91,13 +91,13 @@ void DLTCalibration::calibratePose( Pose_d &pose )
 }
 
 
-void DLTCalibration::filter()
+void DLTCalibration::filter( CameraSet_d& cs )
 {
     // init stuff
     m_filteredCameras.clear();
 
     // run over all the poses and only
-    for( auto it = m_cameras.begin(); it != m_cameras.end(); it++ )
+    for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
         for( size_t p=0; p<it->second.poses.size(); p++ )
         {

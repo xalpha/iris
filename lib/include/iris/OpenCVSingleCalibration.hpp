@@ -42,12 +42,12 @@ public:
                     bool fixAspectRatio,
                     bool tangentialDistortion );
 
-    virtual void calibrate();
+    virtual void calibrate( CameraSet_d& cs );
 
  protected:
     void calibrateCamera( Camera_d &cam, int flags );
 
-    virtual void filter();
+    virtual void filter( CameraSet_d& cs );
 
     virtual int flags();
 

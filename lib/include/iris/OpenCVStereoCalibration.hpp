@@ -41,12 +41,12 @@ public:
     void setRelativeToPattern( bool val );
     void setSameFocalLength( bool val );
 
-    virtual void calibrate();
+    virtual void calibrate( CameraSet_d& cs );
 
 protected:
     void stereoCalibrate( iris::Camera_d& cam1, iris::Camera_d& cam2 );
 
-    virtual void filter();
+    virtual void filter( CameraSet_d& cs );
 
     bool checkFrame( const iris::Pose_d& cam1, const iris::Pose_d& cam2 );
 

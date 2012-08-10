@@ -38,12 +38,12 @@ public:
     DLTCalibration();
     virtual ~DLTCalibration();
 
-    virtual void calibrate();
+    virtual void calibrate( CameraSet_d& cs );
 
  protected:
     void calibratePose( Pose_d &pose );
 
-    virtual void filter();
+    virtual void filter( CameraSet_d& cs );
 
 };
 

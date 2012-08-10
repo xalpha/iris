@@ -100,6 +100,9 @@ protected:
     // camera capture
     cv::VideoCapture m_videoCapture;
 
+    // camera set
+    iris::CameraSet_d m_cs;
+
     // finder
     std::shared_ptr<iris::Finder> m_finder;
 

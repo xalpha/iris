@@ -111,7 +111,7 @@ void IrisCC::update()
         m_calibration->setFinder( m_finder );
 
         // run the calibration
-        m_calibration->calibrate();
+        m_calibration->calibrate( m_cs );
 
         // update the error plot
         updateErrorPlot();
@@ -128,20 +128,16 @@ void IrisCC::update()
 
 void IrisCC::updateErrorPlot()
 {
-    // check if there is any calibration
-    if( !m_calibration )
-        return;
-
     // init stuff
     double error = 0;
 
     // clear the plot
     ui->plot_error->clearGraphs();
     ui->plot_error->clearPlottables();
-    ui->plot_error->legend->setVisible( m_calibration->cameras().size() > 0 );
+    ui->plot_error->legend->setVisible( m_cs.cameras().size() > 0 );
 
     // run over all camera poses
-    for( auto camIt=m_calibration->cameras().begin(); camIt != m_calibration->cameras().end(); camIt++ )
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
     {
         // update error
         if( camIt->second.error > error )
@@ -153,7 +149,7 @@ void IrisCC::updateErrorPlot()
 
         // generate random color
         QColor col;
-        col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_calibration->cameras().size()), 1.0, 0.4 );
+        col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_cs.cameras().size()), 1.0, 0.4 );
 
         // run over all poses of the camera
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
@@ -201,11 +197,11 @@ void IrisCC::updateImage( int idx )
         ui->plot_image->setAxisBackground( QPixmap() );
 
         // check if there are any images
-        if( !m_calibration || m_calibration->poseCount() == 0 )
+        if( m_cs.poseCount() == 0 )
             return;
 
         // get the image
-        const iris::Pose_d pose = m_calibration->pose( m_poseIndices[idx] );
+        const iris::Pose_d pose = m_cs.pose( m_poseIndices[idx] );
         const cimg_library::CImg<uint8_t>& image = *pose.image;
 
         // convert image to Qt
@@ -230,7 +226,7 @@ void IrisCC::updateImage( int idx )
         if( !pose.rejected )
         {
             // get the pose
-            const iris::Pose_d& pose = m_calibration->pose( m_poseIndices[idx] );
+            const iris::Pose_d& pose = m_cs.pose( m_poseIndices[idx] );
 
             // copy the data
             QVector<double> x( pose.points2D.size() );
@@ -276,7 +272,7 @@ void IrisCC::updateImage( int idx )
 
 void IrisCC::addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name )
 {
-    size_t id = m_calibration->addImage( image, name.toStdString(), static_cast<size_t>( ui->cameraID->value() ) );
+    size_t id = m_cs.add( image, name.toStdString(), static_cast<size_t>( ui->cameraID->value() ) );
     m_poseIndices.push_back( id );
 
     // update list
@@ -315,9 +311,8 @@ void IrisCC::clear()
     // clear images
     m_poseIndices.clear();
 
-    // clear the calibration
-    if( 0 != m_calibration.get() )
-        m_calibration->clear();
+    // clear the camera set
+    m_cs.cameras().clear();
 
     // update charts
     updateImage(0);
@@ -331,8 +326,8 @@ void IrisCC::check( bool complain )
 
     try
     {
-        // arer there any images
-        if( m_calibration && m_calibration->poseCount() == 0 )
+        // are there any images
+        if( m_cs.poseCount() == 0 )
             throw std::runtime_error("IrisCC: no poses.");
 
         // check if there is any calibration
@@ -483,7 +478,6 @@ void IrisCC::on_configureCalibration()
                 calib->setFixAspectRatio( form.fixed_aspect_ratio->isChecked() );
                 calib->setTangentialDistortion( form.tangential_distortion->isChecked() );
                 calib->setMinCorrespondences( static_cast<size_t>( form.minCorrespondences->value() ) );
-                calib->copyCameras( m_calibration );
                 m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
@@ -502,7 +496,6 @@ void IrisCC::on_configureCalibration()
                 calib->setRelativeToPattern( form.relative_to_pattern->isChecked() );
                 calib->setSameFocalLength( form.same_focal_length->isChecked() );
                 calib->setMinCorrespondences( static_cast<size_t>( form.minCorrespondences->value() ) );
-                calib->copyCameras( m_calibration );
                 m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
@@ -622,7 +615,7 @@ void IrisCC::on_save()
 //        outFile.close();
 
 
-        m_calibration->save( filename.toStdString() );
+        m_cs.save( filename.toStdString() );
     }
     catch( std::exception &e )
     {

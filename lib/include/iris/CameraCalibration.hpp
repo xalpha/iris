@@ -32,6 +32,7 @@
 #include <memory>
 
 #include <iris/Finder.hpp>
+#include <iris/CameraSet.hpp>
 #include <iris/util.hpp>
 
 namespace iris
@@ -43,37 +44,16 @@ public:
     CameraCalibration();
     virtual ~CameraCalibration();
 
-    // add single image
-    virtual size_t addImage( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const std::string& name, const size_t cameraID=0 );
-
-    // clear
-    void clear();
-
-    // save to disk
-    void save( const std::string& filename );
-
-    // load from disk
-    void load( const std::string& filename );
-
     // run the calibration
-    virtual void calibrate() = 0;
+    virtual void calibrate( CameraSet_d& cs ) = 0;
 
     void setFinder( std::shared_ptr<Finder> finder );
 
     const Finder& finder() const;
 
-    const std::map< size_t, iris::Camera_d >& cameras() const;
-
-    const Camera_d& camera( const size_t id=0 ) const;
-    const Pose_d& pose( const size_t id ) const;
-
-    const size_t poseCount() const;
-
-    void copyCameras( std::shared_ptr<CameraCalibration> cc );
-
 protected:
-    virtual void filter() = 0;
-    virtual void commit();
+    virtual void filter( CameraSet_d& cs ) = 0;
+    virtual void commit( CameraSet_d& cs );
 
     void check();
 
@@ -82,10 +62,6 @@ protected:
 protected:
     // these two do the work
     std::shared_ptr<Finder> m_finder;
-
-    // this on what the work gets done
-    size_t m_poseCount;
-    std::map< size_t, iris::Camera_d > m_cameras;
 
     // filtered
     std::map< size_t, iris::Camera_d > m_filteredCameras;

@@ -446,6 +446,7 @@ inline void str2vector( const std::string& str, std::vector<T>& result )
         ss >> tmp;
         result.push_back( tmp );
     }
+    result.pop_back();
 }
 
 
@@ -455,7 +456,7 @@ inline void str2eigen( std::string str, Eigen::Matrix<T,Rows,Cols>& result )
     std::stringstream ss;
     ss << str;
     ss.seekg( 0, std::ios::beg );
-    for( int i=0; i<Rows*Cols; i++ )
+    for( int i=0; i<Rows*Cols && str.size() > Rows*Cols; i++ )
         ss >> result.data()[i];
 }
 

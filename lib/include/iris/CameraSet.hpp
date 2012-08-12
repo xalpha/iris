@@ -258,7 +258,7 @@ inline void CameraSet<T>::load( const std::string& filename )
 
     // run over all the cameras
     m_cameras.clear();
-    for( tinyxml2::XMLNode* camPtr=cameras->FirstChildElement( "Camera" ); camPtr != 0; camPtr = cameras->NextSiblingElement( "Camera" ) )
+    for( tinyxml2::XMLNode* camPtr=cameras->FirstChildElement( "Camera" ); camPtr != 0; camPtr = camPtr->NextSiblingElement( "Camera" ) )
     {
         Camera<T> camera;
 
@@ -272,7 +272,7 @@ inline void CameraSet<T>::load( const std::string& filename )
         tinyxml2::XMLNode* poses = camPtr->FirstChildElement( "Poses" );
         if( poses != 0 )
         {
-            for( tinyxml2::XMLNode* posePtr=poses->FirstChildElement( "Pose" ); posePtr != 0; posePtr = poses->NextSiblingElement( "Pose" ) )
+            for( tinyxml2::XMLNode* posePtr=poses->FirstChildElement( "Pose" ); posePtr != 0; posePtr = posePtr->NextSiblingElement( "Pose" ) )
             {
                 Pose<T> pose;
 
@@ -284,6 +284,19 @@ inline void CameraSet<T>::load( const std::string& filename )
                 str2vector( getElementValue( posePtr, "PointIndices" ), pose.pointIndices );
                 str2eigen( getElementValue( posePtr, "Transformation" ), pose.transformation );
                 str2eigenVector( getElementValue( posePtr, "ProjectedPoints" ), pose.projected2D );
+
+                pose.rejected = pose.pointIndices.size() == 0;
+
+                if( !pose.rejected &&
+                    ( pose.points2D.size() != pose.pointIndices.size() ||
+                      pose.points2D.size() != pose.points3D.size() ) )
+                {
+                    pose.rejected = false;
+                    std::cerr << "CameraSet::load: point arrays' sizes do not match:";
+                    std::cerr << " Points3D=" << pose.points2D.size();
+                    std::cerr << ", Points3D=" << pose.points3D.size();
+                    std::cerr << ", PointIndices=" << pose.pointIndices.size() << "." << std::endl;
+                }
 
                 camera.poses.push_back( pose );
             }
@@ -316,12 +329,12 @@ inline void CameraSet<T>::appendTextElement( tinyxml2::XMLDocument& doc,
 template <typename T>
 inline std::string CameraSet<T>::getElementValue( tinyxml2::XMLNode* node, std::string name )
 {
-    tinyxml2::XMLNode* childElement = node->FirstChildElement( name.c_str() );
-    if( childElement != 0 )
+    tinyxml2::XMLNode* childTag = node->FirstChildElement( name.c_str() );
+    if( childTag != 0 )
     {
-        tinyxml2::XMLText* childElementText = childElement->ToText();
-        if( childElementText != 0 )
-            return std::string( childElement->Value() );
+        tinyxml2::XMLNode* childText = childTag->FirstChild();
+        if( childText != 0 )
+            return std::string( childText->Value() );
     }
         return std::string();
 }

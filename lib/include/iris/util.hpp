@@ -422,6 +422,70 @@ inline std::string toString( const std::vector< Eigen::Matrix<T,Rows,Cols> >& ve
 
 
 /////
+// from String to Eigen (also with love)
+///
+template <typename T>
+inline void str2scalar( std::string str, T& result )
+{
+    std::stringstream ss;
+    ss << str;
+    ss.seekg( 0, std::ios::beg );
+    ss >> result;
+}
+
+
+template <typename T>
+inline void str2vector( const std::string& str, std::vector<T>& result )
+{
+    std::stringstream ss;
+    ss << str;
+    ss.seekg( 0, std::ios::beg );
+    while( !ss.eof() )
+    {
+        T tmp;
+        ss >> tmp;
+        result.push_back( tmp );
+    }
+}
+
+
+template <typename T, int Rows, int Cols>
+inline void str2eigen( std::string str, Eigen::Matrix<T,Rows,Cols>& result )
+{
+    std::stringstream ss;
+    ss << str;
+    ss.seekg( 0, std::ios::beg );
+    for( int i=0; i<Rows*Cols; i++ )
+        ss >> result.data()[i];
+}
+
+
+template <typename T, int Rows, int Cols>
+inline void str2eigenVector( std::string str, std::vector< Eigen::Matrix<T,Rows,Cols> >& result )
+{
+    size_t start=0;
+    size_t finish = str.find_first_of( ';' );
+    while( finish != std::string::npos )
+    {
+        // get the matrix
+        Eigen::Matrix<T,Rows,Cols> mat;
+        str2eigen( str.substr( start, finish - start ), mat );
+        result.push_back( mat );
+
+        // advance indices
+        start=finish + 1;
+        finish = str.find_first_of( ';', start );
+    }
+}
+
+
+
+
+
+
+
+
+/////
 // limit an image to a certain pixel count
 ///
 template<typename T>

@@ -91,6 +91,7 @@ void testLoadXML( const std::string& filename )
 {
     iris::CameraSet_d cs;
     cs.load( filename );
+    cs.save( "test.xml" );
 }
 
 
@@ -112,7 +113,13 @@ int main(int argc, char** argv)
             std::string filename( argv[1] );
             size_t extIdx = filename.find_last_of( '.' ) + 1;
             std::string extension = filename.substr( extIdx, filename.size() -1 );
-            std::cout << extension << std::endl;
+
+            if( extension.compare( "xml" ) == 0 ||
+                extension.compare( "Xml" ) == 0 ||
+                extension.compare( "XML" ) == 0 )
+                testLoadXML( filename );
+            else
+                testCalibration( argc, argv );
         }
         else
             testCalibration( argc, argv );

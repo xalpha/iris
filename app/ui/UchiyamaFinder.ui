@@ -26,14 +26,14 @@
       <string>Pattern</string>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Scale</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QDoubleSpinBox" name="scale">
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -206,6 +206,34 @@
 743 1222</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Unit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QRadioButton" name="unit_m">
+          <property name="text">
+           <string>meters</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="unit_mm">
+          <property name="text">
+           <string>milimeters</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

@@ -396,10 +396,7 @@ void IrisCC::on_configureFinder()
                 finder->configure( static_cast<size_t>( chessboardFinderUI.columns->value() ),
                                    static_cast<size_t>( chessboardFinderUI.rows->value() ),
                                    0.001 * chessboardFinderUI.square_size->value() );
-                if( chessboardFinderUI.unit_mm )
-                    finder->setScale( chessboardFinderUI.scale->value() * 0.001 );
-                else
-                    finder->setScale( chessboardFinderUI.scale->value() );
+                finder->setScale( chessboardFinderUI.scale->value() );
                 finder->setFastCheck( chessboardFinderUI.fastCheck->isChecked() );
                 finder->setAdaptiveThreshold( chessboardFinderUI.adaptiveThreshold->isChecked() );
                 finder->setNormalizeImage( chessboardFinderUI.normalizeImage->isChecked() );

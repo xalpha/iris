@@ -39,10 +39,10 @@
          <set>Qt::AlignCenter</set>
         </property>
         <property name="decimals">
-         <number>6</number>
+         <number>12</number>
         </property>
         <property name="value">
-         <double>0.947368000000000</double>
+         <double>0.000947368000000</double>
         </property>
        </widget>
       </item>

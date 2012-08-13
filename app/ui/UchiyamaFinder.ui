@@ -26,26 +26,9 @@
       <string>Pattern</string>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Scale</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="scale">
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="decimals">
-         <number>6</number>
-        </property>
-        <property name="value">
-         <double>0.947368000000000</double>
-        </property>
-       </widget>
-      </item>
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
       <item row="0" column="0" colspan="2">
        <widget class="QPlainTextEdit" name="points">
         <property name="horizontalScrollBarPolicy">
@@ -208,32 +191,27 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Unit</string>
+         <string>Scale</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QRadioButton" name="unit_m">
-          <property name="text">
-           <string>meters</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="unit_mm">
-          <property name="text">
-           <string>milimeters</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QDoubleSpinBox" name="scale">
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="decimals">
+         <number>12</number>
+        </property>
+        <property name="maximum">
+         <double>99999999.989999994635582</double>
+        </property>
+        <property name="value">
+         <double>0.000947368000000</double>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

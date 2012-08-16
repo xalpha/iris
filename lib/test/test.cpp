@@ -35,7 +35,7 @@ void showPose( const iris::Pose_d& pose )
     // show the image
     cv::namedWindow( name, 0 );
     cv::imshow( name, img );
-    cvResizeWindow( name.c_str(), 800, 600 );
+    cvResizeWindow( name.c_str(), 1024, 768 );
 }
 
 

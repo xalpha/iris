@@ -87,16 +87,16 @@ IrisCC::IrisCC(QWidget *parent) :
 
     // init finder dialogs
     m_finderDialogs.push_back( std::shared_ptr<QDialog>() );
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );    ui_ChessboardFinder->setupUi( m_finderDialogs.end()->get() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_ChessboardFinder->setupUi( m_finderDialogs.end()->get() );
 #ifdef UCHIYAMA_FOUND
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );    ui_UchiyamaFinder->setupUi( m_finderDialogs.end()->get() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_UchiyamaFinder->setupUi( m_finderDialogs.end()->get() );
 #endif
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );    ui_RandomFeatureFinder->setupUi( m_finderDialogs.end()->get() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_RandomFeatureFinder->setupUi( m_finderDialogs.end()->get() );
 
     // init calibration dialogs
-    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>() );
-    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>() );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.end()->get() );
-    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>() );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.end()->get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.end()->get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.end()->get() );
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -132,13 +132,106 @@ void IrisCC::update()
 {
     try
     {
-        check();
+        // check poses
+        if( m_cs.poseCount() == 0 )
+            throw std::runtime_error( "IrisCC::update: No Images" );
 
-        // configure CameraCalibration
-        m_calibration->setFinder( m_finder );
+        // configure finder
+        std::shared_ptr<iris::Finder> f;
+        switch( ui->select_finder->currentIndex() )
+        {
+            // none
+            case 0:
+                throw std::runtime_error("IrisCC::update: No Finder selected.");
+
+            // chessboard
+            case 1 :
+            {
+                ui->configure_finder->setEnabled(true);
+                iris::ChessboardFinder* finder = new iris::ChessboardFinder();
+                finder->configure( static_cast<size_t>( ui_ChessboardFinder->columns->value() ),
+                                   static_cast<size_t>( ui_ChessboardFinder->rows->value() ),
+                                   0.001 * ui_ChessboardFinder->square_size->value() );
+                finder->setScale( ui_ChessboardFinder->scale->value() );
+                finder->setFastCheck( ui_ChessboardFinder->fastCheck->isChecked() );
+                finder->setAdaptiveThreshold( ui_ChessboardFinder->adaptiveThreshold->isChecked() );
+                finder->setNormalizeImage( ui_ChessboardFinder->normalizeImage->isChecked() );
+                finder->setSubpixelCorner( ui_ChessboardFinder->subpixel_corner->isChecked() );
+                f = std::shared_ptr<iris::Finder>(finder);
+                break;
+            }
+
+            // uchiyama
+#           ifdef UCHIYAMA_FOUND
+            case 2 :
+            {
+                iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
+                finder->configure( ui_UchiyamaFinder->points->toPlainText().toStdString() );
+                finder->setScale( ui_UchiyamaFinder->scale->value() );
+                f = std::shared_ptr<iris::Finder>(finder);
+                break;
+            }
+#           endif
+
+            // random feature descriptor
+            case 3 :
+            {
+                iris::RandomFeatureFinder* finder = new iris::RandomFeatureFinder();
+                finder->configure( ui_RandomFeatureFinder->points->toPlainText().toStdString() );
+                finder->setScale( ui_RandomFeatureFinder->scale->value() );
+                finder->setMaxRadiusRatio( ui_RandomFeatureFinder->max_radius_ratio->value() );
+                finder->setMinRadius( ui_RandomFeatureFinder->min_radius->value() );
+                f = std::shared_ptr<iris::Finder>(finder);
+                break;
+            }
+
+            // not supported finder
+            default:
+                throw std::runtime_error("IrisCC::update: Finder not supported.");
+        }
+
+        // configure calibration
+        std::shared_ptr<iris::CameraCalibration> cc;
+        switch( ui->select_calibration->currentIndex() )
+        {
+            // none
+            case 0 :
+                throw std::runtime_error("IrisCC::update: No Calibration selected.");
+
+            // OpenCV
+            case 1 :
+            {
+                iris::OpenCVSingleCalibration* calib = new iris::OpenCVSingleCalibration();
+                calib->setFixPrincipalPoint( ui_OpenCVSingleCalibration->fixed_principal_point->isChecked() );
+                calib->setFixAspectRatio( ui_OpenCVSingleCalibration->fixed_aspect_ratio->isChecked() );
+                calib->setTangentialDistortion( ui_OpenCVSingleCalibration->tangential_distortion->isChecked() );
+                calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVSingleCalibration->minCorrespondences->value() ) );
+                cc = std::shared_ptr<iris::CameraCalibration>( calib );
+                break;
+            }
+
+            // OpenCV Stereo
+            case 2 :
+            {
+                iris::OpenCVStereoCalibration* calib = new iris::OpenCVStereoCalibration();
+                calib->setFixPrincipalPoint( ui_OpenCVStereoCalibration->fixed_principal_point->isChecked() );
+                calib->setFixAspectRatio( ui_OpenCVStereoCalibration->fixed_aspect_ratio->isChecked() );
+                calib->setTangentialDistortion( ui_OpenCVStereoCalibration->tangential_distortion->isChecked() );
+                calib->setRelativeToPattern( ui_OpenCVStereoCalibration->relative_to_pattern->isChecked() );
+                calib->setSameFocalLength( ui_OpenCVStereoCalibration->same_focal_length->isChecked() );
+                calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVStereoCalibration->minCorrespondences->value() ) );
+                cc = std::shared_ptr<iris::CameraCalibration>( calib );
+                break;
+            }
+
+            // not supported finder
+            default:
+                throw std::runtime_error("IrisCC::update: Calibration not supported.");
+        }
 
         // run the calibration
-        m_calibration->calibrate( m_cs );
+        cc->setFinder(f);
+        cc->calibrate( m_cs );
 
         // update the error plot
         updateErrorPlot();
@@ -347,38 +440,6 @@ void IrisCC::clear()
 }
 
 
-void IrisCC::check( bool complain )
-{
-    ui->update->setEnabled(false);
-
-    try
-    {
-        // are there any images
-        if( m_cs.poseCount() == 0 )
-            throw std::runtime_error("IrisCC: no poses.");
-
-        // check if there is any calibration
-        if( !m_calibration )
-            throw std::runtime_error("IrisCC: no Calibration selected.");
-
-        // is there a finder
-        if( !m_finder )
-            throw std::runtime_error("IrisCC: no Finder selected.");
-    }
-    catch( std::exception& e )
-    {
-        if( complain )
-            critical( e.what() );
-        else
-            warning( e.what() );
-
-        return;
-    }
-
-    ui->update->setEnabled(true);
-}
-
-
 QDomElement IrisCC::addDomElement( QDomDocument &doc,
                                 QDomNode &node,
                                 const QString &tag,
@@ -402,7 +463,6 @@ void IrisCC::on_configureFinder()
     try
     {
         // init stuff
-        QDialog dialog(this);
         ui->configure_finder->setEnabled(false);
 
         // choose what to do
@@ -412,64 +472,19 @@ void IrisCC::on_configureFinder()
             case 0:
                 break;
 
-            // chessboard
-            case 1 :
-            {
-                ui->configure_finder->setEnabled(true);
-                Ui::ChessboardFinder chessboardFinderUI;
-                chessboardFinderUI.setupUi( &dialog );
-                dialog.exec();
-                iris::ChessboardFinder* finder = new iris::ChessboardFinder();
-                finder->configure( static_cast<size_t>( chessboardFinderUI.columns->value() ),
-                                   static_cast<size_t>( chessboardFinderUI.rows->value() ),
-                                   0.001 * chessboardFinderUI.square_size->value() );
-                finder->setScale( chessboardFinderUI.scale->value() );
-                finder->setFastCheck( chessboardFinderUI.fastCheck->isChecked() );
-                finder->setAdaptiveThreshold( chessboardFinderUI.adaptiveThreshold->isChecked() );
-                finder->setNormalizeImage( chessboardFinderUI.normalizeImage->isChecked() );
-                finder->setSubpixelCorner( chessboardFinderUI.subpixel_corner->isChecked() );
-                m_finder = std::shared_ptr<iris::Finder>(finder);
-                break;
-            }
-
-            // uchiyama
+            case 1 : // chessboard
 #           ifdef UCHIYAMA_FOUND
-            case 2 :
-            {
-                ui->configure_finder->setEnabled(true);
-                Ui::UchiyamaFinder uchiyamaFinderUI;
-                uchiyamaFinderUI.setupUi( &dialog );
-                dialog.exec();
-                iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
-                finder->configure( uchiyamaFinderUI.points->toPlainText().toStdString() );
-                finder->setScale( uchiyamaFinderUI.scale->value() );
-                m_finder = std::shared_ptr<iris::Finder>(finder);
-                break;
-            }
+            case 2 : // uchiyama
 #           endif
-
-            // random feature descriptor
-            case 3 :
-            {
+            case 3 : // random feature descriptor
                 ui->configure_finder->setEnabled(true);
-                Ui::RandomFeatureFinder rffFinderUI;
-                rffFinderUI.setupUi( &dialog );
-                dialog.exec();
-                iris::RandomFeatureFinder* finder = new iris::RandomFeatureFinder();
-                finder->configure( rffFinderUI.points->toPlainText().toStdString() );
-                finder->setScale( rffFinderUI.scale->value() );
-                finder->setMaxRadiusRatio( rffFinderUI.max_radius_ratio->value() );
-                finder->setMinRadius( rffFinderUI.min_radius->value() );
-                m_finder = std::shared_ptr<iris::Finder>(finder);
+                m_finderDialogs[ ui->select_finder->currentIndex() ]->exec();
                 break;
-            }
 
             // not supported finder
             default:
                 throw std::runtime_error("IrisCC::on_configure_finder: Finder not supported.");
         }
-
-        check();
     }
     catch( std::exception &e )
     {
@@ -483,7 +498,6 @@ void IrisCC::on_configureCalibration()
     try
     {
         // init stuff
-        QDialog dialog(this);
         ui->configure_calibration->setEnabled(false);
 
         // choose what to do
@@ -493,46 +507,16 @@ void IrisCC::on_configureCalibration()
             case 0 :
                 break;
 
-            // OpenCV
-            case 1 :
-            {
+            case 1 : // OpenCV Single
+            case 2 : // OpenCV Stereo
                 ui->configure_calibration->setEnabled(true);
-                Ui::OpenCVSingleCalibration form;
-                form.setupUi( &dialog );
-                dialog.exec();
-                iris::OpenCVSingleCalibration* calib = new iris::OpenCVSingleCalibration();
-                calib->setFixPrincipalPoint( form.fixed_principal_point->isChecked() );
-                calib->setFixAspectRatio( form.fixed_aspect_ratio->isChecked() );
-                calib->setTangentialDistortion( form.tangential_distortion->isChecked() );
-                calib->setMinCorrespondences( static_cast<size_t>( form.minCorrespondences->value() ) );
-                m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
+                m_calibrationDialogs[ ui->select_finder->currentIndex() ]->exec();
                 break;
-            }
-
-            // OpenCV Stereo
-            case 2 :
-            {
-                ui->configure_calibration->setEnabled(true);
-                Ui::OpenCVStereoCalibration form;
-                form.setupUi( &dialog );
-                dialog.exec();
-                iris::OpenCVStereoCalibration* calib = new iris::OpenCVStereoCalibration();
-                calib->setFixPrincipalPoint( form.fixed_principal_point->isChecked() );
-                calib->setFixAspectRatio( form.fixed_aspect_ratio->isChecked() );
-                calib->setTangentialDistortion( form.tangential_distortion->isChecked() );
-                calib->setRelativeToPattern( form.relative_to_pattern->isChecked() );
-                calib->setSameFocalLength( form.same_focal_length->isChecked() );
-                calib->setMinCorrespondences( static_cast<size_t>( form.minCorrespondences->value() ) );
-                m_calibration = std::shared_ptr<iris::CameraCalibration>( calib );
-                break;
-            }
 
             // not supported finder
             default:
                 throw std::runtime_error("IrisCC::on_configureCalibration: Calibration not supported.");
         }
-
-        check();
     }
     catch( std::exception &e )
     {
@@ -587,8 +571,6 @@ void IrisCC::on_load()
 
         // tidy up progress bar
         progress.setValue(imagePaths.size());
-
-        check();
     }
     catch( std::exception &e )
     {
@@ -605,8 +587,6 @@ void IrisCC::on_clear()
                                                                  QMessageBox::Yes | QMessageBox::No );
     if( QMessageBox::Yes == response )
         clear();
-
-    check();
 }
 
 

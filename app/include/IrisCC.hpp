@@ -124,12 +124,6 @@ protected:
     // camera set
     iris::CameraSet_d m_cs;
 
-    // finder
-    std::shared_ptr<iris::Finder> m_finder;
-
-    // calibration
-    std::shared_ptr<iris::CameraCalibration> m_calibration;
-
     // images
     std::vector< size_t > m_poseIndices;
 };

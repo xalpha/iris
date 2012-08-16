@@ -36,6 +36,17 @@
 
 namespace Ui {
     class IrisCC;
+
+    // Finders
+    class ChessboardFinder;
+    class RandomFeatureFinder;
+#ifdef UCHIYAMA_FOUND
+    class UchiyamaFinder;
+#endif
+
+    // CameraCalibration
+    class OpenCVSingleCalibration;
+    class OpenCVStereoCalibration;
 }
 
 
@@ -48,6 +59,7 @@ public:
     ~IrisCC();
 
 protected:
+
     void update();
 
     void updateErrorPlot();
@@ -96,6 +108,15 @@ protected slots:
 protected:
     // ui's
     Ui::IrisCC *ui;
+    std::vector< std::shared_ptr<QDialog> > m_finderDialogs;
+    std::vector< std::shared_ptr<QDialog> > m_calibrationDialogs;
+    Ui::ChessboardFinder* ui_ChessboardFinder;
+    Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
+#ifdef UCHIYAMA_FOUND
+    Ui::UchiyamaFinder* ui_UchiyamaFinder;
+#endif
+    Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
+    Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
 
     // camera capture
     cv::VideoCapture m_videoCapture;

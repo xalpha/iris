@@ -55,7 +55,14 @@
 
 IrisCC::IrisCC(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::IrisCC)
+    ui(new Ui::IrisCC),
+    ui_ChessboardFinder( new Ui::ChessboardFinder ),
+#ifdef UCHIYAMA_FOUND
+    ui_UchiyamaFinder( new Ui::UchiyamaFinder ),
+#endif
+    ui_RandomFeatureFinder( new Ui::RandomFeatureFinder ),
+    ui_OpenCVSingleCalibration( new Ui::OpenCVSingleCalibration ),
+    ui_OpenCVStereoCalibration( new Ui::OpenCVStereoCalibration )
 {
     ui->setupUi(this);
 
@@ -78,6 +85,19 @@ IrisCC::IrisCC(QWidget *parent) :
     connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
     connect( ui->save, SIGNAL(clicked(bool)), this, SLOT(on_save(void)) );
 
+    // init finder dialogs
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );    ui_ChessboardFinder->setupUi( m_finderDialogs.end()->get() );
+#ifdef UCHIYAMA_FOUND
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );    ui_UchiyamaFinder->setupUi( m_finderDialogs.end()->get() );
+#endif
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>() );    ui_RandomFeatureFinder->setupUi( m_finderDialogs.end()->get() );
+
+    // init calibration dialogs
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>() );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.end()->get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>() );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.end()->get() );
+
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
     ui->plot_image->yAxis->setRange(0, 1);
@@ -98,6 +118,13 @@ IrisCC::IrisCC(QWidget *parent) :
 IrisCC::~IrisCC()
 {
     delete ui;
+    delete ui_ChessboardFinder;
+    delete ui_RandomFeatureFinder;
+#ifdef UCHIYAMA_FOUND
+    delete ui_UchiyamaFinder;
+#endif
+    delete ui_OpenCVSingleCalibration;
+    delete ui_OpenCVStereoCalibration;
 }
 
 

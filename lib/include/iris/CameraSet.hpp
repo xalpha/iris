@@ -57,6 +57,7 @@ public:
 
     // get a particular pose
     const Pose_d& pose( const size_t id ) const;
+    const Pose_d& pose( const std::string& name ) const;
 
     // number of poses over all cameras
     size_t poseCount();
@@ -172,6 +173,19 @@ inline const Pose_d& CameraSet<T>::pose( const size_t id ) const
 
     // nothing found
     throw std::runtime_error("CameraSet::pose: pose not found.");
+}
+
+
+template <typename T>
+inline const Pose_d& CameraSet<T>::pose( const std::string& name ) const
+{
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+            if( camIt->second.poses[p].name.compare( name ) == 0 )
+                return camIt->second.poses[p];
+
+    // nothing found
+    throw std::runtime_error("CameraSet::pose: pose \"" + name + "\" not found.");
 }
 
 

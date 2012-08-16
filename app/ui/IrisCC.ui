@@ -357,7 +357,7 @@
          <item>
           <widget class="QPushButton" name="update">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="styleSheet">
             <string notr="true"/>

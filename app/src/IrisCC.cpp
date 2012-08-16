@@ -87,16 +87,16 @@ IrisCC::IrisCC(QWidget *parent) :
 
     // init finder dialogs
     m_finderDialogs.push_back( std::shared_ptr<QDialog>() );
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_ChessboardFinder->setupUi( m_finderDialogs.end()->get() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_ChessboardFinder->setupUi( m_finderDialogs.back().get() );
 #ifdef UCHIYAMA_FOUND
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_UchiyamaFinder->setupUi( m_finderDialogs.end()->get() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_UchiyamaFinder->setupUi( m_finderDialogs.back().get() );
 #endif
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_RandomFeatureFinder->setupUi( m_finderDialogs.end()->get() );
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_RandomFeatureFinder->setupUi( m_finderDialogs.back().get() );
 
     // init calibration dialogs
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
-    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.end()->get() );
-    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.end()->get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.back().get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.back().get() );
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -237,7 +237,10 @@ void IrisCC::update()
         updateErrorPlot();
 
         // update current view
-        updateImage( ui->image_list_detected->currentRow() );
+        if( ui->image_list_detected->currentRow() < 0 )
+            ui->image_list_detected->setCurrentRow( 0 );
+        else
+            updateImage( ui->image_list_detected->currentRow() );
     }
     catch( std::exception &e )
     {
@@ -315,10 +318,15 @@ void IrisCC::updateImage( int idx )
         ui->plot_image->clearGraphs();
         ui->plot_image->clearPlottables();
         ui->plot_image->setAxisBackground( QPixmap() );
+        ui->plot_image->replot();
 
         // check if there are any images
         if( m_cs.poseCount() == 0 )
             return;
+
+        // check which index this is
+        if( idx < 0 || idx >= m_cs.poseCount() )
+            idx = 0;
 
         // get the image
         const iris::Pose_d pose = m_cs.pose( m_poseIndices[idx] );
@@ -510,7 +518,7 @@ void IrisCC::on_configureCalibration()
             case 1 : // OpenCV Single
             case 2 : // OpenCV Stereo
                 ui->configure_calibration->setEnabled(true);
-                m_calibrationDialogs[ ui->select_finder->currentIndex() ]->exec();
+                m_calibrationDialogs[ ui->select_calibration->currentIndex() ]->exec();
                 break;
 
             // not supported finder

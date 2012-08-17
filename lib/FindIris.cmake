@@ -17,7 +17,7 @@ find_path( Iris_INCLUDE_DIR
         /usr/include
         /usr/local/include
         /opt/include
-        /opt/local/install
+        /opt/local/include
     PATH_SUFFIXES
         iris )
         

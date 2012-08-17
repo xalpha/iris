@@ -149,10 +149,10 @@ void IrisCC::update()
             {
                 ui->configure_finder->setEnabled(true);
                 iris::ChessboardFinder* finder = new iris::ChessboardFinder();
+                finder->setScale( ui_ChessboardFinder->scale->value() );
                 finder->configure( static_cast<size_t>( ui_ChessboardFinder->columns->value() ),
                                    static_cast<size_t>( ui_ChessboardFinder->rows->value() ),
                                    0.001 * ui_ChessboardFinder->square_size->value() );
-                finder->setScale( ui_ChessboardFinder->scale->value() );
                 finder->setFastCheck( ui_ChessboardFinder->fastCheck->isChecked() );
                 finder->setAdaptiveThreshold( ui_ChessboardFinder->adaptiveThreshold->isChecked() );
                 finder->setNormalizeImage( ui_ChessboardFinder->normalizeImage->isChecked() );
@@ -166,8 +166,8 @@ void IrisCC::update()
             case 2 :
             {
                 iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
-                finder->configure( ui_UchiyamaFinder->points->toPlainText().toStdString() );
                 finder->setScale( ui_UchiyamaFinder->scale->value() );
+                finder->configure( ui_UchiyamaFinder->points->toPlainText().toStdString() );
                 f = std::shared_ptr<iris::Finder>(finder);
                 break;
             }
@@ -177,8 +177,8 @@ void IrisCC::update()
             case 3 :
             {
                 iris::RandomFeatureFinder* finder = new iris::RandomFeatureFinder();
-                finder->configure( ui_RandomFeatureFinder->points->toPlainText().toStdString() );
                 finder->setScale( ui_RandomFeatureFinder->scale->value() );
+                finder->configure( ui_RandomFeatureFinder->points->toPlainText().toStdString() );
                 finder->setMaxRadiusRatio( ui_RandomFeatureFinder->max_radius_ratio->value() );
                 finder->setMinRadius( ui_RandomFeatureFinder->min_radius->value() );
                 f = std::shared_ptr<iris::Finder>(finder);

@@ -23,6 +23,9 @@
 cmake_minimum_required(VERSION 2.8)
 project( IrisCC CXX )
 
+# add module paths
+list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share )
+
 # find openGL
 find_package( OpenGL REQUIRED )
 
@@ -63,11 +66,9 @@ set( IrisCC_Target irisCC )
 
 # set the header files of QObject derived classes
 set( IrisCC_INC
-    include/IrisCC.hpp
-    include/WidgetQt.hpp )
+    include/IrisCC.hpp )
 set( IrisCC_SRC
     src/IrisCC.cpp
-    src/WidgetQt.cpp
     src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui

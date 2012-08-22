@@ -41,6 +41,15 @@ if( WIN32 )
 endif()
 find_package( OpenCV REQUIRED )
 
+# find nox
+find_package( Nox QUIET )
+if( NOT ${Nox_FOUND} )
+    message(STATUS "Nox not found, pulling from server...")
+    include(ExternalProject)
+    ExternalProject_Add( Nox
+        GIT_REPOSITORY "https://github.com/xalpha/nox.git" )
+endif()
+
 # some more qt stuff
 include(${QT_USE_FILE})
 add_definitions(${QT_DEFINITIONS})

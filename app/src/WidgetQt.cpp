@@ -21,6 +21,7 @@
 
 #include <stdexcept>
 
+#include <GL/glew.h>
 
 #include <QApplication>
 #include <QGLFormat>
@@ -44,6 +45,7 @@ WidgetQt::~WidgetQt()
 void WidgetQt::initializeGL()
 {
     // set format
+    makeCurrent();
     QGLFormat format;
     format.setDepth( true );
     format.setAlpha( true );
@@ -52,10 +54,10 @@ void WidgetQt::initializeGL()
     QGLFormat::setDefaultFormat( format );
 
     // configure stuff
-    makeCurrent();
-    GLenum err = glewInit();
-    if (GLEW_OK != err)
-        throw std::runtime_error( "WidgetQt::initializeGL: could not initialize GLEW." );
+//    makeCurrent();
+//    GLenum err = glewInit();
+//    if (GLEW_OK != err)
+//        throw std::runtime_error( "WidgetQt::initializeGL: could not initialize GLEW." );
 
     // initialize widget
     makeCurrent();
@@ -108,7 +110,7 @@ void WidgetQt::resizeGL ( int width, int height )
 }
 
 
-const WidgetGL* WidgetQt::widget() const
+const WidgetQt::WidgetGL* WidgetQt::widget() const
 {
     return m_widget;
 }
@@ -121,9 +123,10 @@ void WidgetQt::setWidget( WidgetGL* widget )
     // get the color of the system window
     QColor baseCol = QApplication::palette().base().color();
 
-    m_widget->m_baseColor[0] = static_cast<float>(baseCol.redF());
-    m_widget->m_baseColor[1] = static_cast<float>(baseCol.greenF());
-    m_widget->m_baseColor[2] = static_cast<float>(baseCol.blueF());
+    // set col
+    m_widget->setBackgroundColor( static_cast<double>(baseCol.redF()),
+                                  static_cast<double>(baseCol.greenF()),
+                                  static_cast<double>(baseCol.blueF()) );
 }
 
 

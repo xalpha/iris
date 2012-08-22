@@ -32,7 +32,6 @@
 #include <QProgressBar>
 #include <QStringList>
 #include <QGraphicsPixmapItem>
-#include <QDomDocument>
 
 #include "ui_IrisCC.h"
 #include "ui_ChessboardFinder.h"
@@ -97,6 +96,9 @@ IrisCC::IrisCC(QWidget *parent) :
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.back().get() );
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.back().get() );
+
+    // init opengl
+
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -445,24 +447,6 @@ void IrisCC::clear()
     // update charts
     updateImage(0);
     updateErrorPlot();
-}
-
-
-QDomElement IrisCC::addDomElement( QDomDocument &doc,
-                                QDomNode &node,
-                                const QString &tag,
-                                const QString &value )
-{
-    QDomElement el = doc.createElement( tag );
-    node.appendChild( el );
-
-    if( !value.isNull() )
-    {
-        QDomText txt = doc.createTextNode( value );
-        el.appendChild( txt );
-    }
-
-    return el;
 }
 
 

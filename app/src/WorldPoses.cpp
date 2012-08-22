@@ -19,15 +19,25 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <QtGui/QApplication>
-#include <IrisCC.hpp>
+#include <stdexcept>
+
+#include <QGLFormat>
+#include <QMouseEvent>
+
+#include <WorldPoses.hpp>
 
 
-int main(int argc, char *argv[])
+WorldPoses::WorldPoses( QWidget *parent) : WidgetQt( parent )
 {
-    QApplication a(argc, argv);
-    IrisCC w;
-    w.show();
 
-    return a.exec();
 }
+
+
+WorldPoses::~WorldPoses()
+{
+    // empty destructor
+}
+
+
+
+

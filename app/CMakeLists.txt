@@ -44,14 +44,6 @@ if( WIN32 )
 endif()
 find_package( OpenCV REQUIRED )
 
-# find nox
-find_package( Nox QUIET )
-if( NOT ${Nox_FOUND} )
-    message(STATUS "Nox not found, pulling from server...")
-    include(ExternalProject)
-    ExternalProject_Add( Nox
-        GIT_REPOSITORY "https://github.com/xalpha/nox.git" )
-endif()
 
 # some more qt stuff
 include(${QT_USE_FILE})
@@ -66,9 +58,13 @@ set( IrisCC_Target irisCC )
 
 # set the header files of QObject derived classes
 set( IrisCC_INC
-    include/IrisCC.hpp )
+    include/IrisCC.hpp
+    include/WidgetQt.hpp
+    include/WorldPoses.hpp )
 set( IrisCC_SRC
     src/IrisCC.cpp
+    src/WidgetQt.cpp
+    src/WorldPoses.cpp
     src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
@@ -88,7 +84,6 @@ set( IrisCC_INCLUDE_DIRS
     include
     extern/gl2ps
     extern/qcustomplot
-    extern/qwtplot3d/include
     ${Iris_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR} )

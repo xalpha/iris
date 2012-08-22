@@ -53,8 +53,13 @@ set( Q_CUSTOM_PLOT_SRC extern/qcustomplot/qcustomplot.cpp )
 set( IrisCC_Target irisCC )
 
 # set the header files of QObject derived classes
-set( IrisCC_INC include/IrisCC.hpp )
-set( IrisCC_SRC src/IrisCC.cpp src/main.cpp )
+set( IrisCC_INC
+    include/IrisCC.hpp
+    include/WidgetQt.hpp )
+set( IrisCC_SRC
+    src/IrisCC.cpp
+    src/WidgetQt.cpp
+    src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
     ui/IrisCC.ui

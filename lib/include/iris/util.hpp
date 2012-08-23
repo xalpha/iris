@@ -214,7 +214,7 @@ void cv2eigen( const cv::Mat& rot, const cv::Mat& transl, Eigen::Matrix<T,Rows,C
         Eigen::Matrix<T,3,1> translation;
         cv::cv2eigen( transl, translation );
 
-        // convert to a blas transformation
+        // convert to a Eigen transformation
         trans.translate( translation );
         trans.rotate( rotation );
     }

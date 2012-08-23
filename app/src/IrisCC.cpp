@@ -99,6 +99,12 @@ IrisCC::IrisCC(QWidget *parent) :
 
     // init opengl
     ui->plot_poses->setWidget( &m_worldPoses );
+    Eigen::Matrix4d mv;
+    mv << 1, 0, 0, 0,
+          0, 0, -1,0,
+          0, 1, 0, 0,
+          0, 0, 0, 1;
+    m_worldPoses.setMV(mv);
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -237,6 +243,7 @@ void IrisCC::update()
 
         // update the error plot
         updateErrorPlot();
+        updatePosesPlot();
 
         // update current view
         if( ui->image_list_detected->currentRow() < 0 )
@@ -400,6 +407,38 @@ void IrisCC::updateImage( int idx )
 }
 
 
+void IrisCC::updatePosesPlot()
+{
+    // init stuff
+    std::vector<Eigen::Matrix4d> RTs;
+    std::vector<Eigen::Vector3d> points3D;
+    m_worldPoses.clear();
+
+    // run over all camera poses
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+            if( !camIt->second.poses[p].rejected )
+            {
+                Eigen::Affine3d trans(camIt->second.poses[p].transformation);
+                trans = trans.inverse();
+                Eigen::Matrix4d rt = trans.matrix();
+//                rt.col(1) *= -1;
+//                rt.col(2) *= -1;
+                RTs.push_back( rt );
+
+                for( size_t k=0; k<camIt->second.poses[p].points3D.size(); k++ )
+                    points3D.push_back( camIt->second.poses[p].points3D[k] );
+            }
+
+    // update widget
+    if( RTs.size() > 0 )
+    {
+        m_worldPoses( RTs, nox::plot<double>::Black | nox::plot<double>::CS );
+        m_worldPoses( points3D, nox::plot<double>::Red );
+    }
+}
+
+
 void IrisCC::addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name )
 {
     size_t id = m_cs.add( image, name.toStdString(), static_cast<size_t>( ui->cameraID->value() ) );
@@ -447,6 +486,7 @@ void IrisCC::clear()
     // update charts
     updateImage(0);
     updateErrorPlot();
+    updatePosesPlot();
 }
 
 

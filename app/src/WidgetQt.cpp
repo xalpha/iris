@@ -56,10 +56,10 @@ void WidgetQt::initializeGL()
     QGLFormat::setDefaultFormat( format );
 
     // configure stuff
-//    makeCurrent();
-//    GLenum err = glewInit();
-//    if (GLEW_OK != err)
-//        throw std::runtime_error( "WidgetQt::initializeGL: could not initialize GLEW." );
+    makeCurrent();
+    GLenum err = glewInit();
+    if (GLEW_OK != err)
+        throw std::runtime_error( "WidgetQt::initializeGL: could not initialize GLEW." );
 
     // initialize widget
     makeCurrent();

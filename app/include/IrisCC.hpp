@@ -65,6 +65,7 @@ protected:
 
     void updateErrorPlot();
     void updateImage( int idx );
+    void updatePosesPlot();
 
     void addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name );
 

@@ -305,7 +305,7 @@
            </item>
            <item>
             <property name="text">
-             <string>Random Features</string>
+             <string>Random Features (Experimental)</string>
             </property>
            </item>
           </widget>

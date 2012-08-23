@@ -24,10 +24,7 @@ cmake_minimum_required(VERSION 2.8)
 project( IrisCC CXX )
 
 # add module paths
-list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share )
-
-# find openGL
-find_package( OpenGL REQUIRED )
+list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share ${CMAKE_CURRENT_LIST_DIR}/cmake )
 
 # find Qt
 if( WIN32 )
@@ -74,6 +71,15 @@ set( IrisCC_QT_UI
     ui/RandomFeatureFinder.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
+# find NOX
+find_package( Nox QUIET )
+if( NOT ${Nox_FOUND} )
+    message(STATUS "Nox not found, pulling from server...")
+    include(ExternalProject)
+    ExternalProject_Add(Nox
+        GIT_REPOSITORY "https://github.com/xalpha/nox.git" )
+endif()
+
 # check if Uchiyama was found
 if( Uchiyama_FOUND )
     list( APPEND IrisCC_QT_UI ui/UchiyamaFinder.ui )
@@ -85,12 +91,12 @@ set( IrisCC_INCLUDE_DIRS
     extern/gl2ps
     extern/qcustomplot
     ${Iris_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR}
+    ${Nox_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR} )
 
 # set link libraries
 set( IrisCC_LINK_LIBS
-    ${OPENGL_LIBRARIES}
+    ${Nox_LIBRARIES}
     ${QT_LIBRARIES}
     ${Iris_LIBRARY} )
 

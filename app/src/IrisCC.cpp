@@ -98,7 +98,7 @@ IrisCC::IrisCC(QWidget *parent) :
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.back().get() );
 
     // init opengl
-
+    ui->plot_poses->setWidget( &m_worldPoses );
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);

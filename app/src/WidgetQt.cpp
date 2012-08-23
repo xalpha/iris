@@ -19,6 +19,7 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <stdexcept>
 
 #include <GL/glew.h>
@@ -34,6 +35,7 @@ WidgetQt::WidgetQt( QWidget *parent) :
     QGLWidget( parent ),
     m_widget(0)
 {
+    //std::cout << context()->isValid() << std::endl;
 }
 
 WidgetQt::~WidgetQt()

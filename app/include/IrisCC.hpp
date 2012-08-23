@@ -28,9 +28,10 @@
 #include <opencv/highgui.h>
 
 #include <QMainWindow>
-#include <QGLContext>
 
 #include <iris/CameraCalibration.hpp>
+
+#include <nox/plot.hpp>
 
 
 
@@ -105,6 +106,7 @@ protected:
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
 
     // opengl
+    nox::plot<double> m_worldPoses;
 
     // camera capture
     cv::VideoCapture m_videoCapture;

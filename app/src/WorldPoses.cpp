@@ -21,9 +21,6 @@
 
 #include <stdexcept>
 
-#include <QGLFormat>
-#include <QMouseEvent>
-
 #include <WorldPoses.hpp>
 
 

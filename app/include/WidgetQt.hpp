@@ -21,16 +21,20 @@
 
 #pragma once
 
+#include <nox/widget.hpp>
+
 #include <QGLWidget>
 
-#include <nox/widget.hpp>
+
 
 
 class WidgetQt : public QGLWidget
 {
     Q_OBJECT
 
+public:
     typedef nox::widget<double> WidgetGL;
+
 public:
 
     explicit WidgetQt( QWidget *parent = 0);

@@ -23,8 +23,8 @@
 cmake_minimum_required(VERSION 2.8)
 project( IrisCC CXX )
 
-# find openGL
-find_package( OpenGL REQUIRED )
+# add module paths
+list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share ${CMAKE_CURRENT_LIST_DIR}/cmake )
 
 # find Qt
 if( WIN32 )
@@ -41,6 +41,7 @@ if( WIN32 )
 endif()
 find_package( OpenCV REQUIRED )
 
+
 # some more qt stuff
 include(${QT_USE_FILE})
 add_definitions(${QT_DEFINITIONS})
@@ -53,8 +54,15 @@ set( Q_CUSTOM_PLOT_SRC extern/qcustomplot/qcustomplot.cpp )
 set( IrisCC_Target irisCC )
 
 # set the header files of QObject derived classes
-set( IrisCC_INC include/IrisCC.hpp )
-set( IrisCC_SRC src/IrisCC.cpp src/main.cpp )
+set( IrisCC_INC
+    include/IrisCC.hpp
+    include/WidgetQt.hpp
+    include/WorldPoses.hpp )
+set( IrisCC_SRC
+    src/IrisCC.cpp
+    src/WidgetQt.cpp
+    src/WorldPoses.cpp
+    src/main.cpp )
 set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
@@ -62,6 +70,15 @@ set( IrisCC_QT_UI
     ui/OpenCVStereoCalibration.ui
     ui/RandomFeatureFinder.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
+
+# find NOX
+find_package( Nox QUIET )
+if( NOT ${Nox_FOUND} )
+    message(STATUS "Nox not found, pulling from server...")
+    include(ExternalProject)
+    ExternalProject_Add(Nox
+        GIT_REPOSITORY "https://github.com/xalpha/nox.git" )
+endif()
 
 # check if Uchiyama was found
 if( Uchiyama_FOUND )
@@ -73,14 +90,13 @@ set( IrisCC_INCLUDE_DIRS
     include
     extern/gl2ps
     extern/qcustomplot
-    extern/qwtplot3d/include
     ${Iris_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR}
+    ${Nox_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR} )
 
 # set link libraries
 set( IrisCC_LINK_LIBS
-    ${OPENGL_LIBRARIES}
+    ${Nox_LIBRARIES}
     ${QT_LIBRARIES}
     ${Iris_LIBRARY} )
 

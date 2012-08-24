@@ -61,6 +61,9 @@ protected:
     std::string m_patternDescriptor;
     std::stringstream m_patternDescriptorStream;
     size_t m_minPoints;
+    double m_patternWidth;
+    double m_patternHeight;
+    size_t m_patternPointCount;
     bool m_adaptiveExtract;
 
 

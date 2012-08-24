@@ -33,6 +33,7 @@
  *                  dot detection into the iris library
  */
 
+#include <algorithm>
 #include <iostream>
 
 #include <iris/UchiyamaFinder.hpp>
@@ -62,6 +63,13 @@ void UchiyamaFinder::configure( const std::string& patternDescriptor )
     m_patternDescriptor = patternDescriptor;
     m_patternDescriptorStream.clear();
     m_patternDescriptorStream << m_patternDescriptor;
+
+    // get properties of pattern
+    m_patternDescriptorStream.seekg( 0, std::ios::beg );
+    m_patternDescriptorStream >> m_patternWidth;
+    m_patternDescriptorStream >> m_patternHeight;
+    m_patternDescriptorStream >> m_patternPointCount;
+
     m_configured = true;
 }
 
@@ -95,7 +103,7 @@ inline void cimg2myimage( const cimg_library::CImg<T>& src, MyImage& dst )
 
 
 template <typename T>
-inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double fx, double fy )
+inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double scale, double patternHeight, double fx, double fy )
 {
     // init stuff
     pose.points2D.clear();
@@ -109,8 +117,12 @@ inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double fx, double fy 
     llah.SaveCorrespondingPoints( stream );
     stream.seekg( 0, std::ios::beg );
 
+    // count lines
+    std::string text = stream.str();
+    size_t lineCount = std::count( text.begin(), text.end(), '\n' );
+
     // now parse them
-    while( !stream.eof() )
+    for( size_t i=0; i<lineCount && !stream.eof(); i++ )
     {
         // point index
         stream >> idx;
@@ -130,9 +142,9 @@ inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double fx, double fy 
 
         // update pose
         pose.pointIndices.push_back( idx );
-        pose.points3D.push_back( Eigen::Vector3d( 0.1*static_cast<double>(p3dx),
-                                                  0.1*static_cast<double>(p3dy),
-                                                  0.1*static_cast<double>(p3dz) ) );
+        pose.points3D.push_back( Eigen::Vector3d( scale*static_cast<double>(p3dx),
+                                                  scale*static_cast<double>(patternHeight-p3dy),
+                                                  scale*static_cast<double>(p3dz) ) );
         pose.points2D.push_back( Eigen::Vector2d( fx*p2dx, fy*p2dy ) );
     }
 }
@@ -153,7 +165,7 @@ bool UchiyamaFinder::find( Pose_d& pose )
     // add the pattern descriptor
     // TODO: should be in the configure function
     m_patternDescriptorStream.seekg( 0, std::ios::beg );
-    llah.AddPaper( m_patternDescriptorStream, m_scale );
+    llah.AddPaper( m_patternDescriptorStream );
 
     // comvert image to myimage (cimg -> cv::Mat -> IplImage -> MyImage)
     MyImage imageMy;
@@ -175,7 +187,7 @@ bool UchiyamaFinder::find( Pose_d& pose )
     // if succesfull store extracted points
     if( found )
     {
-        getCorrespondences( llah, pose,
+        getCorrespondences( llah, pose, m_scale, m_patternHeight,
                             static_cast<double>(pose.image->width())/static_cast<double>(image.width()),
                             static_cast<double>(pose.image->height())/static_cast<double>(image.height()));
     }

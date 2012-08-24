@@ -19,15 +19,42 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <QtGui/QApplication>
-#include <IrisCC.hpp>
+#pragma once
+
+#include <nox/widget.hpp>
+
+#include <QGLWidget>
 
 
-int main(int argc, char *argv[])
+
+
+class WidgetQt : public QGLWidget
 {
-    QApplication a(argc, argv);
-    IrisCC w;
-    w.show();
+    Q_OBJECT
 
-    return a.exec();
-}
+public:
+    typedef nox::widget<double> WidgetGL;
+
+public:
+
+    explicit WidgetQt( QWidget *parent = 0);
+    virtual ~WidgetQt();
+
+    virtual void initializeGL();
+    virtual void paintGL();
+
+    virtual void mousePressEvent(QMouseEvent *e);
+    virtual void mouseMoveEvent(QMouseEvent *e);
+
+    virtual void resizeGL ( int width, int height );
+
+    const WidgetGL* widget() const;
+    void setWidget( WidgetGL* widget );
+
+protected:
+    int convertButton( Qt::MouseButton qtButton );
+
+protected:
+    WidgetGL* m_widget;
+
+};

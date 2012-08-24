@@ -19,15 +19,22 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <QtGui/QApplication>
-#include <IrisCC.hpp>
+#pragma once
+
+#include <WidgetQt.hpp>
 
 
-int main(int argc, char *argv[])
+class WorldPoses : public WidgetQt
 {
-    QApplication a(argc, argv);
-    IrisCC w;
-    w.show();
+    Q_OBJECT
 
-    return a.exec();
-}
+public:
+
+    explicit WorldPoses( QWidget *parent = 0);
+    virtual ~WorldPoses();
+
+
+protected:
+
+
+};

@@ -63,6 +63,13 @@ void UchiyamaFinder::configure( const std::string& patternDescriptor )
     m_patternDescriptor = patternDescriptor;
     m_patternDescriptorStream.clear();
     m_patternDescriptorStream << m_patternDescriptor;
+
+    // get properties of pattern
+    m_patternDescriptorStream.seekg( 0, std::ios::beg );
+    m_patternDescriptorStream >> m_patternWidth;
+    m_patternDescriptorStream >> m_patternHeight;
+    m_patternDescriptorStream >> m_patternPointCount;
+
     m_configured = true;
 }
 
@@ -96,7 +103,7 @@ inline void cimg2myimage( const cimg_library::CImg<T>& src, MyImage& dst )
 
 
 template <typename T>
-inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double scale, double fx, double fy )
+inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double scale, double patternHeight, double fx, double fy )
 {
     // init stuff
     pose.points2D.clear();
@@ -136,7 +143,7 @@ inline void getCorrespondences( LLAH& llah, Pose<T> &pose, double scale, double 
         // update pose
         pose.pointIndices.push_back( idx );
         pose.points3D.push_back( Eigen::Vector3d( scale*static_cast<double>(p3dx),
-                                                  scale*static_cast<double>(p3dy),
+                                                  scale*static_cast<double>(patternHeight-p3dy),
                                                   scale*static_cast<double>(p3dz) ) );
         pose.points2D.push_back( Eigen::Vector2d( fx*p2dx, fy*p2dy ) );
     }
@@ -180,7 +187,7 @@ bool UchiyamaFinder::find( Pose_d& pose )
     // if succesfull store extracted points
     if( found )
     {
-        getCorrespondences( llah, pose, m_scale,
+        getCorrespondences( llah, pose, m_scale, m_patternHeight,
                             static_cast<double>(pose.image->width())/static_cast<double>(image.width()),
                             static_cast<double>(pose.image->height())/static_cast<double>(image.height()));
     }

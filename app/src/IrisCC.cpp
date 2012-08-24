@@ -101,8 +101,8 @@ IrisCC::IrisCC(QWidget *parent) :
     ui->plot_poses->setWidget( &m_worldPoses );
     Eigen::Matrix4d mv;
     mv << 1, 0, 0, 0,
-          0, 0, -1,0,
-          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, -1,0, 0,
           0, 0, 0, 1;
     m_worldPoses.setMV(mv);
 

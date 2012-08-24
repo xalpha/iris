@@ -422,8 +422,6 @@ void IrisCC::updatePosesPlot()
                 Eigen::Affine3d trans(camIt->second.poses[p].transformation);
                 trans = trans.inverse();
                 Eigen::Matrix4d rt = trans.matrix();
-//                rt.col(1) *= -1;
-//                rt.col(2) *= -1;
                 RTs.push_back( rt );
 
                 for( size_t k=0; k<camIt->second.poses[p].points3D.size(); k++ )

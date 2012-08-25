@@ -80,7 +80,7 @@ IrisCC::IrisCC(QWidget *parent) :
 
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
-    connect( ui->image_list_detected, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
+    connect( ui->image_list, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
     connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
     connect( ui->save, SIGNAL(clicked(bool)), this, SLOT(on_save(void)) );
 
@@ -244,16 +244,52 @@ void IrisCC::update()
         // update the error plot
         updateErrorPlot();
         updatePosesPlot();
-
-        // update current view
-        if( ui->image_list_detected->currentRow() < 0 )
-            ui->image_list_detected->setCurrentRow( 0 );
-        else
-            updateImage( ui->image_list_detected->currentRow() );
+        updateList();
+        updateImage( ui->image_list->currentRow() );
     }
     catch( std::exception &e )
     {
         critical( e.what() );
+    }
+}
+
+
+void IrisCC::updateList()
+{
+    // init stuff
+    int currentRow =  ui->image_list->currentRow();
+    ui->image_list->clear();
+    m_poseIndices.clear();
+
+    // run over all camera poses
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+    {
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+        {
+            ui->image_list->addItem( QString( camIt->second.poses[p].name.c_str() ) );
+            m_poseIndices.push_back( camIt->second.poses[p].id );
+
+            if( camIt->second.poses[p].rejected )
+                ui->image_list->item( ui->image_list->count() -1 )->setBackgroundColor( QColor( 255, 128, 128 ) );
+        }
+    }
+
+    // set the current row
+    if( currentRow < 0 )
+    {
+        if( ui->image_list->count() > 0 )
+            ui->image_list->setCurrentRow( 0 );
+        else
+            ui->image_list->setCurrentRow( currentRow );
+    }
+    else
+    {
+        if( ui->image_list->count() > 0 && currentRow < ui->image_list->count() )
+            ui->image_list->setCurrentRow( currentRow );
+        else if( ui->image_list->count() > 0 )
+            ui->image_list->setCurrentRow( 0 );
+        else
+            ui->image_list->setCurrentRow( -1 );
     }
 }
 
@@ -437,16 +473,6 @@ void IrisCC::updatePosesPlot()
 }
 
 
-void IrisCC::addImage( std::shared_ptr< cimg_library::CImg<uint8_t> > image, const QString& name )
-{
-    size_t id = m_cs.add( image, name.toStdString(), static_cast<size_t>( ui->cameraID->value() ) );
-    m_poseIndices.push_back( id );
-
-    // update list
-    ui->image_list_detected->addItem( name );
-}
-
-
 void IrisCC::critical( const std::string& message )
 {
     ui->statusBar->showMessage( QString( message.c_str() ), 5000 );
@@ -473,7 +499,7 @@ void IrisCC::clear()
     ui->plot_error->clearGraphs();
 
     // cleanup the lists
-    ui->image_list_detected->clear();
+    ui->image_list->clear();
 
     // clear images
     m_poseIndices.clear();
@@ -593,7 +619,9 @@ void IrisCC::on_load()
             }
 
             // add image
-            addImage( image, QFileInfo( imagePaths[i] ).fileName() );
+            m_cs.add( image,
+                      QFileInfo( imagePaths[i] ).fileName().toStdString(),
+                      static_cast<size_t>( ui->cameraID->value() ) );
 
             // update progress
             progress.setValue(i);
@@ -601,6 +629,9 @@ void IrisCC::on_load()
 
         // tidy up progress bar
         progress.setValue(imagePaths.size());
+
+        // update the image list
+        updateList();
     }
     catch( std::exception &e )
     {
@@ -708,7 +739,10 @@ void IrisCC::on_capture()
         std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
         iris::cv2cimg<uint8_t,3>( imageCV, *image );
 
-        addImage( image, "frame" );
+        // assemble name
+        std::stringstream ss;
+        ss << "frame_" << m_cs.poseCount();
+        m_cs.add( image, ss.str() );
     }
     else
         warning("IrisCC::on_capture: camera not open.");

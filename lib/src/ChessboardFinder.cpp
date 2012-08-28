@@ -173,6 +173,7 @@ bool ChessboardFinder::find( Pose_d& pose )
         pose.detected2D = pose.points2D;
         pose.points3D = m_points3D;
         pose.pointIndices = m_indices;
+        pose.pointsMax = m_indices.size();
     }
 
     // return

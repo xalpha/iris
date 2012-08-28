@@ -402,35 +402,42 @@ void IrisCC::updateImage( int idx )
             const iris::Pose_d& pose = m_cs.pose( m_poseIndices[idx] );
 
             // copy the data
-            QVector<double> x( pose.points2D.size() );
-            QVector<double> y( pose.points2D.size() );
-            QVector<double> px( pose.points2D.size() );
-            QVector<double> py( pose.points2D.size() );
             double height = static_cast<double>(imageQt.height());
             for( size_t i=0; i<pose.points2D.size(); i++ )
             {
-                x[i] = pose.points2D[i](0);
-                y[i] = height - pose.points2D[i](1);
+                // get the color hue
+                double hue = static_cast<double>(3*pose.pointIndices[i])/static_cast<double>(4*pose.pointsMax);
 
-                px[i] = pose.projected2D[i](0);
-                py[i] = height - pose.projected2D[i](1);
+                // plot the background of detected points
+                QCPGraph* detectedBg = ui->plot_image->addGraph();
+                detectedBg->addData( pose.points2D[i](0), height - pose.points2D[i](1) );
+                QColor detectedBgCol;
+                detectedBgCol.setHslF( hue, 0.8, 0.8 );
+                detectedBg->setPen( QPen( QBrush( detectedBgCol ), 3 ) );
+                detectedBg->setLineStyle(QCPGraph::lsNone);
+                detectedBg->setScatterStyle(QCPGraph::ssPlus);
+                detectedBg->setScatterSize(12);
+
+                // plot the detected points
+                QCPGraph* detected = ui->plot_image->addGraph();
+                detected->addData( pose.points2D[i](0), height - pose.points2D[i](1) );
+                QColor detectedCol;
+                detectedCol.setHslF( hue, 0.8, 0.3 );
+                detected->setPen( QPen( QBrush( detectedCol ), 1 ) );
+                detected->setLineStyle(QCPGraph::lsNone);
+                detected->setScatterStyle(QCPGraph::ssPlus);
+                detected->setScatterSize(12);
+
+                // plot the reprojected points
+                QCPGraph* projected = ui->plot_image->addGraph();
+                projected->addData(pose.projected2D[i](0), height - pose.projected2D[i](1));
+                QColor projectedCol;
+                projectedCol.setHslF( hue, 0.8, 0.6 );
+                projected->setPen( QPen( QBrush( projectedCol ), 1.5 ) );
+                projected->setLineStyle(QCPGraph::lsNone);
+                projected->setScatterStyle(QCPGraph::ssCircle);
+                projected->setScatterSize(8);
             }
-
-            // plot the detected points
-            QCPGraph* detected = ui->plot_image->addGraph();
-            detected->setData(x, y);
-            detected->setPen( QPen( QBrush( QColor( Qt::green ) ), 2 ) );
-            detected->setLineStyle(QCPGraph::lsNone);
-            detected->setScatterStyle(QCPGraph::ssPlusCircle);
-            detected->setScatterSize(12);
-
-            // plot the detected points
-            QCPGraph* projected = ui->plot_image->addGraph();
-            projected->setData(px, py);
-            projected->setPen( QPen( QBrush( QColor( Qt::red ) ), 2 ) );
-            projected->setLineStyle(QCPGraph::lsNone);
-            projected->setScatterStyle(QCPGraph::ssPlus);
-            projected->setScatterSize(10);
         }
 
         // redraw
@@ -448,6 +455,7 @@ void IrisCC::updatePosesPlot()
     // init stuff
     std::vector<Eigen::Matrix4d> RTs;
     std::vector<Eigen::Vector3d> points3D;
+    std::vector<Eigen::Vector4d> colors;
     m_worldPoses.clear();
 
     // run over all camera poses
@@ -455,20 +463,30 @@ void IrisCC::updatePosesPlot()
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
             if( !camIt->second.poses[p].rejected )
             {
+                // get the transformation of the pose
                 Eigen::Affine3d trans(camIt->second.poses[p].transformation);
                 trans = trans.inverse();
                 Eigen::Matrix4d rt = trans.matrix();
                 RTs.push_back( rt );
 
+                // get the points in this pose
                 for( size_t k=0; k<camIt->second.poses[p].points3D.size(); k++ )
+                {
+                    double hue = static_cast<double>(3*camIt->second.poses[p].pointIndices[k])/static_cast<double>(4*camIt->second.poses[p].pointsMax);
+                    double alpha = static_cast<double>(1) / static_cast<double>(camIt->second.poses.size());
+                    QColor col;
+                    col.setHslF( hue, 0.8, 0.4 );
+
                     points3D.push_back( camIt->second.poses[p].points3D[k] );
+                    colors.push_back( Eigen::Vector4d( col.redF(), col.greenF(), col.blueF(), alpha ) );
+                }
             }
 
     // update widget
     if( RTs.size() > 0 )
     {
         m_worldPoses( RTs, nox::plot<double>::Black | nox::plot<double>::CS );
-        m_worldPoses( points3D, nox::plot<double>::Red );
+        m_worldPoses( points3D, colors );
     }
 }
 
@@ -497,6 +515,7 @@ void IrisCC::clear()
     // cleanup the error plot
     ui->plot_error->clearPlottables();
     ui->plot_error->clearGraphs();
+    m_worldPoses.clear();
 
     // cleanup the lists
     ui->image_list->clear();

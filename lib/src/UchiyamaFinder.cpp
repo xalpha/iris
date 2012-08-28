@@ -187,6 +187,7 @@ bool UchiyamaFinder::find( Pose_d& pose )
     // if succesfull store extracted points
     if( found )
     {
+        pose.pointsMax = m_patternPointCount;
         getCorrespondences( llah, pose, m_scale, m_patternHeight,
                             static_cast<double>(pose.image->width())/static_cast<double>(image.width()),
                             static_cast<double>(pose.image->height())/static_cast<double>(image.height()));

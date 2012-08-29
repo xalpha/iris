@@ -70,8 +70,8 @@ IrisCC::IrisCC(QWidget *parent) :
     on_configureCalibration();
 
     // connect combo boxes
-    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
-    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
+//    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
+//    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
 
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
     connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
@@ -681,26 +681,7 @@ void IrisCC::on_save()
     try
     {
         // get an output filename
-        //QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration", "Iris Camera Calibration XML (*.xml);; Matlab Camera Clibration Toolbox TXT (*.txt)");
         QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration.xml", "Iris Camera Calibration XML (*.xml)");
-
-//        // return fi nothing there
-//        if( filename.size() == 0 )
-//            return;
-
-//        // try to save
-//        QFile outFile( filename );
-//        if( !outFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-//            throw std::runtime_error("IrisCC::on_save: could not open file for writing.");
-
-//        // save
-//        QTextStream stream( &outFile );
-////        if( QFileInfo( filename ).suffix().compare( "txt", Qt::CaseInsensitive ) )
-////            stream << toMatlabTXT();
-////        else
-//            stream << toXML();
-//        outFile.close();
-
 
         m_cs.save( filename.toStdString() );
     }
@@ -711,61 +692,61 @@ void IrisCC::on_save()
 }
 
 
-void IrisCC::on_inputChanged( int page )
-{
-    if( 1 == page )
-        on_cameraOpen();
-    else
-        on_cameraClose();
-}
+//void IrisCC::on_inputChanged( int page )
+//{
+//    if( 1 == page )
+//        on_cameraOpen();
+//    else
+//        on_cameraClose();
+//}
 
 
-void IrisCC::on_cameraOpen()
-{
-    if( !m_videoCapture.isOpened() )
-    {
-        m_videoCapture.open(0);
-        if( !m_videoCapture.isOpened() )
-        {
-            ui->capture_frame->setEnabled(false);
-            critical("IrisCC::on_cameraOpen: could not open camera.");
-        }
-        else
-            ui->capture_frame->setEnabled(true);
-    }
-    else
-        warning("IrisCC::on_cameraOpen: camera already open.");
-}
+//void IrisCC::on_cameraOpen()
+//{
+//    if( !m_videoCapture.isOpened() )
+//    {
+//        m_videoCapture.open(0);
+//        if( !m_videoCapture.isOpened() )
+//        {
+//            ui->capture_frame->setEnabled(false);
+//            critical("IrisCC::on_cameraOpen: could not open camera.");
+//        }
+//        else
+//            ui->capture_frame->setEnabled(true);
+//    }
+//    else
+//        warning("IrisCC::on_cameraOpen: camera already open.");
+//}
 
 
-void IrisCC::on_cameraClose()
-{
-    if( !m_videoCapture.isOpened() )
-        m_videoCapture.release();
-    else
-        warning("IrisCC::on_cameraClose: camera not open.");
-}
+//void IrisCC::on_cameraClose()
+//{
+//    if( !m_videoCapture.isOpened() )
+//        m_videoCapture.release();
+//    else
+//        warning("IrisCC::on_cameraClose: camera not open.");
+//}
 
 
-void IrisCC::on_capture()
-{
-    if( m_videoCapture.isOpened() )
-    {
-        cv::Mat imageCV;
-        m_videoCapture >> imageCV;
-        cv::cvtColor(imageCV, imageCV, cv::COLOR_BGR2RGB);
+//void IrisCC::on_capture()
+//{
+//    if( m_videoCapture.isOpened() )
+//    {
+//        cv::Mat imageCV;
+//        m_videoCapture >> imageCV;
+//        cv::cvtColor(imageCV, imageCV, cv::COLOR_BGR2RGB);
 
-        std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
-        iris::cv2cimg<uint8_t,3>( imageCV, *image );
+//        std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
+//        iris::cv2cimg<uint8_t,3>( imageCV, *image );
 
-        // assemble name
-        std::stringstream ss;
-        ss << "frame_" << m_cs.poseCount();
-        m_cs.add( image, ss.str() );
-    }
-    else
-        warning("IrisCC::on_capture: camera not open.");
-}
+//        // assemble name
+//        std::stringstream ss;
+//        ss << "frame_" << m_cs.poseCount();
+//        m_cs.add( image, ss.str() );
+//    }
+//    else
+//        warning("IrisCC::on_capture: camera not open.");
+//}
 
 
 void IrisCC::on_detectedImageChanged( int idx )

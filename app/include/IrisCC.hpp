@@ -84,11 +84,11 @@ protected slots:
     void on_update();
     void on_save();
 
-    void on_inputChanged( int page );
+//    void on_inputChanged( int page );
 
-    void on_cameraOpen();
-    void on_cameraClose();
-    void on_capture();
+//    void on_cameraOpen();
+//    void on_cameraClose();
+//    void on_capture();
 
     void on_detectedImageChanged( int idx );
 
@@ -108,8 +108,8 @@ protected:
     // opengl
     nox::plot<double> m_worldPoses;
 
-    // camera capture
-    cv::VideoCapture m_videoCapture;
+//    // camera capture
+//    cv::VideoCapture m_videoCapture;
 
     // camera set
     iris::CameraSet_d m_cs;

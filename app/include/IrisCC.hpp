@@ -77,12 +77,12 @@ protected:
 
     void clear();
 
-    void check( bool complain=false );
+    size_t getCameraId( int comboBoxIdx );
 
 protected slots:
     void on_selectCamera();
     void on_configureCamera();
-    void on_modifiedCamera();
+    void on_acceptConfigureCamera();
 
     void on_configureFinder();
     void on_configureCalibration();

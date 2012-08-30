@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>391</height>
+    <height>419</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -78,6 +78,16 @@
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="fix_intrinsic">
+        <property name="toolTip">
+         <string>If it is set, &lt;b&gt;cameraMatrix&lt;/b&gt; , as well as &lt;b&gt;distCoeffs&lt;/b&gt; are fixed, so that only R, T, E and F are estimated</string>
+        </property>
+        <property name="text">
+         <string>fix intrinsic</string>
         </property>
        </widget>
       </item>

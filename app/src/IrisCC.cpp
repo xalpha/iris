@@ -79,10 +79,7 @@ IrisCC::IrisCC(QWidget *parent) :
     ui_CameraConfig->setupUi( &m_cameraDialog );
     connect( ui->select_camera, SIGNAL(currentIndexChanged(int)), this, SLOT(on_selectCamera(void)) );
     connect( ui->configure_camera, SIGNAL(clicked(bool)), this, SLOT(on_configureCamera(void)) );
-    connect( ui_CameraConfig->cx, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
-    connect( ui_CameraConfig->cy, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
-    connect( ui_CameraConfig->fx, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
-    connect( ui_CameraConfig->fy, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
+    connect( &m_cameraDialog, SIGNAL(accepted(void)), this, SLOT( on_acceptConfigureCamera(void) ) );
 
     // finder
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
@@ -228,6 +225,7 @@ void IrisCC::update()
                 calib->setFixPrincipalPoint( ui_OpenCVSingleCalibration->fixed_principal_point->isChecked() );
                 calib->setFixAspectRatio( ui_OpenCVSingleCalibration->fixed_aspect_ratio->isChecked() );
                 calib->setTangentialDistortion( ui_OpenCVSingleCalibration->tangential_distortion->isChecked() );
+                calib->setIntrinsicGuess( static_cast<size_t>( ui_OpenCVSingleCalibration->intrinsic_guess->isChecked() ) );
                 calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVSingleCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
@@ -242,6 +240,8 @@ void IrisCC::update()
                 calib->setTangentialDistortion( ui_OpenCVStereoCalibration->tangential_distortion->isChecked() );
                 calib->setRelativeToPattern( ui_OpenCVStereoCalibration->relative_to_pattern->isChecked() );
                 calib->setSameFocalLength( ui_OpenCVStereoCalibration->same_focal_length->isChecked() );
+                calib->setFixIntrinsic( static_cast<size_t>( ui_OpenCVStereoCalibration->fix_intrinsic->isChecked() ) );
+                calib->setIntrinsicGuess( static_cast<size_t>( ui_OpenCVStereoCalibration->intrinsic_guess->isChecked() ) );
                 calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVStereoCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
@@ -355,20 +355,21 @@ void IrisCC::updateErrorPlot()
     }
 
     // draw current camera
-    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+    if(  ui->select_camera->currentIndex() >= 0 )
     {
         // run over all poses of the camera
-        for( size_t p=0; p<camIt->second.poses.size() && ui->select_camera->currentIndex() == camIdx; p++ )
+        const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+        for( size_t p=0; p<cam.poses.size(); p++ )
         {
-            if( !camIt->second.poses[p].rejected )
+            if( !cam.poses[p].rejected )
             {
                 // update more stuff
-                const iris::Pose_d& pose = camIt->second.poses[p];
+                const iris::Pose_d& pose = cam.poses[p];
                 auto graph = ui->plot_error->addGraph();
 
                 // generate color
                 QColor col;
-                double l  = static_cast<double>(p)/static_cast<double>(camIt->second.poses.size());
+                double l  = static_cast<double>(p)/static_cast<double>(cam.poses.size());
                 col.setHslF( 1.0, 1.0, 0.3 + 0.4*l );
 
                 // run over the points
@@ -383,11 +384,10 @@ void IrisCC::updateErrorPlot()
                 graph->setScatterSize(4);
             }
         }
-        camIdx++;
     }
 
     // draw the current pose
-    if( ui->image_list->currentRow() != -1 )
+    if( ui->image_list->currentRow() > 0 )
     {
         const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
         if( !pose.rejected )
@@ -612,18 +612,38 @@ void IrisCC::clear()
     ui->plot_error->clearGraphs();
     m_worldPoses.clear();
 
+    // update charts
+    updateImageList();
+    updateCameraList();
+    updateImage(0);
+    updateErrorPlot();
+    updatePosesPlot();
+
     // clear images
     m_poseIndices.clear();
 
     // clear the camera set
     m_cs.cameras().clear();
+}
 
-    // update charts
-    updateImage(0);
-    updateErrorPlot();
-    updatePosesPlot();
-    updateImageList();
-    updateCameraList();
+
+size_t IrisCC::getCameraId( int comboBoxIdx )
+{
+    // get the camera Id
+    int camIdx = 0;
+    size_t camId = 0;
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+    {
+        if( comboBoxIdx == camIdx )
+        {
+            camId = camIt->first;
+            break;
+        }
+        else
+            camIdx++;
+    }
+
+    return camId;
 }
 
 
@@ -643,23 +663,45 @@ void IrisCC::on_configureCamera()
 {
     if( ui->select_camera->currentIndex() >= 0 )
     {
-        // init stuff
-        QDialog dialog(this);
-        Ui::CameraConfig ui_CC;
-        ui_CC.setupUi(&dialog);
+        // get the camera
+        const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
 
-        // configure
-        // TODO
+        // update the dialog
+        ui_CameraConfig->camera_box->setTitle( QString("Camera: \"") + QString::number(cam.id) + QString("\"   (") + QString::number( cam.imageSize(0) ) + "x" + QString::number( cam.imageSize(1) ) + ")" );
+        ui_CameraConfig->fx->setValue( cam.intrinsic(0,0) );
+        ui_CameraConfig->fy->setValue( cam.intrinsic(1,1) );
+        ui_CameraConfig->cx->setValue( cam.intrinsic(0,2) );
+        ui_CameraConfig->cy->setValue( cam.intrinsic(1,2) );
 
-        // run
-        dialog.exec();
+        // set intrinsic matrix
+        std::stringstream sim;
+        sim << cam.intrinsic;
+        ui_CameraConfig->intrinsic_matrix->setText( QString(sim.str().c_str()) );
+
+        // set the distortion
+        ui_CameraConfig->distortion_model->setText( "OpenCV" );
+        QString dist;
+        for( size_t i=0; i<cam.distortion.size(); i++ )
+            dist += QString::number( cam.distortion[i] ) + "\n";
+        ui_CameraConfig->distortion_params->setText( dist );
+
+        // show the dialog
+        m_cameraDialog.exec();
     }
 }
 
 
-void IrisCC::on_modifiedCamera()
+void IrisCC::on_acceptConfigureCamera()
 {
-
+    if( ui->select_camera->currentIndex() >= 0 && ui_CameraConfig->edit->isChecked() )
+    {
+        // get the camera
+        iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+        cam.intrinsic(0,0) = ui_CameraConfig->fx->value();
+        cam.intrinsic(1,1) = ui_CameraConfig->fy->value();
+        cam.intrinsic(0,2) = ui_CameraConfig->cx->value();
+        cam.intrinsic(1,2) = ui_CameraConfig->cy->value();
+    }
 }
 
 

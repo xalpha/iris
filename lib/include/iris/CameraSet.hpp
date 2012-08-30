@@ -53,6 +53,7 @@ public:
     const std::map< size_t, iris::Camera<T> >& cameras() const;
 
     // get a particular camera
+    Camera_d& camera( const size_t id=0 );
     const Camera_d& camera( const size_t id=0 ) const;
 
     // get a particular pose
@@ -146,6 +147,20 @@ template <typename T>
 inline const std::map< size_t, iris::Camera<T> >& CameraSet<T>::cameras() const
 {
     return m_cameras;
+}
+
+
+template <typename T>
+inline Camera_d& CameraSet<T>::camera( const size_t id )
+{
+    // find the camera
+    std::map< size_t, Camera_d >::iterator camIt = m_cameras.find( id );
+
+    // search for the camera
+    if( camIt != m_cameras.end() )
+        return (*camIt).second;
+    else
+        throw std::runtime_error("CameraSet::camera: camera not found.");
 }
 
 

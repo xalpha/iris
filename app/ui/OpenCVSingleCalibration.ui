@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>243</height>
+    <height>271</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -65,6 +65,16 @@
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="intrinsic_guess">
+        <property name="statusTip">
+         <string>cameraMatrix contains valid initial values of fx, fy, cx, cy that are optimized further. </string>
+        </property>
+        <property name="text">
+         <string>use intrinsic guess</string>
         </property>
        </widget>
       </item>

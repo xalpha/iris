@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>363</height>
+    <height>419</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,32 +20,6 @@
    <string>OpenCV Stereo Calibration Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Extrinsic Matrices</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QRadioButton" name="relative_to_cam1">
-        <property name="text">
-         <string>relative to first camera</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="relative_to_pattern">
-        <property name="text">
-         <string>relative to calibration pattern</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -101,6 +75,54 @@
         </property>
         <property name="text">
          <string>tangential distortion</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="fix_intrinsic">
+        <property name="toolTip">
+         <string>If it is set, &lt;b&gt;cameraMatrix&lt;/b&gt; , as well as &lt;b&gt;distCoeffs&lt;/b&gt; are fixed, so that only R, T, E and F are estimated</string>
+        </property>
+        <property name="text">
+         <string>fix intrinsic</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="intrinsic_guess">
+        <property name="toolTip">
+         <string>cameraMatrix contains valid initial values of
+fx, fy, cx, cy that are optimized further.
+</string>
+        </property>
+        <property name="text">
+         <string>use intrinsic guess</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Extrinsic Matrices</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QRadioButton" name="relative_to_cam1">
+        <property name="text">
+         <string>relative to first camera</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="relative_to_pattern">
+        <property name="text">
+         <string>relative to calibration pattern</string>
         </property>
         <property name="checked">
          <bool>true</bool>

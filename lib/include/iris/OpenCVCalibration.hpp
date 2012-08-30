@@ -42,6 +42,7 @@ public:
     void setFixAspectRatio( bool val );
     void setTangentialDistortion( bool val );
     void setMinCorrespondences( size_t val );
+    void setIntrinsicGuess( bool val );
 
  protected:
     std::vector< Eigen::Vector2d > projectPoints( const std::vector<cv::Point3f> points3D,
@@ -56,6 +57,7 @@ protected:
     bool m_fixPrincipalPoint;
     bool m_fixAspectRatio;
     bool m_tangentialDistortion;
+    bool m_intrinsicGuess;
     size_t m_minPoseCorrespondences;
 
 };

@@ -87,6 +87,10 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
     // init stuff
     std::vector< std::vector<cv::Point2f> > cvVectorPoints2D;
     std::vector< std::vector<cv::Point3f> > cvVectorPoints3D;
+    cv::Mat cameraMatrix = cv::Mat::eye(3,3,CV_64F);
+    cv::Mat distCoeff(5,1,CV_64F);
+    std::vector<cv::Mat> rotationVectors;
+    std::vector<cv::Mat> translationVectors;
 
     // run over all the poses of this camera and assemble the correspondences
     for( size_t i=0; i<cam.poses.size(); i++ )
@@ -96,10 +100,7 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
     }
 
     // try to compute the intrinsic and extrinsic parameters
-    cv::Mat cameraMatrix = cv::Mat::eye(3,3,CV_64F);
-    cv::Mat distCoeff(5,1,CV_64F);
-    std::vector<cv::Mat> rotationVectors;
-    std::vector<cv::Mat> translationVectors;
+    eigen2cv( cam.intrinsic, cameraMatrix );
     double error = cv::calibrateCamera( cvVectorPoints3D,
                                         cvVectorPoints2D,
                                         cv::Size( cam.imageSize(0), cam.imageSize(1) ),
@@ -165,6 +166,7 @@ void OpenCVSingleCalibration::filter( CameraSet_d& cs )
         {
             m_filteredCameras[it->second.id].id = it->second.id;
             m_filteredCameras[it->second.id].imageSize = it->second.imageSize;
+            m_filteredCameras[it->second.id].intrinsic = it->second.intrinsic;
         }
     }
 }
@@ -183,6 +185,9 @@ int OpenCVSingleCalibration::flags()
 
     if( !m_tangentialDistortion )
         result = result | CV_CALIB_ZERO_TANGENT_DIST;
+
+    if( m_intrinsicGuess )
+        result = result | CV_CALIB_USE_INTRINSIC_GUESS;
 
     return result;
 }

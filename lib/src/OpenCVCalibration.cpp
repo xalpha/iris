@@ -37,6 +37,7 @@ OpenCVCalibration::OpenCVCalibration() :
     m_fixPrincipalPoint( false ),
     m_fixAspectRatio( true ),
     m_tangentialDistortion( true ),
+    m_intrinsicGuess(false),
     m_minPoseCorrespondences( 8 )
 {
 }
@@ -68,6 +69,12 @@ void OpenCVCalibration::setTangentialDistortion( bool val )
 void OpenCVCalibration::setMinCorrespondences( size_t val )
 {
     m_minPoseCorrespondences = val;
+}
+
+
+void OpenCVCalibration::setIntrinsicGuess( bool val )
+{
+    m_intrinsicGuess = val;
 }
 
 

@@ -58,6 +58,12 @@ void OpenCVStereoCalibration::setSameFocalLength( bool val )
 }
 
 
+void OpenCVStereoCalibration::setFixIntrinsic( bool val )
+{
+    m_fixIntrinsic = val;
+}
+
+
 void OpenCVStereoCalibration::calibrate( CameraSet_d& cs )
 {
     // assuming there are only two cameras
@@ -105,6 +111,16 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     std::vector< std::vector<cv::Point3f> > cvVectorPoints3D;
     size_t frameCount = cam1.poses.size();
 
+    // init camera params
+    cv::Mat A_1 = cv::Mat::eye(3,3,CV_64F); // intrinsic matrix 1
+    cv::Mat A_2 = cv::Mat::eye(3,3,CV_64F); // intrinsic matrix 2
+    cv::Mat E = cv::Mat::eye(3,3,CV_64F); // essential matrix
+    cv::Mat F = cv::Mat::eye(3,3,CV_64F); // fundamental matrix
+    cv::Mat dc_1(5,1,CV_64F); // distortion coefficients
+    cv::Mat dc_2(5,1,CV_64F); // distortion coefficients
+    cv::Mat R; // rotation
+    cv::Mat T; // translation
+
     // run over all the poses of this camera and assemble the correspondences
     for( size_t f=0; f<frameCount; f++ )
     {
@@ -115,14 +131,8 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     }
 
     // try to compute the intrinsic and extrinsic parameters
-    cv::Mat A_1 = cv::Mat::eye(3,3,CV_64F); // intrinsic matrix 1
-    cv::Mat A_2 = cv::Mat::eye(3,3,CV_64F); // intrinsic matrix 2
-    cv::Mat E = cv::Mat::eye(3,3,CV_64F); // essential matrix
-    cv::Mat F = cv::Mat::eye(3,3,CV_64F); // fundamental matrix
-    cv::Mat dc_1(5,1,CV_64F); // distortion coefficients
-    cv::Mat dc_2(5,1,CV_64F); // distortion coefficients
-    cv::Mat R; // rotation
-    cv::Mat T; // translation
+    eigen2cv( cam1.intrinsic, A_1 );
+    eigen2cv( cam2.intrinsic, A_2 );
     double error = cv::stereoCalibrate( cvVectorPoints3D,
                                         cvVectorPoints2D_1,
                                         cvVectorPoints2D_2,
@@ -173,12 +183,6 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
         iris::eigen2cv( cam1.poses[i].transformation, rv1, tv1 );
         iris::eigen2cv( cam2.poses[i].transformation, rv2, tv2 );
 
-//        // flip coordinate system
-//        cam1.poses[i].transformation.col(1) *= -1;
-//        cam1.poses[i].transformation.col(2) *= -1;
-//        cam2.poses[i].transformation.col(1) *= -1;
-//        cam2.poses[i].transformation.col(2) *= -1;
-
         // reproject points from the opencv poses
         cam1.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv1, tv1, A_1, dc_1 );
         cam2.poses[i].projected2D = projectPoints( cvVectorPoints3D[i], rv2, tv2, A_2, dc_2 );
@@ -205,7 +209,7 @@ void OpenCVStereoCalibration::filter( CameraSet_d& cs )
     iris::Camera_d& cam2 = (++(cs.cameras().begin()))->second;
 
     // check that the cameras have the same image size
-    if( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(1) != cam2.imageSize(1)) )
+    if( !(m_intrinsicGuess || m_fixIntrinsic) && ( (cam1.imageSize(0) != cam2.imageSize(0)) || (cam1.imageSize(1) != cam2.imageSize(1)) ) )
         throw std::runtime_error("OpenCVStereoCalibration::filter: cameras do not have the same images size.");
 
     // do the actual filtering
@@ -233,6 +237,8 @@ void OpenCVStereoCalibration::filter( CameraSet_d& cs )
         m_filteredCameras[cam2.id].imageSize = cam2.imageSize;
         m_filteredCameras[cam1.id].id = cam1.id;
         m_filteredCameras[cam2.id].id = cam2.id;
+        m_filteredCameras[cam1.id].intrinsic = cam1.intrinsic;
+        m_filteredCameras[cam2.id].intrinsic = cam2.intrinsic;
     }
 }
 
@@ -270,6 +276,12 @@ int OpenCVStereoCalibration::flags()
 
     if( !m_tangentialDistortion )
         result = result | CV_CALIB_ZERO_TANGENT_DIST;
+
+    if( m_fixIntrinsic )
+        result = result | CV_CALIB_FIX_INTRINSIC;
+
+    if( m_intrinsicGuess )
+        result = result | CV_CALIB_USE_INTRINSIC_GUESS;
 
     return result;
 }

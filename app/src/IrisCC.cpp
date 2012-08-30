@@ -604,7 +604,7 @@ void IrisCC::on_load()
 {
     try
     {
-        QStringList imagePaths = QFileDialog::getOpenFileNames(this, "Load Images", ".", "Images (*.bmp *.png *.xpm *.jpg *.tif)");
+        QStringList imagePaths = QFileDialog::getOpenFileNames(this, "Load Images", ".", "Images (*.bmp *.png *.xpm *.jpg *.tif *.tiff)");
 
         // return fi nothing there
         if( imagePaths.size() == 0 )

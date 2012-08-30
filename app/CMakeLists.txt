@@ -64,6 +64,7 @@ set( IrisCC_SRC
     src/WorldPoses.cpp
     src/main.cpp )
 set( IrisCC_QT_UI
+    ui/CameraConfig.ui
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
     ui/OpenCVSingleCalibration.ui

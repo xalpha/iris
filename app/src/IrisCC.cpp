@@ -34,6 +34,7 @@
 #include <QGraphicsPixmapItem>
 
 #include "ui_IrisCC.h"
+#include "ui_CameraConfig.h"
 #include "ui_ChessboardFinder.h"
 #include "ui_RandomFeatureFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
@@ -55,6 +56,7 @@
 IrisCC::IrisCC(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::IrisCC),
+    ui_CameraConfig( new Ui::CameraConfig ),
     ui_ChessboardFinder( new Ui::ChessboardFinder ),
 #ifdef UCHIYAMA_FOUND
     ui_UchiyamaFinder( new Ui::UchiyamaFinder ),
@@ -73,9 +75,21 @@ IrisCC::IrisCC(QWidget *parent) :
 //    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
 //    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
 
+    // camera config
+    ui_CameraConfig->setupUi( &m_cameraDialog );
+    connect( ui->select_camera, SIGNAL(currentIndexChanged(int)), this, SLOT(on_selectCamera(void)) );
+    connect( ui->configure_camera, SIGNAL(clicked(bool)), this, SLOT(on_configureCamera(void)) );
+    connect( ui_CameraConfig->cx, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
+    connect( ui_CameraConfig->cy, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
+    connect( ui_CameraConfig->fx, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
+    connect( ui_CameraConfig->fy, SIGNAL(valueChanged(double)), this, SLOT(on_modifiedCamera(void)) );
+
+    // finder
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
-    connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
     connect( ui->configure_finder, SIGNAL(clicked(bool)), this, SLOT(on_configureFinder(void)) );
+
+    // calibration
+    connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
     connect( ui->configure_calibration, SIGNAL(clicked(bool)), this, SLOT(on_configureCalibration(void)) );
 
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
@@ -126,6 +140,7 @@ IrisCC::IrisCC(QWidget *parent) :
 IrisCC::~IrisCC()
 {
     delete ui;
+    delete ui_CameraConfig;
     delete ui_ChessboardFinder;
     delete ui_RandomFeatureFinder;
 #ifdef UCHIYAMA_FOUND
@@ -242,9 +257,9 @@ void IrisCC::update()
         cc->calibrate( m_cs );
 
         // update the error plot
+        updateImageList();
         updateErrorPlot();
         updatePosesPlot();
-        updateList();
         updateImage( ui->image_list->currentRow() );
     }
     catch( std::exception &e )
@@ -254,7 +269,7 @@ void IrisCC::update()
 }
 
 
-void IrisCC::updateList()
+void IrisCC::updateImageList()
 {
     // init stuff
     int currentRow =  ui->image_list->currentRow();
@@ -297,27 +312,19 @@ void IrisCC::updateList()
 void IrisCC::updateErrorPlot()
 {
     // init stuff
-    double error = 0;
+    double range = 1.5;
+    int camIdx = 0;
 
     // clear the plot
     ui->plot_error->clearGraphs();
     ui->plot_error->clearPlottables();
-    ui->plot_error->legend->setVisible( m_cs.cameras().size() > 0 );
 
     // run over all camera poses
     for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
     {
         // update error
-        if( camIt->second.error > error )
-            error = camIt->second.error;
-
-        // add graph for this camera
-        auto graph = ui->plot_error->addGraph();
-        QVector<double> x, y;
-
-        // generate random color
-        QColor col;
-        col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_cs.cameras().size()), 1.0, 0.4 );
+        if( camIt->second.error > range )
+            range = camIt->second.error;
 
         // run over all poses of the camera
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
@@ -326,29 +333,85 @@ void IrisCC::updateErrorPlot()
             {
                 // update more stuff
                 const iris::Pose_d& pose = camIt->second.poses[p];
+                auto graph = ui->plot_error->addGraph();
+
+                // generate color
+                QColor col;
+                double l  = static_cast<double>(p)/static_cast<double>(camIt->second.poses.size());
+                col.setHslF( 0.5843, 1.0, 0.3 + 0.4*l );
 
                 // run over the points
                 for( size_t i=0; i<pose.points2D.size(); i++ )
-                {
-                    x.push_back( pose.projected2D[i](0) - pose.points2D[i](0) );
-                    y.push_back( pose.projected2D[i](1) - pose.points2D[i](1) );
-                }
+                    graph->addData( pose.projected2D[i](0) - pose.points2D[i](0),
+                                    pose.projected2D[i](1) - pose.points2D[i](1) );
+
+                // plot the detected points
+                graph->setPen( col );
+                graph->setLineStyle(QCPGraph::lsNone);
+                graph->setScatterStyle(QCPGraph::ssPlus);
+                graph->setScatterSize(4);
             }
         }
-
-        // plot the detected points
-        graph->setData(x, y);
-        graph->setPen( col );
-        graph->setLineStyle(QCPGraph::lsNone);
-        graph->setScatterStyle(QCPGraph::ssPlus);
-        graph->setScatterSize(4);
-
-        // add graph name
-        graph->setName( "Camera \"" + QString::number(camIt->first) + "\"" );
     }
 
-    ui->plot_error->xAxis->setRange(-error, error);
-    ui->plot_error->yAxis->setRange(-error, error);
+    // draw current camera
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+    {
+        // run over all poses of the camera
+        for( size_t p=0; p<camIt->second.poses.size() && ui->select_camera->currentIndex() == camIdx; p++ )
+        {
+            if( !camIt->second.poses[p].rejected )
+            {
+                // update more stuff
+                const iris::Pose_d& pose = camIt->second.poses[p];
+                auto graph = ui->plot_error->addGraph();
+
+                // generate color
+                QColor col;
+                double l  = static_cast<double>(p)/static_cast<double>(camIt->second.poses.size());
+                col.setHslF( 1.0, 1.0, 0.3 + 0.4*l );
+
+                // run over the points
+                for( size_t i=0; i<pose.points2D.size(); i++ )
+                    graph->addData( pose.projected2D[i](0) - pose.points2D[i](0),
+                                    pose.projected2D[i](1) - pose.points2D[i](1) );
+
+                // plot the detected points
+                graph->setPen( col );
+                graph->setLineStyle(QCPGraph::lsNone);
+                graph->setScatterStyle(QCPGraph::ssPlus);
+                graph->setScatterSize(4);
+            }
+        }
+        camIdx++;
+    }
+
+    // draw the current pose
+    if( ui->image_list->currentRow() != -1 )
+    {
+        const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
+        if( !pose.rejected )
+        {
+            // points background
+            auto graphBg = ui->plot_error->addGraph();
+            for( size_t i=0; i<pose.points2D.size(); i++ ) graphBg->addData( pose.projected2D[i](0) - pose.points2D[i](0), pose.projected2D[i](1) - pose.points2D[i](1) );
+            graphBg->setPen( QPen( QBrush( QColor( Qt::white ) ), 2.5 ) );
+            graphBg->setLineStyle(QCPGraph::lsNone);
+            graphBg->setScatterStyle(QCPGraph::ssPlus);
+            graphBg->setScatterSize(6);
+
+            // points
+            auto graph = ui->plot_error->addGraph();
+            for( size_t i=0; i<pose.points2D.size(); i++ ) graph->addData( pose.projected2D[i](0) - pose.points2D[i](0), pose.projected2D[i](1) - pose.points2D[i](1) );
+            graph->setPen( QPen( QBrush( QColor( Qt::black ) ), 1 ) );
+            graph->setLineStyle(QCPGraph::lsNone);
+            graph->setScatterStyle(QCPGraph::ssPlus);
+            graph->setScatterSize(5);
+        }
+    }
+
+    ui->plot_error->xAxis->setRange(-range, range);
+    ui->plot_error->yAxis->setRange(-range, range);
 
     // redraw
     ui->plot_error->replot();
@@ -485,8 +548,40 @@ void IrisCC::updatePosesPlot()
     // update widget
     if( RTs.size() > 0 )
     {
+        ui->plot_poses->update();
         m_worldPoses( RTs, nox::plot<double>::Black | nox::plot<double>::CS );
         m_worldPoses( points3D, colors );
+        ui->plot_poses->update();
+    }
+}
+
+
+void IrisCC::updateCameraList()
+{
+    // init stuff
+    int currentRow =  ui->select_camera->currentIndex();
+    ui->select_camera->clear();
+
+    // run over all cameras and add their names
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+        ui->select_camera->addItem( QString("Camera: \"") + QString::number(camIt->first) + QString("\"") );
+
+    // set the current row
+    if( currentRow < 0 )
+    {
+        if( ui->select_camera->count() > 0 )
+            ui->select_camera->setCurrentIndex( 0 );
+        else
+            ui->select_camera->setCurrentIndex( currentRow );
+    }
+    else
+    {
+        if( ui->select_camera->count() > 0 && currentRow < ui->select_camera->count() )
+            ui->select_camera->setCurrentIndex( currentRow );
+        else if( ui->select_camera->count() > 0 )
+            ui->select_camera->setCurrentIndex( 0 );
+        else
+            ui->select_camera->setCurrentIndex( -1 );
     }
 }
 
@@ -517,9 +612,6 @@ void IrisCC::clear()
     ui->plot_error->clearGraphs();
     m_worldPoses.clear();
 
-    // cleanup the lists
-    ui->image_list->clear();
-
     // clear images
     m_poseIndices.clear();
 
@@ -530,6 +622,44 @@ void IrisCC::clear()
     updateImage(0);
     updateErrorPlot();
     updatePosesPlot();
+    updateImageList();
+    updateCameraList();
+}
+
+
+void IrisCC::on_selectCamera()
+{
+    if( ui->select_camera->currentIndex() < 0 )
+        ui->configure_camera->setEnabled(false);
+    else
+    {
+        ui->configure_camera->setEnabled(true);
+        updateErrorPlot();
+    }
+}
+
+
+void IrisCC::on_configureCamera()
+{
+    if( ui->select_camera->currentIndex() >= 0 )
+    {
+        // init stuff
+        QDialog dialog(this);
+        Ui::CameraConfig ui_CC;
+        ui_CC.setupUi(&dialog);
+
+        // configure
+        // TODO
+
+        // run
+        dialog.exec();
+    }
+}
+
+
+void IrisCC::on_modifiedCamera()
+{
+
 }
 
 
@@ -650,7 +780,8 @@ void IrisCC::on_load()
         progress.setValue(imagePaths.size());
 
         // update the image list
-        updateList();
+        updateImageList();
+        updateCameraList();
     }
     catch( std::exception &e )
     {
@@ -752,4 +883,5 @@ void IrisCC::on_save()
 void IrisCC::on_detectedImageChanged( int idx )
 {
     updateImage( idx );
+    updateErrorPlot();
 }

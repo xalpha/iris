@@ -27,6 +27,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+#include <QDialog>
 #include <QMainWindow>
 
 #include <iris/CameraCalibration.hpp>
@@ -37,6 +38,8 @@
 
 namespace Ui {
     class IrisCC;
+
+    class CameraConfig;
 
     // Finders
     class ChessboardFinder;
@@ -63,10 +66,11 @@ protected:
 
     void update();
 
-    void updateList();
+    void updateImageList();
     void updateErrorPlot();
     void updateImage( int idx );
     void updatePosesPlot();
+    void updateCameraList();
 
     void critical( const std::string& message );
     void warning( const std::string& message );
@@ -76,6 +80,10 @@ protected:
     void check( bool complain=false );
 
 protected slots:
+    void on_selectCamera();
+    void on_configureCamera();
+    void on_modifiedCamera();
+
     void on_configureFinder();
     void on_configureCalibration();
 
@@ -95,8 +103,10 @@ protected slots:
 protected:
     // ui's
     Ui::IrisCC *ui;
+    QDialog m_cameraDialog;
     std::vector< std::shared_ptr<QDialog> > m_finderDialogs;
     std::vector< std::shared_ptr<QDialog> > m_calibrationDialogs;
+    Ui::CameraConfig* ui_CameraConfig;
     Ui::ChessboardFinder* ui_ChessboardFinder;
     Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
 #ifdef UCHIYAMA_FOUND
@@ -114,7 +124,8 @@ protected:
     // camera set
     iris::CameraSet_d m_cs;
 
-    // images
+    // indices
     std::vector< size_t > m_poseIndices;
+    std::vector< size_t > m_cameraIndices;
 };
 

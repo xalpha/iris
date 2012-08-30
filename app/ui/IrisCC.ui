@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1077</width>
-    <height>829</height>
+    <width>813</width>
+    <height>687</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -52,7 +52,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_image">
        <attribute name="title">
@@ -70,6 +70,32 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_error">
+       <attribute name="title">
+        <string>Error</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QCustomPlot" name="plot_error" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="tab_scene">
        <attribute name="title">
         <string>Scene</string>
@@ -83,222 +109,6 @@
         </property>
         <item>
          <widget class="WorldPoses" name="plot_poses" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_cameras">
-       <attribute name="title">
-        <string>Cameras</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout">
-        <property name="margin">
-         <number>10</number>
-        </property>
-        <item row="1" column="0">
-         <widget class="QGroupBox" name="groupBox_7">
-          <property name="title">
-           <string>Intrinsics:</string>
-          </property>
-          <layout class="QFormLayout" name="formLayout_2">
-           <property name="fieldGrowthPolicy">
-            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-           </property>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Image Size:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="image_size">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Focal Length:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="focal_length">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Principal Point</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLabel" name="principal_point">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QPlainTextEdit" name="intrinsic_matrix">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="backgroundVisible">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QGroupBox" name="groupBox_6">
-          <property name="title">
-           <string>Camera</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
-           <item>
-            <widget class="QComboBox" name="camera"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QGroupBox" name="groupBox_9">
-          <property name="title">
-           <string>Extrinsics:</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <item>
-            <widget class="QPlainTextEdit" name="extrinsic_matrix">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QGroupBox" name="groupBox_10">
-          <property name="title">
-           <string>Distortion</string>
-          </property>
-          <layout class="QFormLayout" name="formLayout_3">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Model:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Params:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="distortionParams"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="1" rowspan="4">
-         <widget class="QGroupBox" name="groupBox_8">
-          <property name="title">
-           <string>Reprojection Error:</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <widget class="QCustomPlot" name="plot_error" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>100</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QFormLayout" name="formLayout_4">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_8">
-               <property name="text">
-                <string>Error:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLabel" name="error">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_9">
-               <property name="text">
-                <string>Variance:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="variance">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -383,6 +193,32 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_6">
+        <property name="title">
+         <string>Camera</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QComboBox" name="select_camera"/>
+         </item>
+         <item>
+          <widget class="QToolButton" name="configure_camera">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../res/IrisCC.qrc">
+             <normaloff>:/icon/applications-system.svg</normaloff>:/icon/applications-system.svg</iconset>
            </property>
           </widget>
          </item>

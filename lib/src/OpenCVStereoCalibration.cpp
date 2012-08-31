@@ -150,7 +150,7 @@ void OpenCVStereoCalibration::stereoCalibrate( iris::Camera_d& cam1, iris::Camer
     // distortion coefficeints
     cam1.distortion.clear();
     cam2.distortion.clear();
-    for( int i=0; i<dc_1.size().width; i++ )
+    for( int i=0; i<dc_1.rows; i++ )
     {
         cam1.distortion.push_back( dc_1.at<double>( i, 0 ) );
         cam2.distortion.push_back( dc_2.at<double>( i, 0 ) );

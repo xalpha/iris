@@ -112,8 +112,8 @@ IrisCC::IrisCC(QWidget *parent) :
     ui->plot_poses->setWidget( &m_worldPoses );
     Eigen::Matrix4d mv;
     mv << 1, 0, 0, 0,
-          0, 0, 1, 0,
-          0, -1,0, 0,
+          0, 0,-1, 0,
+          0, 1, 0, 0,
           0, 0, 0, 1;
     m_worldPoses.setMV(mv);
 
@@ -313,7 +313,6 @@ void IrisCC::updateErrorPlot()
 {
     // init stuff
     double range = 1.5;
-    int camIdx = 0;
 
     // clear the plot
     ui->plot_error->clearGraphs();
@@ -395,7 +394,7 @@ void IrisCC::updateErrorPlot()
             // points background
             auto graphBg = ui->plot_error->addGraph();
             for( size_t i=0; i<pose.points2D.size(); i++ ) graphBg->addData( pose.projected2D[i](0) - pose.points2D[i](0), pose.projected2D[i](1) - pose.points2D[i](1) );
-            graphBg->setPen( QPen( QBrush( QColor( Qt::white ) ), 2.5 ) );
+            graphBg->setPen( QPen( QBrush( QColor( Qt::black ) ), 3 ) );
             graphBg->setLineStyle(QCPGraph::lsNone);
             graphBg->setScatterStyle(QCPGraph::ssPlus);
             graphBg->setScatterSize(6);
@@ -403,15 +402,23 @@ void IrisCC::updateErrorPlot()
             // points
             auto graph = ui->plot_error->addGraph();
             for( size_t i=0; i<pose.points2D.size(); i++ ) graph->addData( pose.projected2D[i](0) - pose.points2D[i](0), pose.projected2D[i](1) - pose.points2D[i](1) );
-            graph->setPen( QPen( QBrush( QColor( Qt::black ) ), 1 ) );
+            graph->setPen( QPen( QBrush( QColor( 115, 210, 22 ) ), 1.5 ) );
             graph->setLineStyle(QCPGraph::lsNone);
             graph->setScatterStyle(QCPGraph::ssPlus);
             graph->setScatterSize(5);
         }
     }
 
+    // update the range
     ui->plot_error->xAxis->setRange(-range, range);
     ui->plot_error->yAxis->setRange(-range, range);
+
+    // update the tick size
+    double ts = 1.0;
+    while((ts * 10.0) < range)
+        ts *= 10.0;
+    ui->plot_error->xAxis->setTickStep( ts*0.5 );
+    ui->plot_error->yAxis->setTickStep( ts*0.5 );
 
     // redraw
     ui->plot_error->replot();
@@ -612,18 +619,18 @@ void IrisCC::clear()
     ui->plot_error->clearGraphs();
     m_worldPoses.clear();
 
-    // update charts
-    updateImageList();
-    updateCameraList();
-    updateImage(0);
-    updateErrorPlot();
-    updatePosesPlot();
-
     // clear images
     m_poseIndices.clear();
 
     // clear the camera set
     m_cs.cameras().clear();
+
+    // update charts
+    updateCameraList();
+    updateImageList();
+    updateImage(-1);
+    updateErrorPlot();
+    updatePosesPlot();
 }
 
 

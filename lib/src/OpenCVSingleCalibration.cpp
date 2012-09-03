@@ -115,7 +115,7 @@ void OpenCVSingleCalibration::calibrateCamera( Camera_d &cam, int flags )
 
     // distortion coefficeints
     cam.distortion.clear();
-    for( int i=0; i<distCoeff.size().width; i++ )
+    for( int i=0; i<distCoeff.rows; i++ )
         cam.distortion.push_back( distCoeff.at<double>( i, 0 ) );
 
     // error

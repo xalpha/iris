@@ -54,7 +54,8 @@ list( APPEND Iris_SRC
 
 # external dependencies of iris
 list( APPEND Iris_EXTERN_INC
-    extern/cimg/CImg.h )
+    extern/cimg/CImg.h
+    extern/tinyxml2/tinyxml2.h )
 list( APPEND Iris_EXTERN_SRC
     extern/tinyxml2/tinyxml2.cpp )
 
@@ -100,6 +101,6 @@ install(FILES ${Iris_EXTERN_INC} DESTINATION "include" )
 
 
 # add test app
-add_executable( irisTest test/test.cpp )
-target_link_libraries( irisTest ${Iris_TARGET} )
+add_executable( test test/test.cpp )
+target_link_libraries( test ${Iris_TARGET} )
 

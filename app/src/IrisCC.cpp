@@ -556,6 +556,12 @@ void IrisCC::updatePosesPlot()
 }
 
 
+void IrisCC::updatePosesPlotCurrent()
+{
+    // TODO
+}
+
+
 void IrisCC::updateCameraList()
 {
     // init stuff

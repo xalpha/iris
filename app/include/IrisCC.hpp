@@ -70,6 +70,7 @@ protected:
     void updateErrorPlot();
     void updateImage( int idx );
     void updatePosesPlot();
+    void updatePosesPlotCurrent();
     void updateCameraList();
 
     void critical( const std::string& message );

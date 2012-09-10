@@ -485,7 +485,8 @@ void IrisCC::updatePosesPlot()
     // update widget
     if( RTs.size() > 0 )
     {
-        m_worldPoses( RTs, nox::plot<double>::Black | nox::plot<double>::CS );
+        m_worldPoses( RTs, nox::plot<double>::CS );
+        m_worldPoses.setPointSize( 5 );
         m_worldPoses( points3D, colors );
     }
 }

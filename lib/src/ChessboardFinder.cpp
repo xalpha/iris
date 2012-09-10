@@ -67,7 +67,7 @@ void ChessboardFinder::configure( const size_t columns, const size_t rows, const
     for( size_t i=0; i<m_columns*m_rows; i++ )
     {
         m_points3D.push_back( Eigen::Vector3d( static_cast<double>( i % m_columns ) *ss,
-                                              -static_cast<double>( i / m_columns ) *ss,
+                                               static_cast<double>( i / m_columns ) *ss,
                                                0.0f ) );
         m_indices.push_back(i);
     }

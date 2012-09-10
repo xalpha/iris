@@ -40,6 +40,7 @@ public:
 
     void setRelativeToPattern( bool val );
     void setSameFocalLength( bool val );
+    void setFixIntrinsic( bool val );
 
     virtual void calibrate( CameraSet_d& cs );
 
@@ -55,6 +56,7 @@ protected:
 protected:
     bool m_relativeToPattern;
     bool m_sameFocalLength;
+    bool m_fixIntrinsic;
 
 };
 

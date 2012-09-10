@@ -34,6 +34,7 @@
 #include <QGraphicsPixmapItem>
 
 #include "ui_IrisCC.h"
+#include "ui_CameraConfig.h"
 #include "ui_ChessboardFinder.h"
 #include "ui_RandomFeatureFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
@@ -55,6 +56,7 @@
 IrisCC::IrisCC(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::IrisCC),
+    ui_CameraConfig( new Ui::CameraConfig ),
     ui_ChessboardFinder( new Ui::ChessboardFinder ),
 #ifdef UCHIYAMA_FOUND
     ui_UchiyamaFinder( new Ui::UchiyamaFinder ),
@@ -70,12 +72,21 @@ IrisCC::IrisCC(QWidget *parent) :
     on_configureCalibration();
 
     // connect combo boxes
-    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
-    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
+//    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
+//    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
 
+    // camera config
+    ui_CameraConfig->setupUi( &m_cameraDialog );
+    connect( ui->select_camera, SIGNAL(currentIndexChanged(int)), this, SLOT(on_selectCamera(void)) );
+    connect( ui->configure_camera, SIGNAL(clicked(bool)), this, SLOT(on_configureCamera(void)) );
+    connect( &m_cameraDialog, SIGNAL(accepted(void)), this, SLOT( on_acceptConfigureCamera(void) ) );
+
+    // finder
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
-    connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
     connect( ui->configure_finder, SIGNAL(clicked(bool)), this, SLOT(on_configureFinder(void)) );
+
+    // calibration
+    connect( ui->select_calibration, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureCalibration(void)) );
     connect( ui->configure_calibration, SIGNAL(clicked(bool)), this, SLOT(on_configureCalibration(void)) );
 
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
@@ -101,8 +112,8 @@ IrisCC::IrisCC(QWidget *parent) :
     ui->plot_poses->setWidget( &m_worldPoses );
     Eigen::Matrix4d mv;
     mv << 1, 0, 0, 0,
-          0, 0, 1, 0,
-          0, -1,0, 0,
+          0, 0,-1, 0,
+          0, 1, 0, 0,
           0, 0, 0, 1;
     m_worldPoses.setMV(mv);
 
@@ -126,6 +137,7 @@ IrisCC::IrisCC(QWidget *parent) :
 IrisCC::~IrisCC()
 {
     delete ui;
+    delete ui_CameraConfig;
     delete ui_ChessboardFinder;
     delete ui_RandomFeatureFinder;
 #ifdef UCHIYAMA_FOUND
@@ -157,10 +169,10 @@ void IrisCC::update()
             {
                 ui->configure_finder->setEnabled(true);
                 iris::ChessboardFinder* finder = new iris::ChessboardFinder();
+                finder->setScale( ui_ChessboardFinder->scale->value() );
                 finder->configure( static_cast<size_t>( ui_ChessboardFinder->columns->value() ),
                                    static_cast<size_t>( ui_ChessboardFinder->rows->value() ),
                                    0.001 * ui_ChessboardFinder->square_size->value() );
-                finder->setScale( ui_ChessboardFinder->scale->value() );
                 finder->setFastCheck( ui_ChessboardFinder->fastCheck->isChecked() );
                 finder->setAdaptiveThreshold( ui_ChessboardFinder->adaptiveThreshold->isChecked() );
                 finder->setNormalizeImage( ui_ChessboardFinder->normalizeImage->isChecked() );
@@ -174,8 +186,8 @@ void IrisCC::update()
             case 2 :
             {
                 iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
-                finder->configure( ui_UchiyamaFinder->points->toPlainText().toStdString() );
                 finder->setScale( ui_UchiyamaFinder->scale->value() );
+                finder->configure( ui_UchiyamaFinder->points->toPlainText().toStdString() );
                 f = std::shared_ptr<iris::Finder>(finder);
                 break;
             }
@@ -185,8 +197,8 @@ void IrisCC::update()
             case 3 :
             {
                 iris::RandomFeatureFinder* finder = new iris::RandomFeatureFinder();
-                finder->configure( ui_RandomFeatureFinder->points->toPlainText().toStdString() );
                 finder->setScale( ui_RandomFeatureFinder->scale->value() );
+                finder->configure( ui_RandomFeatureFinder->points->toPlainText().toStdString() );
                 finder->setMaxRadiusRatio( ui_RandomFeatureFinder->max_radius_ratio->value() );
                 finder->setMinRadius( ui_RandomFeatureFinder->min_radius->value() );
                 f = std::shared_ptr<iris::Finder>(finder);
@@ -213,6 +225,7 @@ void IrisCC::update()
                 calib->setFixPrincipalPoint( ui_OpenCVSingleCalibration->fixed_principal_point->isChecked() );
                 calib->setFixAspectRatio( ui_OpenCVSingleCalibration->fixed_aspect_ratio->isChecked() );
                 calib->setTangentialDistortion( ui_OpenCVSingleCalibration->tangential_distortion->isChecked() );
+                calib->setIntrinsicGuess( static_cast<size_t>( ui_OpenCVSingleCalibration->intrinsic_guess->isChecked() ) );
                 calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVSingleCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
@@ -227,6 +240,8 @@ void IrisCC::update()
                 calib->setTangentialDistortion( ui_OpenCVStereoCalibration->tangential_distortion->isChecked() );
                 calib->setRelativeToPattern( ui_OpenCVStereoCalibration->relative_to_pattern->isChecked() );
                 calib->setSameFocalLength( ui_OpenCVStereoCalibration->same_focal_length->isChecked() );
+                calib->setFixIntrinsic( static_cast<size_t>( ui_OpenCVStereoCalibration->fix_intrinsic->isChecked() ) );
+                calib->setIntrinsicGuess( static_cast<size_t>( ui_OpenCVStereoCalibration->intrinsic_guess->isChecked() ) );
                 calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVStereoCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
@@ -242,9 +257,9 @@ void IrisCC::update()
         cc->calibrate( m_cs );
 
         // update the error plot
+        updateImageList();
         updateErrorPlot();
         updatePosesPlot();
-        updateList();
         updateImage( ui->image_list->currentRow() );
     }
     catch( std::exception &e )
@@ -254,7 +269,7 @@ void IrisCC::update()
 }
 
 
-void IrisCC::updateList()
+void IrisCC::updateImageList()
 {
     // init stuff
     int currentRow =  ui->image_list->currentRow();
@@ -297,27 +312,18 @@ void IrisCC::updateList()
 void IrisCC::updateErrorPlot()
 {
     // init stuff
-    double error = 0;
+    double range = 1.5;
 
     // clear the plot
     ui->plot_error->clearGraphs();
     ui->plot_error->clearPlottables();
-    ui->plot_error->legend->setVisible( m_cs.cameras().size() > 0 );
 
     // run over all camera poses
     for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
     {
         // update error
-        if( camIt->second.error > error )
-            error = camIt->second.error;
-
-        // add graph for this camera
-        auto graph = ui->plot_error->addGraph();
-        QVector<double> x, y;
-
-        // generate random color
-        QColor col;
-        col.setHslF( static_cast<double>(camIt->first)/static_cast<double>(m_cs.cameras().size()), 1.0, 0.4 );
+        if( camIt->second.error > range )
+            range = camIt->second.error;
 
         // run over all poses of the camera
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
@@ -326,29 +332,93 @@ void IrisCC::updateErrorPlot()
             {
                 // update more stuff
                 const iris::Pose_d& pose = camIt->second.poses[p];
+                auto graph = ui->plot_error->addGraph();
+
+                // generate color
+                QColor col;
+                double l  = static_cast<double>(p)/static_cast<double>(camIt->second.poses.size());
+                col.setHslF( 0.5843, 1.0, 0.3 + 0.4*l );
 
                 // run over the points
                 for( size_t i=0; i<pose.points2D.size(); i++ )
-                {
-                    x.push_back( pose.projected2D[i](0) - pose.points2D[i](0) );
-                    y.push_back( pose.projected2D[i](1) - pose.points2D[i](1) );
-                }
+                    graph->addData( pose.projected2D[i](0) - pose.points2D[i](0),
+                                    pose.projected2D[i](1) - pose.points2D[i](1) );
+
+                // plot the detected points
+                graph->setPen( col );
+                graph->setLineStyle(QCPGraph::lsNone);
+                graph->setScatterStyle(QCPGraph::ssPlus);
+                graph->setScatterSize(4);
             }
         }
-
-        // plot the detected points
-        graph->setData(x, y);
-        graph->setPen( col );
-        graph->setLineStyle(QCPGraph::lsNone);
-        graph->setScatterStyle(QCPGraph::ssPlus);
-        graph->setScatterSize(4);
-
-        // add graph name
-        graph->setName( "Camera \"" + QString::number(camIt->first) + "\"" );
     }
 
-    ui->plot_error->xAxis->setRange(-error, error);
-    ui->plot_error->yAxis->setRange(-error, error);
+    // draw current camera
+    if(  ui->select_camera->currentIndex() >= 0 )
+    {
+        // run over all poses of the camera
+        const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+        for( size_t p=0; p<cam.poses.size(); p++ )
+        {
+            if( !cam.poses[p].rejected )
+            {
+                // update more stuff
+                const iris::Pose_d& pose = cam.poses[p];
+                auto graph = ui->plot_error->addGraph();
+
+                // generate color
+                QColor col;
+                double l  = static_cast<double>(p)/static_cast<double>(cam.poses.size());
+                col.setHslF( 1.0, 1.0, 0.3 + 0.4*l );
+
+                // run over the points
+                for( size_t i=0; i<pose.points2D.size(); i++ )
+                    graph->addData( pose.projected2D[i](0) - pose.points2D[i](0),
+                                    pose.projected2D[i](1) - pose.points2D[i](1) );
+
+                // plot the detected points
+                graph->setPen( col );
+                graph->setLineStyle(QCPGraph::lsNone);
+                graph->setScatterStyle(QCPGraph::ssPlus);
+                graph->setScatterSize(4);
+            }
+        }
+    }
+
+    // draw the current pose
+    if( ui->image_list->currentRow() > 0 )
+    {
+        const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
+        if( !pose.rejected )
+        {
+            // points background
+            auto graphBg = ui->plot_error->addGraph();
+            for( size_t i=0; i<pose.points2D.size(); i++ ) graphBg->addData( pose.projected2D[i](0) - pose.points2D[i](0), pose.projected2D[i](1) - pose.points2D[i](1) );
+            graphBg->setPen( QPen( QBrush( QColor( Qt::black ) ), 3 ) );
+            graphBg->setLineStyle(QCPGraph::lsNone);
+            graphBg->setScatterStyle(QCPGraph::ssPlus);
+            graphBg->setScatterSize(6);
+
+            // points
+            auto graph = ui->plot_error->addGraph();
+            for( size_t i=0; i<pose.points2D.size(); i++ ) graph->addData( pose.projected2D[i](0) - pose.points2D[i](0), pose.projected2D[i](1) - pose.points2D[i](1) );
+            graph->setPen( QPen( QBrush( QColor( 115, 210, 22 ) ), 1.5 ) );
+            graph->setLineStyle(QCPGraph::lsNone);
+            graph->setScatterStyle(QCPGraph::ssPlus);
+            graph->setScatterSize(5);
+        }
+    }
+
+    // update the range
+    ui->plot_error->xAxis->setRange(-range, range);
+    ui->plot_error->yAxis->setRange(-range, range);
+
+    // update the tick size
+    double ts = 1.0;
+    while((ts * 10.0) < range)
+        ts *= 10.0;
+    ui->plot_error->xAxis->setTickStep( ts*0.5 );
+    ui->plot_error->yAxis->setTickStep( ts*0.5 );
 
     // redraw
     ui->plot_error->replot();
@@ -485,9 +555,63 @@ void IrisCC::updatePosesPlot()
     // update widget
     if( RTs.size() > 0 )
     {
+        ui->plot_poses->update();
+        m_worldPoses.setLineWidth( 1 );
         m_worldPoses( RTs, nox::plot<double>::CS );
         m_worldPoses.setPointSize( 5 );
         m_worldPoses( points3D, colors );
+        ui->plot_poses->update();
+    }
+}
+
+
+void IrisCC::updatePosesPlotCurrent()
+{
+    m_worldPoses.clear( 1 );
+
+    // draw the current pose
+    if( ui->image_list->currentRow() > 0 )
+    {
+        const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
+        if( !pose.rejected )
+        {
+            m_worldPoses.setLineWidth( 3 );
+            Eigen::Affine3d trans( pose.transformation);
+            trans = trans.inverse();
+            m_worldPoses( trans.matrix(), nox::plot<double>::CS | nox::plot<double>::Pos, 1 );
+            ui->plot_poses->update();
+        }
+    }
+
+}
+
+
+void IrisCC::updateCameraList()
+{
+    // init stuff
+    int currentRow =  ui->select_camera->currentIndex();
+    ui->select_camera->clear();
+
+    // run over all cameras and add their names
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+        ui->select_camera->addItem( QString("Camera: \"") + QString::number(camIt->first) + QString("\"") );
+
+    // set the current row
+    if( currentRow < 0 )
+    {
+        if( ui->select_camera->count() > 0 )
+            ui->select_camera->setCurrentIndex( 0 );
+        else
+            ui->select_camera->setCurrentIndex( currentRow );
+    }
+    else
+    {
+        if( ui->select_camera->count() > 0 && currentRow < ui->select_camera->count() )
+            ui->select_camera->setCurrentIndex( currentRow );
+        else if( ui->select_camera->count() > 0 )
+            ui->select_camera->setCurrentIndex( 0 );
+        else
+            ui->select_camera->setCurrentIndex( -1 );
     }
 }
 
@@ -518,9 +642,6 @@ void IrisCC::clear()
     ui->plot_error->clearGraphs();
     m_worldPoses.clear();
 
-    // cleanup the lists
-    ui->image_list->clear();
-
     // clear images
     m_poseIndices.clear();
 
@@ -528,9 +649,89 @@ void IrisCC::clear()
     m_cs.cameras().clear();
 
     // update charts
-    updateImage(0);
+    updateCameraList();
+    updateImageList();
+    updateImage(-1);
     updateErrorPlot();
     updatePosesPlot();
+}
+
+
+size_t IrisCC::getCameraId( int comboBoxIdx )
+{
+    // get the camera Id
+    int camIdx = 0;
+    size_t camId = 0;
+    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+    {
+        if( comboBoxIdx == camIdx )
+        {
+            camId = camIt->first;
+            break;
+        }
+        else
+            camIdx++;
+    }
+
+    return camId;
+}
+
+
+void IrisCC::on_selectCamera()
+{
+    if( ui->select_camera->currentIndex() < 0 )
+        ui->configure_camera->setEnabled(false);
+    else
+    {
+        ui->configure_camera->setEnabled(true);
+        updateErrorPlot();
+    }
+}
+
+
+void IrisCC::on_configureCamera()
+{
+    if( ui->select_camera->currentIndex() >= 0 )
+    {
+        // get the camera
+        const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+
+        // update the dialog
+        ui_CameraConfig->camera_box->setTitle( QString("Camera: \"") + QString::number(cam.id) + QString("\"   (") + QString::number( cam.imageSize(0) ) + "x" + QString::number( cam.imageSize(1) ) + ")" );
+        ui_CameraConfig->fx->setValue( cam.intrinsic(0,0) );
+        ui_CameraConfig->fy->setValue( cam.intrinsic(1,1) );
+        ui_CameraConfig->cx->setValue( cam.intrinsic(0,2) );
+        ui_CameraConfig->cy->setValue( cam.intrinsic(1,2) );
+
+        // set intrinsic matrix
+        std::stringstream sim;
+        sim << cam.intrinsic;
+        ui_CameraConfig->intrinsic_matrix->setText( QString(sim.str().c_str()) );
+
+        // set the distortion
+        ui_CameraConfig->distortion_model->setText( "OpenCV" );
+        QString dist;
+        for( size_t i=0; i<cam.distortion.size(); i++ )
+            dist += QString::number( cam.distortion[i] ) + "\n";
+        ui_CameraConfig->distortion_params->setText( dist );
+
+        // show the dialog
+        m_cameraDialog.exec();
+    }
+}
+
+
+void IrisCC::on_acceptConfigureCamera()
+{
+    if( ui->select_camera->currentIndex() >= 0 && ui_CameraConfig->edit->isChecked() )
+    {
+        // get the camera
+        iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+        cam.intrinsic(0,0) = ui_CameraConfig->fx->value();
+        cam.intrinsic(1,1) = ui_CameraConfig->fy->value();
+        cam.intrinsic(0,2) = ui_CameraConfig->cx->value();
+        cam.intrinsic(1,2) = ui_CameraConfig->cy->value();
+    }
 }
 
 
@@ -651,7 +852,8 @@ void IrisCC::on_load()
         progress.setValue(imagePaths.size());
 
         // update the image list
-        updateList();
+        updateImageList();
+        updateCameraList();
     }
     catch( std::exception &e )
     {
@@ -682,26 +884,7 @@ void IrisCC::on_save()
     try
     {
         // get an output filename
-        //QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration", "Iris Camera Calibration XML (*.xml);; Matlab Camera Clibration Toolbox TXT (*.txt)");
         QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration.xml", "Iris Camera Calibration XML (*.xml)");
-
-//        // return fi nothing there
-//        if( filename.size() == 0 )
-//            return;
-
-//        // try to save
-//        QFile outFile( filename );
-//        if( !outFile.open( QIODevice::WriteOnly | QIODevice::Text ) )
-//            throw std::runtime_error("IrisCC::on_save: could not open file for writing.");
-
-//        // save
-//        QTextStream stream( &outFile );
-////        if( QFileInfo( filename ).suffix().compare( "txt", Qt::CaseInsensitive ) )
-////            stream << toMatlabTXT();
-////        else
-//            stream << toXML();
-//        outFile.close();
-
 
         m_cs.save( filename.toStdString() );
     }
@@ -712,64 +895,66 @@ void IrisCC::on_save()
 }
 
 
-void IrisCC::on_inputChanged( int page )
-{
-    if( 1 == page )
-        on_cameraOpen();
-    else
-        on_cameraClose();
-}
+//void IrisCC::on_inputChanged( int page )
+//{
+//    if( 1 == page )
+//        on_cameraOpen();
+//    else
+//        on_cameraClose();
+//}
 
 
-void IrisCC::on_cameraOpen()
-{
-    if( !m_videoCapture.isOpened() )
-    {
-        m_videoCapture.open(0);
-        if( !m_videoCapture.isOpened() )
-        {
-            ui->capture_frame->setEnabled(false);
-            critical("IrisCC::on_cameraOpen: could not open camera.");
-        }
-        else
-            ui->capture_frame->setEnabled(true);
-    }
-    else
-        warning("IrisCC::on_cameraOpen: camera already open.");
-}
+//void IrisCC::on_cameraOpen()
+//{
+//    if( !m_videoCapture.isOpened() )
+//    {
+//        m_videoCapture.open(0);
+//        if( !m_videoCapture.isOpened() )
+//        {
+//            ui->capture_frame->setEnabled(false);
+//            critical("IrisCC::on_cameraOpen: could not open camera.");
+//        }
+//        else
+//            ui->capture_frame->setEnabled(true);
+//    }
+//    else
+//        warning("IrisCC::on_cameraOpen: camera already open.");
+//}
 
 
-void IrisCC::on_cameraClose()
-{
-    if( !m_videoCapture.isOpened() )
-        m_videoCapture.release();
-    else
-        warning("IrisCC::on_cameraClose: camera not open.");
-}
+//void IrisCC::on_cameraClose()
+//{
+//    if( !m_videoCapture.isOpened() )
+//        m_videoCapture.release();
+//    else
+//        warning("IrisCC::on_cameraClose: camera not open.");
+//}
 
 
-void IrisCC::on_capture()
-{
-    if( m_videoCapture.isOpened() )
-    {
-        cv::Mat imageCV;
-        m_videoCapture >> imageCV;
-        cv::cvtColor(imageCV, imageCV, cv::COLOR_BGR2RGB);
+//void IrisCC::on_capture()
+//{
+//    if( m_videoCapture.isOpened() )
+//    {
+//        cv::Mat imageCV;
+//        m_videoCapture >> imageCV;
+//        cv::cvtColor(imageCV, imageCV, cv::COLOR_BGR2RGB);
 
-        std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
-        iris::cv2cimg<uint8_t,3>( imageCV, *image );
+//        std::shared_ptr< cimg_library::CImg<uint8_t> > image( new cimg_library::CImg<uint8_t> );
+//        iris::cv2cimg<uint8_t,3>( imageCV, *image );
 
-        // assemble name
-        std::stringstream ss;
-        ss << "frame_" << m_cs.poseCount();
-        m_cs.add( image, ss.str() );
-    }
-    else
-        warning("IrisCC::on_capture: camera not open.");
-}
+//        // assemble name
+//        std::stringstream ss;
+//        ss << "frame_" << m_cs.poseCount();
+//        m_cs.add( image, ss.str() );
+//    }
+//    else
+//        warning("IrisCC::on_capture: camera not open.");
+//}
 
 
 void IrisCC::on_detectedImageChanged( int idx )
 {
     updateImage( idx );
+    updateErrorPlot();
+    updatePosesPlotCurrent();
 }

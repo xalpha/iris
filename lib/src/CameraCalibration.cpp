@@ -85,6 +85,7 @@ void CameraCalibration::commit( CameraSet_d &cs )
         // get camera params
         cs.cameras()[ camIt->second.id ].intrinsic = camIt->second.intrinsic;
         cs.cameras()[ camIt->second.id ].distortion = camIt->second.distortion;
+        cs.cameras()[ camIt->second.id ].error = camIt->second.error;
     }
 }
 

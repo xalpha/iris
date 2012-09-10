@@ -556,7 +556,9 @@ void IrisCC::updatePosesPlot()
     if( RTs.size() > 0 )
     {
         ui->plot_poses->update();
-        m_worldPoses( RTs, nox::plot<double>::Black | nox::plot<double>::CS );
+        m_worldPoses.setLineWidth( 1 );
+        m_worldPoses( RTs, nox::plot<double>::CS );
+        m_worldPoses.setPointSize( 5 );
         m_worldPoses( points3D, colors );
         ui->plot_poses->update();
     }
@@ -565,7 +567,22 @@ void IrisCC::updatePosesPlot()
 
 void IrisCC::updatePosesPlotCurrent()
 {
-    // TODO
+    m_worldPoses.clear( 1 );
+
+    // draw the current pose
+    if( ui->image_list->currentRow() > 0 )
+    {
+        const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
+        if( !pose.rejected )
+        {
+            m_worldPoses.setLineWidth( 3 );
+            Eigen::Affine3d trans( pose.transformation);
+            trans = trans.inverse();
+            m_worldPoses( trans.matrix(), nox::plot<double>::CS | nox::plot<double>::Pos, 1 );
+            ui->plot_poses->update();
+        }
+    }
+
 }
 
 
@@ -939,4 +956,5 @@ void IrisCC::on_detectedImageChanged( int idx )
 {
     updateImage( idx );
     updateErrorPlot();
+    updatePosesPlotCurrent();
 }

@@ -122,6 +122,7 @@ public:
         id = cam.id;
         poses = cam.poses;
         imageSize = cam.imageSize;
+        sensorSize = cam.sensorSize;
         intrinsic = cam.intrinsic;
         distortion = cam.distortion;
         error = cam.error;
@@ -132,6 +133,7 @@ public:
     size_t id;
     std::vector< Pose<T> > poses;
     Eigen::Vector2i imageSize;
+    Eigen::Matrix<T,2,1> sensorSize;
     Eigen::Matrix<T,3,3> intrinsic;
     std::vector<T> distortion;
     T error;

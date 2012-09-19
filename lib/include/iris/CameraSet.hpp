@@ -53,10 +53,13 @@ public:
     const std::map< size_t, iris::Camera<T> >& cameras() const;
 
     // get a particular camera
+    bool hasCamera( const size_t id=0 ) const;
     Camera_d& camera( const size_t id=0 );
     const Camera_d& camera( const size_t id=0 ) const;
 
     // get a particular pose
+    bool hasPose( const size_t id ) const;
+    bool hasPose( const std::string& name ) const;
     const Pose_d& pose( const size_t id ) const;
     const Pose_d& pose( const std::string& name ) const;
 
@@ -151,6 +154,15 @@ inline const std::map< size_t, iris::Camera<T> >& CameraSet<T>::cameras() const
 
 
 template <typename T>
+inline bool CameraSet<T>::hasCamera( const size_t id ) const
+{
+    // find the camera
+    std::map< size_t, Camera_d >::const_iterator camIt = m_cameras.find( id );
+    return camIt != m_cameras.end();
+}
+
+
+template <typename T>
 inline Camera_d& CameraSet<T>::camera( const size_t id )
 {
     // find the camera
@@ -175,6 +187,32 @@ inline const Camera_d& CameraSet<T>::camera( const size_t id ) const
         return (*camIt).second;
     else
         throw std::runtime_error("CameraSet::camera: camera not found.");
+}
+
+
+template <typename T>
+inline bool CameraSet<T>::hasPose( const size_t id ) const
+{
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+            if( camIt->second.poses[p].id == id )
+                return true;
+
+    // nothing found
+    return false;
+}
+
+
+template <typename T>
+inline bool CameraSet<T>::hasPose( const std::string& name ) const
+{
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+            if( camIt->second.poses[p].name.compare( name ) == 0 )
+                return true;
+
+    // nothing found
+    return false;
 }
 
 

@@ -222,6 +222,17 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QToolButton" name="camera_info">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../res/IrisCC.qrc">
+             <normaloff>:/icon/info.svg</normaloff>:/icon/info.svg</iconset>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>

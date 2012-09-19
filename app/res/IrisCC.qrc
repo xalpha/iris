@@ -3,5 +3,6 @@
         <file>lib-iris.png</file>
         <file>process-stop.svg</file>
         <file>applications-system.svg</file>
+        <file>info.svg</file>
     </qresource>
 </RCC>

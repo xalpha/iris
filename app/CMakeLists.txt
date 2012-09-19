@@ -65,6 +65,7 @@ set( IrisCC_SRC
     src/main.cpp )
 set( IrisCC_QT_UI
     ui/CameraConfig.ui
+    ui/CameraInfo.ui
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
     ui/OpenCVSingleCalibration.ui

@@ -35,6 +35,7 @@
 
 #include "ui_IrisCC.h"
 #include "ui_CameraConfig.h"
+#include "ui_CameraInfo.h"
 #include "ui_ChessboardFinder.h"
 #include "ui_RandomFeatureFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
@@ -57,6 +58,7 @@ IrisCC::IrisCC(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::IrisCC),
     ui_CameraConfig( new Ui::CameraConfig ),
+    ui_CameraInfo( new Ui::CameraInfo ),
     ui_ChessboardFinder( new Ui::ChessboardFinder ),
 #ifdef UCHIYAMA_FOUND
     ui_UchiyamaFinder( new Ui::UchiyamaFinder ),
@@ -75,11 +77,13 @@ IrisCC::IrisCC(QWidget *parent) :
 //    connect( ui->input, SIGNAL(currentChanged(int)), this, SLOT(on_inputChanged(int)) );
 //    connect( ui->capture, SIGNAL(clicked(bool)), this, SLOT(on_capture(void)) );
 
-    // camera config
-    ui_CameraConfig->setupUi( &m_cameraDialog );
+    // camera
+    ui_CameraConfig->setupUi( &m_cameraConfigDialog );
+    ui_CameraInfo->setupUi( &m_cameraInfoDialog );
     connect( ui->select_camera, SIGNAL(currentIndexChanged(int)), this, SLOT(on_selectCamera(void)) );
     connect( ui->configure_camera, SIGNAL(clicked(bool)), this, SLOT(on_configureCamera(void)) );
-    connect( &m_cameraDialog, SIGNAL(accepted(void)), this, SLOT( on_acceptConfigureCamera(void) ) );
+    connect( ui->camera_info, SIGNAL(clicked(bool)), this, SLOT(on_cameraInfo(void)) );
+    connect( &m_cameraConfigDialog, SIGNAL(accepted(void)), this, SLOT( on_acceptConfigureCamera(void) ) );
 
     // finder
     connect( ui->select_finder, SIGNAL(currentIndexChanged(int)), this, SLOT(on_configureFinder(void)) );
@@ -138,6 +142,7 @@ IrisCC::~IrisCC()
 {
     delete ui;
     delete ui_CameraConfig;
+    delete ui_CameraInfo;
     delete ui_ChessboardFinder;
     delete ui_RandomFeatureFinder;
 #ifdef UCHIYAMA_FOUND
@@ -697,33 +702,77 @@ void IrisCC::on_configureCamera()
         const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
 
         // update the dialog
-        ui_CameraConfig->camera_box->setTitle( QString("Camera: \"") + QString::number(cam.id) + QString("\"   (") + QString::number( cam.imageSize(0) ) + "x" + QString::number( cam.imageSize(1) ) + ")" );
+        //ui_CameraConfig->camera_box->setTitle( QString("Camera: \"") + QString::number(cam.id) + QString("\"   (") + QString::number( cam.imageSize(0) ) + "x" + QString::number( cam.imageSize(1) ) + ")" );
         ui_CameraConfig->fx->setValue( cam.intrinsic(0,0) );
         ui_CameraConfig->fy->setValue( cam.intrinsic(1,1) );
         ui_CameraConfig->cx->setValue( cam.intrinsic(0,2) );
         ui_CameraConfig->cy->setValue( cam.intrinsic(1,2) );
+        ui_CameraConfig->sensor_width->setValue( cam.sensorSize(0) );
+        ui_CameraConfig->sensor_height->setValue( cam.sensorSize(1) );
+
+        // show the dialog
+        m_cameraConfigDialog.exec();
+    }
+}
+
+
+void IrisCC::on_cameraInfo()
+{
+    if( m_cs.hasCamera( ui->select_camera->currentIndex() ) )
+    {
+        // get the camera
+        const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+
+        // camera
+        ui_CameraInfo->name->setText( QString::number(cam.id) );
+        ui_CameraInfo->image_size->setText( QString::number( cam.imageSize(0) ) + "x" + QString::number( cam.imageSize(1) ) );
+
+        // update the dialog
+        ui_CameraInfo->fx->setText( QString::number( cam.intrinsic(0,0) ) );
+        ui_CameraInfo->fy->setText( QString::number( cam.intrinsic(1,1) ) );
+        ui_CameraInfo->cx->setText( QString::number( cam.intrinsic(0,2) ) );
+        ui_CameraInfo->cy->setText( QString::number( cam.intrinsic(1,2) ) );
 
         // set intrinsic matrix
         std::stringstream sim;
         sim << cam.intrinsic;
-        ui_CameraConfig->intrinsic_matrix->setText( QString(sim.str().c_str()) );
+        ui_CameraInfo->intrinsic_matrix->setText( QString(sim.str().c_str()) );
 
         // set the distortion
-        ui_CameraConfig->distortion_model->setText( "OpenCV" );
+        ui_CameraInfo->distortion_model->setText( "OpenCV" );
         QString dist;
         for( size_t i=0; i<cam.distortion.size(); i++ )
             dist += QString::number( cam.distortion[i] ) + "\n";
-        ui_CameraConfig->distortion_params->setText( dist );
+        ui_CameraInfo->distortion_params->setText( dist );
+
+        // f, fov & aspect ratio
+        if( cam.sensorSize(0) > 0 && cam.sensorSize(1) > 0 )
+        {
+            cv::Mat_<double> intrinsic;
+            cv::eigen2cv(cam.intrinsic, intrinsic);
+            double fovx, fovy, f, ar;
+            cv::Point2d pp;
+            cv::calibrationMatrixValues( intrinsic,
+                                         cv::Size(cam.imageSize(0), cam.imageSize(1)),
+                                         cam.sensorSize(0),
+                                         cam.sensorSize(1),
+                                         fovx, fovy, f, pp, ar);
+
+            ui_CameraInfo->f->setText( QString::number( f ) );
+            ui_CameraInfo->fov_x->setText( QString::number( fovx ) );
+            ui_CameraInfo->fov_y->setText( QString::number( fovy ) );
+            ui_CameraInfo->aspect_ratio->setText( QString::number( ar ) );
+        }
 
         // show the dialog
-        m_cameraDialog.exec();
+        m_cameraInfoDialog.exec();
     }
 }
 
 
 void IrisCC::on_acceptConfigureCamera()
 {
-    if( ui->select_camera->currentIndex() >= 0 && ui_CameraConfig->edit->isChecked() )
+    if( m_cs.hasCamera( ui->select_camera->currentIndex() ) )
     {
         // get the camera
         iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
@@ -731,6 +780,8 @@ void IrisCC::on_acceptConfigureCamera()
         cam.intrinsic(1,1) = ui_CameraConfig->fy->value();
         cam.intrinsic(0,2) = ui_CameraConfig->cx->value();
         cam.intrinsic(1,2) = ui_CameraConfig->cy->value();
+        cam.sensorSize(0) = ui_CameraConfig->sensor_width->value();
+        cam.sensorSize(1) = ui_CameraConfig->sensor_height->value();
     }
 }
 

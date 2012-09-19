@@ -40,6 +40,7 @@ namespace Ui {
     class IrisCC;
 
     class CameraConfig;
+    class CameraInfo;
 
     // Finders
     class ChessboardFinder;
@@ -83,6 +84,7 @@ protected:
 protected slots:
     void on_selectCamera();
     void on_configureCamera();
+    void on_cameraInfo();
     void on_acceptConfigureCamera();
 
     void on_configureFinder();
@@ -104,10 +106,12 @@ protected slots:
 protected:
     // ui's
     Ui::IrisCC *ui;
-    QDialog m_cameraDialog;
+    QDialog m_cameraConfigDialog;
+    QDialog m_cameraInfoDialog;
     std::vector< std::shared_ptr<QDialog> > m_finderDialogs;
     std::vector< std::shared_ptr<QDialog> > m_calibrationDialogs;
     Ui::CameraConfig* ui_CameraConfig;
+    Ui::CameraInfo* ui_CameraInfo;
     Ui::ChessboardFinder* ui_ChessboardFinder;
     Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
 #ifdef UCHIYAMA_FOUND

@@ -69,7 +69,7 @@ protected:
 
     void updateImageList();
     void updateErrorPlot();
-    void updateImage( int idx );
+    void updateImage( int row );
     void updatePosesPlot();
     void updatePosesPlotCurrent();
     void updateCameraList();
@@ -79,6 +79,7 @@ protected:
 
     void clear();
 
+    size_t getPoseId( int row );
     size_t getCameraId( int comboBoxIdx );
 
 protected slots:
@@ -92,6 +93,7 @@ protected slots:
 
     void on_load();
     void on_clear();
+    void on_erase();
     void on_update();
     void on_save();
 

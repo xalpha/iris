@@ -48,6 +48,10 @@ public:
     // add single image
     size_t add( std::shared_ptr<cimg_library::CImg<uint8_t> > image, const std::string& name, const size_t cameraID=0 );
 
+    // remove pose
+    bool erase( const size_t id );
+    bool erase( const std::string& name ) ;
+
     // get the cameras
     std::map< size_t, iris::Camera<T> >& cameras();
     const std::map< size_t, iris::Camera<T> >& cameras() const;
@@ -136,6 +140,46 @@ inline size_t CameraSet<T>::add( std::shared_ptr<cimg_library::CImg<uint8_t> > i
     // increment pose count and return id
     m_poseCount++;
     return pose.id;
+}
+
+
+template <typename T>
+inline bool CameraSet<T>::erase( const size_t id )
+{
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+    {
+        for( auto poseIt=camIt->second.poses.begin(); poseIt != camIt->second.poses.end(); poseIt++ )
+        {
+            if( poseIt->id == id )
+            {
+                camIt->second.poses.erase( poseIt );
+                return true;
+            }
+        }
+    }
+
+    // nothing found
+    return false;
+}
+
+
+template <typename T>
+inline bool CameraSet<T>::erase( const std::string& name )
+{
+    for( auto camIt=m_cameras.begin(); camIt != m_cameras.end(); camIt++ )
+    {
+        for( auto poseIt=camIt->second.poses.begin(); poseIt != camIt->second.poses.end(); poseIt++ )
+        {
+            if( poseIt->name.compare( name ) == 0)
+            {
+                camIt->second.poses.erase( poseIt );
+                return true;
+            }
+        }
+    }
+
+    // nothing found
+    return false;
 }
 
 

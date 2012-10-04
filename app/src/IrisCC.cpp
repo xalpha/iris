@@ -96,6 +96,7 @@ IrisCC::IrisCC(QWidget *parent) :
     connect( ui->load, SIGNAL(clicked(bool)), this, SLOT(on_load(void)) );
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
     connect( ui->image_list, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
+    connect( ui->erase, SIGNAL(clicked(bool)), this, SLOT(on_erase(void)) );
     connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
     connect( ui->save, SIGNAL(clicked(bool)), this, SLOT(on_save(void)) );
 
@@ -359,7 +360,7 @@ void IrisCC::updateErrorPlot()
     }
 
     // draw current camera
-    if(  ui->select_camera->currentIndex() >= 0 )
+    if( m_cs.hasCamera( getCameraId( ui->select_camera->currentIndex() ) ) )
     {
         // run over all poses of the camera
         const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
@@ -391,9 +392,9 @@ void IrisCC::updateErrorPlot()
     }
 
     // draw the current pose
-    if( ui->image_list->currentRow() > 0 )
+    if( m_cs.hasPose( getPoseId( ui->image_list->currentRow() ) ) )
     {
-        const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
+        const iris::Pose_d& pose = m_cs.pose( getPoseId( ui->image_list->currentRow() ) );
         if( !pose.rejected )
         {
             // points background
@@ -430,7 +431,7 @@ void IrisCC::updateErrorPlot()
 }
 
 
-void IrisCC::updateImage( int idx )
+void IrisCC::updateImage( int row )
 {
     try
     {
@@ -445,11 +446,11 @@ void IrisCC::updateImage( int idx )
             return;
 
         // check which index this is
-        if( idx < 0 || idx >= m_cs.poseCount() )
-            idx = 0;
+        if( row < 0 || row >= m_cs.poseCount() )
+            row = 0;
 
         // get the image
-        const iris::Pose_d pose = m_cs.pose( m_poseIndices[idx] );
+        const iris::Pose_d pose = m_cs.pose( m_poseIndices[row] );
         const cimg_library::CImg<uint8_t>& image = *pose.image;
 
         // convert image to Qt
@@ -474,7 +475,7 @@ void IrisCC::updateImage( int idx )
         if( !pose.rejected )
         {
             // get the pose
-            const iris::Pose_d& pose = m_cs.pose( m_poseIndices[idx] );
+            const iris::Pose_d& pose = m_cs.pose( getPoseId(row) );
 
             // copy the data
             double height = static_cast<double>(imageQt.height());
@@ -575,9 +576,9 @@ void IrisCC::updatePosesPlotCurrent()
     m_worldPoses.clear( 1 );
 
     // draw the current pose
-    if( ui->image_list->currentRow() > 0 )
+    if( m_cs.hasPose( getPoseId( ui->image_list->currentRow() ) ) )
     {
-        const iris::Pose_d& pose = m_cs.pose( m_poseIndices[ ui->image_list->currentRow() ] );
+        const iris::Pose_d& pose = m_cs.pose( getPoseId( ui->image_list->currentRow() ) );
         if( !pose.rejected )
         {
             m_worldPoses.setLineWidth( 3 );
@@ -659,6 +660,16 @@ void IrisCC::clear()
     updateImage(-1);
     updateErrorPlot();
     updatePosesPlot();
+}
+
+
+size_t IrisCC::getPoseId( int row )
+{
+    // get the camera Id
+    if( row >= 0 && row < m_poseIndices.size() )
+        return m_poseIndices[ row ];
+    else
+        return -1;
 }
 
 
@@ -921,6 +932,30 @@ void IrisCC::on_clear()
                                                                  QMessageBox::Yes | QMessageBox::No );
     if( QMessageBox::Yes == response )
         clear();
+}
+
+
+void IrisCC::on_erase()
+{
+    if( m_cs.poseCount() > 0 )
+    {
+        QMessageBox::StandardButton response = QMessageBox::warning( this,
+                                                                     QString(),
+                                                                     "Clear image?",
+                                                                     QMessageBox::Yes | QMessageBox::No );
+        if( QMessageBox::Yes == response )
+        {
+            int row = ui->image_list->currentRow();
+            if(  m_cs.hasPose( m_poseIndices[row] ) )
+            {
+                m_cs.erase( m_poseIndices[row] );
+                updateImageList();
+                updateErrorPlot();
+                updatePosesPlot();
+                updatePosesPlotCurrent();
+            }
+        }
+    }
 }
 
 

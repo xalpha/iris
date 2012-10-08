@@ -79,7 +79,8 @@ if( NOT ${Nox_FOUND} )
     message(STATUS "Nox not found, pulling from server...")
     include(ExternalProject)
     ExternalProject_Add(Nox
-        GIT_REPOSITORY "https://github.com/xalpha/nox.git" )
+        GIT_REPOSITORY "https://github.com/xalpha/nox.git"
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$ENV{HOME}/.local )
 endif()
 
 # check if Uchiyama was found
@@ -94,6 +95,7 @@ set( IrisCC_INCLUDE_DIRS
     extern/qcustomplot
     ${Iris_INCLUDE_DIRS}
     ${Nox_INCLUDE_DIRS}
+    $ENV{HOME}/.local/include
     ${CMAKE_CURRENT_BINARY_DIR} )
 
 # set link libraries
@@ -101,6 +103,8 @@ set( IrisCC_LINK_LIBS
     ${Nox_LIBRARIES}
     ${QT_LIBRARIES}
     ${Iris_LIBRARY} )
+
+message("${Nyx_LIBRARIES}")
 
 # set compile definitions
 set( IrisCC_COMPILE_DEFINITIONS

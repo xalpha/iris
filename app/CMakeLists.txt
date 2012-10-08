@@ -24,7 +24,14 @@ cmake_minimum_required(VERSION 2.8)
 project( IrisCC CXX )
 
 # add module paths
-list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share ${CMAKE_CURRENT_LIST_DIR}/cmake )
+list( APPEND CMAKE_MODULE_PATH
+    ${Iris_DIR}/cmake
+    ${CMAKE_INSTALL_PREFIX}/share
+    ${CMAKE_CURRENT_LIST_DIR}/cmake
+    $ENV{HOME}/.local/share )
+
+# find GLEW
+find_package( GLEW REQUIRED )
 
 # find Qt
 if( WIN32 )
@@ -101,10 +108,9 @@ set( IrisCC_INCLUDE_DIRS
 # set link libraries
 set( IrisCC_LINK_LIBS
     ${Nox_LIBRARIES}
+    ${GLEW_LIBRARY}
     ${QT_LIBRARIES}
     ${Iris_LIBRARY} )
-
-message("${Nyx_LIBRARIES}")
 
 # set compile definitions
 set( IrisCC_COMPILE_DEFINITIONS

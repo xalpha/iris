@@ -89,6 +89,11 @@ if( NOT ${Nox_FOUND} )
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$ENV{HOME}/.local )
 endif()
 
+# check if Random Dot Markers was found
+if( UCHIYAMARKERS_FOUND )
+    list( APPEND IrisCC_QT_UI ui/UCHIYAMARKERSFinder.ui )
+endif()
+
 # set include directories
 set( IrisCC_INCLUDE_DIRS
     include

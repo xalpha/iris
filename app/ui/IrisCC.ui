@@ -263,12 +263,7 @@
            </item>
            <item>
             <property name="text">
-             <string>Uchiyamama</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Random Features (Experimental)</string>
+             <string>Random Dot Markers</string>
             </property>
            </item>
           </widget>

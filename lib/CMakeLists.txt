@@ -56,6 +56,12 @@ list( APPEND Iris_EXTERN_INC
 list( APPEND Iris_EXTERN_SRC
     extern/tinyxml2/tinyxml2.cpp )
 
+# check if Uchiyama was found
+if( UCHIYAMARKERS_FOUND )
+    list( APPEND Iris_INC include/iris/UCHIYAMARKERSFinder.hpp )
+    list( APPEND Iris_SRC src/UCHIYAMARKERSFinder.cpp )
+endif()
+
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )
 

@@ -114,6 +114,14 @@ if(OPENMP_FOUND)
     message( STATUS "iris: OpenMP detected, taking advantage" )
 endif()
 
+# try to find Random Dot Markers
+find_package( UCHIYAMARKERS QUIET )
+if( UCHIYAMARKERS_FOUND )
+    list( APPEND Iris_INCLUDE_DIRS ${UCHIYAMARKERS_INCLUDE_DIRS} )
+    list( APPEND Iris_LINK_LIBRARIES ${UCHIYAMARKERS_LIBRARY} )
+    #list( APPEND Iris_COMPILE_DEFINITIONS UCHIYAMARKERS_FOUND  )
+    set( Iris_COMPILE_DEFINITIONS "${Iris_COMPILE_DEFINITIONS} -DUCHIYAMARKERS_FOUND" CACHE INTERNAL "all compile definitions iris needs" )
+endif()
 
 
 

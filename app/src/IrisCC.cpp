@@ -36,15 +36,18 @@
 #include "ui_IrisCC.h"
 #include "ui_CameraConfig.h"
 #include "ui_CameraInfo.h"
+
 #include "ui_ChessboardFinder.h"
-#include "ui_RandomFeatureFinder.h"
+#ifdef UCHIYAMARKERS_FOUND
+#include <iris/UCHIYAMARKERSFinder.hpp>
+#include "ui_UCHIYAMARKERSFinder.h"
+#endif
 #include "ui_OpenCVSingleCalibration.h"
 #include "ui_OpenCVStereoCalibration.h"
 
 #include <IrisCC.hpp>
 
 #include <iris/ChessboardFinder.hpp>
-
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
 
@@ -55,6 +58,9 @@ IrisCC::IrisCC(QWidget *parent) :
     ui_CameraConfig( new Ui::CameraConfig ),
     ui_CameraInfo( new Ui::CameraInfo ),
     ui_ChessboardFinder( new Ui::ChessboardFinder ),
+#ifdef UCHIYAMARKERS_FOUND
+    ui_UCHIYAMARKERSFinder( new Ui::UCHIYAMARKERSFinder ),
+#endif
     ui_OpenCVSingleCalibration( new Ui::OpenCVSingleCalibration ),
     ui_OpenCVStereoCalibration( new Ui::OpenCVStereoCalibration )
 {
@@ -94,6 +100,11 @@ IrisCC::IrisCC(QWidget *parent) :
     // init finder dialogs
     m_finderDialogs.push_back( std::shared_ptr<QDialog>() );
     m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_ChessboardFinder->setupUi( m_finderDialogs.back().get() );
+#ifdef UCHIYAMARKERS_FOUND
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_UCHIYAMARKERSFinder->setupUi( m_finderDialogs.back().get() );
+#else
+    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
+#endif
 
     // init calibration dialogs
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
@@ -132,6 +143,9 @@ IrisCC::~IrisCC()
     delete ui_CameraConfig;
     delete ui_CameraInfo;
     delete ui_ChessboardFinder;
+#ifdef UCHIYAMARKERS_FOUND
+    delete ui_UCHIYAMARKERSFinder;
+#endif
     delete ui_OpenCVSingleCalibration;
     delete ui_OpenCVStereoCalibration;
 }
@@ -169,6 +183,18 @@ void IrisCC::update()
                 f = std::shared_ptr<iris::Finder>(finder);
                 break;
             }
+
+            // uchiyama
+#           ifdef UCHIYAMARKERS_FOUND
+            case 2 :
+            {
+                iris::UCHIYAMARKERSFinder* finder = new iris::UCHIYAMARKERSFinder();
+                finder->setScale( ui_UCHIYAMARKERSFinder->scale->value() );
+                finder->configure( ui_UCHIYAMARKERSFinder->points->toPlainText().toStdString() );
+                f = std::shared_ptr<iris::Finder>(finder);
+                break;
+            }
+#           endif
 
             // not supported finder
             default:
@@ -780,6 +806,15 @@ void IrisCC::on_configureFinder()
                 break;
 
             case 1 : // chessboard
+                ui->configure_finder->setEnabled(true);
+                m_finderDialogs[ ui->select_finder->currentIndex() ]->exec();
+                break;
+#           ifdef UCHIYAMARKERS_FOUND
+            case 2 : // uchiyama
+                ui->configure_finder->setEnabled(true);
+                m_finderDialogs[ ui->select_finder->currentIndex() ]->exec();
+                break;
+#           endif
 
             // not supported finder
             default:

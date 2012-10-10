@@ -71,7 +71,7 @@ public:
     size_t poseCount();
 
     // save to disk
-    void save( const std::string& filename );
+    void save( const std::string& filename, bool undistort=false );
 
     // load from disk
     void load( const std::string& filename );
@@ -298,10 +298,12 @@ inline size_t CameraSet<T>::poseCount()
 
 
 template <typename T>
-inline void CameraSet<T>::save( const std::string& filename )
+inline void CameraSet<T>::save( const std::string& filename, bool undistort )
 {
     // init stuff
     tinyxml2::XMLDocument doc;
+    progress<size_t> pb( "CameraSet::save: saving poses ", poseCount() );
+    pb.update();
 
     // add root
     tinyxml2::XMLNode* root = doc.InsertEndChild( doc.NewElement( "CameraCalibration" ) );
@@ -339,12 +341,28 @@ inline void CameraSet<T>::save( const std::string& filename )
                 appendTextElement( doc, *pose, std::string("PointIndices"), toString( camIt->second.poses[p].pointIndices ) );
                 appendTextElement( doc, *pose, std::string("Transformation"), toString( camIt->second.poses[p].transformation ) );
                 appendTextElement( doc, *pose, std::string("ProjectedPoints"), toString( camIt->second.poses[p].projected2D ) );
+
+                // check if should undistort
+                if( undistort )
+                {
+                    // get the pose
+                    cimg_library::CImg<uint8_t> undistorted;
+                    iris::undistort( camIt->second, camIt->second.poses[p], undistorted );
+
+                    // assemble filename
+                    std::string imageFileName = camIt->second.poses[p].name.substr( 0, camIt->second.poses[p].name.find_last_of('.') ) + "-undistorted.png";
+                    undistorted.save_png( imageFileName.c_str() );
+                }
             }
+
+            // update progress bar
+            pb.next_step();
         }
     }
 
-    // save to disk
+    // wrap up
     doc.SaveFile( filename.c_str() );
+    pb.finish();
 }
 
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>813</width>
-    <height>687</height>
+    <height>720</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -360,8 +360,24 @@
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QPushButton" name="save">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
             <string>Save</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="save_images">
+           <property name="toolTip">
+            <string>Save undistorted images.</string>
+           </property>
+           <property name="text">
+            <string>Images</string>
            </property>
           </widget>
          </item>

@@ -51,6 +51,9 @@ void OpenCVSingleCalibration::calibrate( CameraSet_d &cs )
     // check that all is OK
     check();
 
+    // init progress bar
+    iris::progress<size_t> pb( "OpenCVSingleCalibration::calibrate: ", cs.poseCount() );
+
     // run over all cameras and calibrate them
     for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
@@ -58,16 +61,29 @@ void OpenCVSingleCalibration::calibrate( CameraSet_d &cs )
         std::vector< Pose_d >& poses = it->second.poses;
         size_t poseCount = poses.size();
 
+
         // run feature detection
         if( m_finder->useOpenMP() )
         {
             #pragma omp parallel for
             for( int p=0; p<poseCount; p++ )
+            {
                 m_finder->find( poses[p] );
+
+                #pragma omp critical
+                {
+                    pb.next_step();
+                }
+            }
         }
         else
+        {
             for( int p=0; p<poseCount; p++ )
+            {
                 m_finder->find( poses[p] );
+                pb.next_step();
+            }
+        }
     }
 
     // filter the poses
@@ -77,7 +93,8 @@ void OpenCVSingleCalibration::calibrate( CameraSet_d &cs )
     for( auto it = m_filteredCameras.begin(); it != m_filteredCameras.end(); it++ )
         calibrateCamera( it->second, flags() );
 
-    // commit the calibration calibrated frames
+    // wrap up
+    pb.finish();
     commit( cs );
 }
 

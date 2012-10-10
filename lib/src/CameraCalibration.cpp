@@ -40,11 +40,13 @@ namespace iris {
 
 CameraCalibration::CameraCalibration() :
     m_finder(0),
-    m_handEye(false)
+    m_handEye(false),
+    m_threadCount(1)
 {
     // use all available threads
 #ifdef IRIS_OPENMP
     omp_set_num_threads( omp_get_max_threads() );
+    m_threadCount = omp_get_max_threads();
 #endif
 }
 

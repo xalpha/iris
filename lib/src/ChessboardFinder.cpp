@@ -214,8 +214,6 @@ int ChessboardFinder::devideFactor( const cimg_library::CImg<uint8_t>& image )
         f *= 2;
     }
 
-    std::cout << "ChessboardFinder::devideFactor: width: " << image.width() << ", height: " << image.height() << ", MP: " << static_cast<double>(pixelCount)/1000000.0 << ", f: " << f << std::endl;
-
     return f;
 }
 

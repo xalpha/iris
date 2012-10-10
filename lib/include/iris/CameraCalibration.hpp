@@ -68,6 +68,9 @@ protected:
 
     // flags
     bool m_handEye;
+
+    // threads
+    size_t m_threadCount;
 };
 
 

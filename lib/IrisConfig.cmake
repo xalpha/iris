@@ -26,6 +26,12 @@
 # Iris_INCLUDE_DIRS - all include directories iris needs
 # Iris_LIBRARY - library
 
+# version
+set(Iris_MAJOR_VERSION 0)
+set(Iris_MINOR_VERSION 1)
+set(Iris_PATCH_VERSION 0)
+set(Iris_VERSION ${Iris_MAJOR_VERSION}.${Iris_MINOR_VERSION}.${Iris_PATCH_VERSION})
+
 # set path
 set( Iris_DIR ${CMAKE_CURRENT_LIST_DIR})
 set( ENV{Iris_DIR} ${Iris_DIR} )

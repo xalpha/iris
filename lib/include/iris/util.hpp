@@ -252,114 +252,6 @@ inline void eigen2cv( const Eigen::Matrix<T, Rows, Cols>& trans, cv::Mat& rot, c
 }
 
 
-
-/////
-// OpenCV Image to CImg
-///
-template <typename T, int Ch>
-inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
-{
-    // some runtime checks
-    if( Ch != src.spectrum() )
-        throw std::runtime_error( "iris::cimg2cv: channel count of source image does not match template parameter." );
-
-    // init result
-    typedef cv::Vec<T,Ch> Pix;
-    cv::Mat_<Pix> result( src.height(), src.width() ); // don't forget cv::Mat works on rows and columns and not width and height ;)
-
-    // convert
-    for( int y=0; y<src.height(); y++ )
-        for( int x=0; x<src.width(); x++ )
-            for( int c=0; c<Ch; c++ )
-                result(y,x)[c] = src( x, y, 0, c );
-
-    // pass the result
-    dst = result;
-}
-
-
-template <typename T>
-inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
-{
-    switch( src.spectrum() )
-    {
-        case 1 : cimg2cv<T, 1>(src, dst); break;
-        case 2 : cimg2cv<T, 2>(src, dst); break;
-        case 3 : cimg2cv<T, 3>(src, dst); break;
-        case 4 : cimg2cv<T, 4>(src, dst); break;
-        default:
-            throw std::runtime_error( "iris::cimg2cv: unsupported number of channels." );
-    }
-}
-
-
-template <typename T, int Ch>
-inline void cv2cimg( const cv::Mat& src, cimg_library::CImg<T>& dst )
-{
-    // init result
-    typedef cv::Vec<T,Ch> Pix;
-    cimg_library::CImg<uint8_t> result( src.cols, src.rows, 1, Ch );
-
-    // convert
-    for( int y=0; y<src.rows; y++ )
-        for( int x=0; x<src.cols; x++ )
-            for( int c=0; c<Ch; c++ )
-                result( x, y, 0, c ) = src.at<Pix>(y,x)[c];
-
-    // pass the result
-    dst = result;
-}
-
-
-template <typename T>
-inline void cv2cimg( const cv::Mat& src, cimg_library::CImg<T>& dst )
-{
-    switch( src.depth() )
-    {
-        case 1 : cv2cimg<T, 1>(src, dst); break;
-        case 2 : cv2cimg<T, 2>(src, dst); break;
-        case 3 : cv2cimg<T, 3>(src, dst); break;
-        case 4 : cv2cimg<T, 4>(src, dst); break;
-        default:
-            throw std::runtime_error( "iris::cv2cimg: unsupported number of channels." );
-    }
-}
-
-
-/////
-// Eigen Cross Matrix
-///
-template <typename T>
-inline Eigen::Matrix<T,3,3> crossMatrix( const Eigen::Matrix<T,3,1>& v )
-{
-    Eigen::Matrix<T,3,3> result;
-    result <<   0, -v(2),  v(1),
-             v(2),     0, -v(0),
-            -v(1),  v(0),     0;
-    return result;
-}
-
-
-/////
-// Eigen Vector Product (or whatever this stupidity is called)
-///
-template <typename T>
-inline Eigen::Matrix<T,3,3> vectorProduct( const Eigen::Matrix<T,3,1>& a, const Eigen::Matrix<T,3,1>& b )
-{
-    Eigen::Matrix<T,3,3> result;
-    result(0,0) = a(0)*b(0);
-    result(0,1) = a(0)*b(1);
-    result(0,2) = a(0)*b(2);
-    result(1,0) = a(1)*b(0);
-    result(1,1) = a(1)*b(1);
-    result(1,2) = a(1)*b(2);
-    result(2,0) = a(2)*b(0);
-    result(2,1) = a(2)*b(1);
-    result(2,2) = a(2)*b(2);
-    return result;
-}
-
-
 /////
 // from Eigen to String (with love)
 ///
@@ -466,8 +358,198 @@ inline void str2eigenVector( std::string str, std::vector< Eigen::Matrix<T,Rows,
 
 
 
+/////
+// OpenCV Image to CImg
+///
+template <typename T, int Ch>
+inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
+{
+    // some runtime checks
+    if( Ch != src.spectrum() )
+        throw std::runtime_error( "iris::cimg2cv: channel count of source image does not match template parameter." );
+
+    // init result
+    typedef cv::Vec<T,Ch> Pix;
+    cv::Mat_<Pix> result( src.height(), src.width() ); // don't forget cv::Mat works on rows and columns and not width and height ;)
+
+    // convert
+    for( int y=0; y<src.height(); y++ )
+        for( int x=0; x<src.width(); x++ )
+            for( int c=0; c<Ch; c++ )
+                result(y,x)[c] = src( x, y, 0, c );
+
+    // pass the result
+    dst = result;
+}
 
 
+template <typename T>
+inline void cimg2cv( const cimg_library::CImg<T>& src, cv::Mat& dst )
+{
+    switch( src.spectrum() )
+    {
+        case 1 : cimg2cv<T, 1>(src, dst); break;
+        case 2 : cimg2cv<T, 2>(src, dst); break;
+        case 3 : cimg2cv<T, 3>(src, dst); break;
+        case 4 : cimg2cv<T, 4>(src, dst); break;
+        default:
+            throw std::runtime_error( "iris::cimg2cv: unsupported number of channels." );
+    }
+}
+
+
+template <typename T, int Ch>
+inline void cv2cimg( const cv::Mat& src, cimg_library::CImg<T>& dst )
+{
+    // init result
+    typedef cv::Vec<T,Ch> Pix;
+    cimg_library::CImg<uint8_t> result( src.cols, src.rows, 1, Ch );
+
+    // convert
+    for( int y=0; y<src.rows; y++ )
+        for( int x=0; x<src.cols; x++ )
+            for( int c=0; c<Ch; c++ )
+                result( x, y, 0, c ) = src.at<Pix>(y,x)[c];
+
+    // pass the result
+    dst = result;
+}
+
+
+template <typename T>
+inline void cv2cimg( const cv::Mat& src, cimg_library::CImg<T>& dst )
+{
+    switch( src.channels() )
+    {
+        case 1 : cv2cimg<T, 1>(src, dst); break;
+        case 2 : cv2cimg<T, 2>(src, dst); break;
+        case 3 : cv2cimg<T, 3>(src, dst); break;
+        case 4 : cv2cimg<T, 4>(src, dst); break;
+        default:
+            throw std::runtime_error( "iris::cv2cimg: unsupported number of channels (" + toString( src.channels() ) + ")." );
+    }
+}
+
+
+/////
+// Eigen Cross Matrix
+///
+template <typename T>
+inline Eigen::Matrix<T,3,3> crossMatrix( const Eigen::Matrix<T,3,1>& v )
+{
+    Eigen::Matrix<T,3,3> result;
+    result <<   0, -v(2),  v(1),
+             v(2),     0, -v(0),
+            -v(1),  v(0),     0;
+    return result;
+}
+
+
+/////
+// Eigen Vector Product (or whatever this stupidity is called)
+///
+template <typename T>
+inline Eigen::Matrix<T,3,3> vectorProduct( const Eigen::Matrix<T,3,1>& a, const Eigen::Matrix<T,3,1>& b )
+{
+    Eigen::Matrix<T,3,3> result;
+    result(0,0) = a(0)*b(0);
+    result(0,1) = a(0)*b(1);
+    result(0,2) = a(0)*b(2);
+    result(1,0) = a(1)*b(0);
+    result(1,1) = a(1)*b(1);
+    result(1,2) = a(1)*b(2);
+    result(2,0) = a(2)*b(0);
+    result(2,1) = a(2)*b(1);
+    result(2,2) = a(2)*b(2);
+    return result;
+}
+
+
+/////
+// Undistort pose
+///
+template <typename Timg, typename Tmat>
+inline void undistort( const Camera<Tmat>& camera, const Pose<Tmat> &pose, cimg_library::CImg<Timg> &image )
+{
+    // get the pose
+    cv::Mat_<uint8_t> imageCV;
+    cv::Mat_<uint8_t> imageCVout;
+    cimg2cv( *pose.image, imageCV );
+    cv::Mat_<Tmat> intrinsic;
+    cv::eigen2cv( camera.intrinsic, intrinsic );
+    cv::Mat_<Tmat> distCoeff( camera.distortion );
+
+    // undistort the image
+    cv::undistort( imageCV, imageCVout, intrinsic, distCoeff );
+
+    // save result
+    cv2cimg( imageCVout, image );
+}
+
+
+/////
+// Commandline Progress bar
+///
+template <typename T>
+class progress
+{
+public:
+    progress( const std::string& message, T steps ) :
+        m_message(message),
+        m_step(0),
+        m_steps(steps)
+    {}
+
+
+    ~progress(){ reset(); }
+
+
+    void step( T step )
+    {
+        m_step = (step) < m_steps ? step : m_steps;
+        update();
+    }
+
+
+    void next_step()
+    {
+        step( m_step + static_cast<T>(1) );
+    }
+
+
+    void reset()
+    {
+        m_step = 0;
+    }
+
+
+    void finish()
+    {
+        m_step = m_steps;
+        update();
+        std::cout << std::endl;
+    }
+
+
+    void update()
+    {
+        // assemble the progressbar
+        size_t pc = (100.0*static_cast<size_t>(m_step)) / static_cast<size_t>(m_steps);
+        std::string pb = " [";
+        for( size_t i=0; i<20; i++ )
+            pb += ( (i*100)/20 <= pc ) ? "#" : " ";
+        pb += "] " + toString( pc ) + " (" + toString(m_step) + "/" + toString(m_steps) +")";
+
+
+        std::cout << '\r' << m_message << pb;
+        std::cout.flush();
+    }
+
+protected:
+    std::string m_message;
+    T m_step;
+    T m_steps;
+};
 
 
 
@@ -490,8 +572,6 @@ inline cimg_library::CImg<T> pixelLimit( const cimg_library::CImg<T>& image, con
         pixelCount = result.width()*result.height();
         times++;
     }
-
-    std::cout << "iris::pixelLimit: width: " << image.width() << ", height: " << image.height() << ", MP: " << static_cast<double>(pixelCount)/1000000.0 << "(" << times << "x)" << std::endl;
 
     return result;
 }

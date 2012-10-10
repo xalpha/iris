@@ -532,6 +532,7 @@ void IrisCC::updatePosesPlot()
     std::vector<Eigen::Matrix4d> RTs;
     std::vector<Eigen::Vector3d> points3D;
     std::vector<Eigen::Vector4d> colors;
+    double alphaInc = static_cast<double>(1) / static_cast<double>(m_cs.poseCount());
     m_worldPoses.clear();
 
     // run over all camera poses
@@ -539,6 +540,13 @@ void IrisCC::updatePosesPlot()
         for( size_t p=0; p<camIt->second.poses.size(); p++ )
             if( !camIt->second.poses[p].rejected )
             {
+                // init alpha values
+                if( points3D.size() == 0 )
+                {
+                    points3D.resize( camIt->second.poses[p].pointsMax );
+                    colors.resize( camIt->second.poses[p].pointsMax, Eigen::Vector4d::Zero() );
+                }
+
                 // get the transformation of the pose
                 Eigen::Affine3d trans(camIt->second.poses[p].transformation);
                 trans = trans.inverse();
@@ -549,12 +557,13 @@ void IrisCC::updatePosesPlot()
                 for( size_t k=0; k<camIt->second.poses[p].points3D.size(); k++ )
                 {
                     double hue = static_cast<double>(3*camIt->second.poses[p].pointIndices[k])/static_cast<double>(4*camIt->second.poses[p].pointsMax);
-                    double alpha = static_cast<double>(1) / static_cast<double>(camIt->second.poses.size());
+                    double alpha = colors[camIt->second.poses[p].pointIndices[k]](3) + alphaInc;
+
                     QColor col;
                     col.setHslF( hue, 0.8, 0.4 );
 
-                    points3D.push_back( camIt->second.poses[p].points3D[k] );
-                    colors.push_back( Eigen::Vector4d( col.redF(), col.greenF(), col.blueF(), alpha ) );
+                    points3D[camIt->second.poses[p].pointIndices[k]] = camIt->second.poses[p].points3D[k];
+                    colors[camIt->second.poses[p].pointIndices[k]] = Eigen::Vector4d( col.redF(), col.greenF(), col.blueF(), alpha );
                 }
             }
 
@@ -972,7 +981,7 @@ void IrisCC::on_save()
         // get an output filename
         QString filename = QFileDialog::getSaveFileName(this, "Save Calibration", "calibration.xml", "Iris Camera Calibration XML (*.xml)");
 
-        m_cs.save( filename.toStdString() );
+        m_cs.save( filename.toStdString(), ui->save_images->isChecked() );
     }
     catch( std::exception &e )
     {

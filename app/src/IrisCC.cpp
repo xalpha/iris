@@ -37,7 +37,6 @@
 #include "ui_CameraConfig.h"
 #include "ui_CameraInfo.h"
 #include "ui_ChessboardFinder.h"
-#include "ui_RandomFeatureFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
 #include "ui_OpenCVStereoCalibration.h"
 
@@ -780,6 +779,9 @@ void IrisCC::on_configureFinder()
                 break;
 
             case 1 : // chessboard
+                ui->configure_finder->setEnabled(true);
+                m_finderDialogs[ ui->select_finder->currentIndex() ]->exec();
+                break;
 
             // not supported finder
             default:

@@ -261,16 +261,6 @@
              <string>Chessboard</string>
             </property>
            </item>
-           <item>
-            <property name="text">
-             <string>Uchiyamama</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Random Features (Experimental)</string>
-            </property>
-           </item>
           </widget>
          </item>
          <item>

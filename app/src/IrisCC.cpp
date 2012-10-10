@@ -809,6 +809,7 @@ void IrisCC::on_configureFinder()
                 ui->configure_finder->setEnabled(true);
                 m_finderDialogs[ ui->select_finder->currentIndex() ]->exec();
                 break;
+
 #           ifdef UCHIYAMARKERS_FOUND
             case 2 : // uchiyama
                 ui->configure_finder->setEnabled(true);

@@ -44,11 +44,6 @@
 #include <IrisCC.hpp>
 
 #include <iris/ChessboardFinder.hpp>
-#ifdef UCHIYAMA_FOUND
-#include <iris/UchiyamaFinder.hpp>
-#include "ui_UchiyamaFinder.h"
-#endif
-#include <iris/RandomFeatureFinder.hpp>
 
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
@@ -60,10 +55,6 @@ IrisCC::IrisCC(QWidget *parent) :
     ui_CameraConfig( new Ui::CameraConfig ),
     ui_CameraInfo( new Ui::CameraInfo ),
     ui_ChessboardFinder( new Ui::ChessboardFinder ),
-#ifdef UCHIYAMA_FOUND
-    ui_UchiyamaFinder( new Ui::UchiyamaFinder ),
-#endif
-    ui_RandomFeatureFinder( new Ui::RandomFeatureFinder ),
     ui_OpenCVSingleCalibration( new Ui::OpenCVSingleCalibration ),
     ui_OpenCVStereoCalibration( new Ui::OpenCVStereoCalibration )
 {
@@ -103,10 +94,6 @@ IrisCC::IrisCC(QWidget *parent) :
     // init finder dialogs
     m_finderDialogs.push_back( std::shared_ptr<QDialog>() );
     m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_ChessboardFinder->setupUi( m_finderDialogs.back().get() );
-#ifdef UCHIYAMA_FOUND
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_UchiyamaFinder->setupUi( m_finderDialogs.back().get() );
-#endif
-    m_finderDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );    ui_RandomFeatureFinder->setupUi( m_finderDialogs.back().get() );
 
     // init calibration dialogs
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
@@ -145,10 +132,6 @@ IrisCC::~IrisCC()
     delete ui_CameraConfig;
     delete ui_CameraInfo;
     delete ui_ChessboardFinder;
-    delete ui_RandomFeatureFinder;
-#ifdef UCHIYAMA_FOUND
-    delete ui_UchiyamaFinder;
-#endif
     delete ui_OpenCVSingleCalibration;
     delete ui_OpenCVStereoCalibration;
 }
@@ -183,30 +166,6 @@ void IrisCC::update()
                 finder->setAdaptiveThreshold( ui_ChessboardFinder->adaptiveThreshold->isChecked() );
                 finder->setNormalizeImage( ui_ChessboardFinder->normalizeImage->isChecked() );
                 finder->setSubpixelCorner( ui_ChessboardFinder->subpixel_corner->isChecked() );
-                f = std::shared_ptr<iris::Finder>(finder);
-                break;
-            }
-
-            // uchiyama
-#           ifdef UCHIYAMA_FOUND
-            case 2 :
-            {
-                iris::UchiyamaFinder* finder = new iris::UchiyamaFinder();
-                finder->setScale( ui_UchiyamaFinder->scale->value() );
-                finder->configure( ui_UchiyamaFinder->points->toPlainText().toStdString() );
-                f = std::shared_ptr<iris::Finder>(finder);
-                break;
-            }
-#           endif
-
-            // random feature descriptor
-            case 3 :
-            {
-                iris::RandomFeatureFinder* finder = new iris::RandomFeatureFinder();
-                finder->setScale( ui_RandomFeatureFinder->scale->value() );
-                finder->configure( ui_RandomFeatureFinder->points->toPlainText().toStdString() );
-                finder->setMaxRadiusRatio( ui_RandomFeatureFinder->max_radius_ratio->value() );
-                finder->setMinRadius( ui_RandomFeatureFinder->min_radius->value() );
                 f = std::shared_ptr<iris::Finder>(finder);
                 break;
             }
@@ -821,13 +780,6 @@ void IrisCC::on_configureFinder()
                 break;
 
             case 1 : // chessboard
-#           ifdef UCHIYAMA_FOUND
-            case 2 : // uchiyama
-#           endif
-            case 3 : // random feature descriptor
-                ui->configure_finder->setEnabled(true);
-                m_finderDialogs[ ui->select_finder->currentIndex() ]->exec();
-                break;
 
             // not supported finder
             default:

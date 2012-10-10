@@ -44,10 +44,6 @@ namespace Ui {
 
     // Finders
     class ChessboardFinder;
-    class RandomFeatureFinder;
-#ifdef UCHIYAMA_FOUND
-    class UchiyamaFinder;
-#endif
 
     // CameraCalibration
     class OpenCVSingleCalibration;
@@ -115,18 +111,11 @@ protected:
     Ui::CameraConfig* ui_CameraConfig;
     Ui::CameraInfo* ui_CameraInfo;
     Ui::ChessboardFinder* ui_ChessboardFinder;
-    Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
-#ifdef UCHIYAMA_FOUND
-    Ui::UchiyamaFinder* ui_UchiyamaFinder;
-#endif
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
 
     // opengl
     nox::plot<double> m_worldPoses;
-
-//    // camera capture
-//    cv::VideoCapture m_videoCapture;
 
     // camera set
     iris::CameraSet_d m_cs;

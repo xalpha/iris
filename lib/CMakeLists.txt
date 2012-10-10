@@ -40,8 +40,6 @@ list( APPEND Iris_INC
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
-    include/iris/RandomFeatureDescriptor.hpp
-    include/iris/RandomFeatureFinder.hpp
     include/iris/util.hpp )
 list( APPEND Iris_SRC
     src/CameraCalibration.cpp
@@ -49,8 +47,7 @@ list( APPEND Iris_SRC
     src/Finder.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp
-    src/OpenCVStereoCalibration.cpp
-    src/RandomFeatureFinder.cpp )
+    src/OpenCVStereoCalibration.cpp )
 
 # external dependencies of iris
 list( APPEND Iris_EXTERN_INC
@@ -58,12 +55,6 @@ list( APPEND Iris_EXTERN_INC
     extern/tinyxml2/tinyxml2.h )
 list( APPEND Iris_EXTERN_SRC
     extern/tinyxml2/tinyxml2.cpp )
-
-# check if Uchiyama was found
-if( Uchiyama_FOUND )
-    list( APPEND Iris_INC include/iris/UchiyamaFinder.hpp )
-    list( APPEND Iris_SRC src/UchiyamaFinder.cpp )
-endif()
 
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )

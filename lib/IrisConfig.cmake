@@ -115,14 +115,5 @@ if(OPENMP_FOUND)
 endif()
 
 
-# try to find Uchiyama
-find_package( Uchiyama QUIET )
-if( Uchiyama_FOUND )
-    list( APPEND Iris_INCLUDE_DIRS ${Uchiyama_INCLUDE_DIRS} )
-    list( APPEND Iris_LINK_LIBRARIES ${Uchiyama_LIBRARY} )
-    #list( APPEND Iris_COMPILE_DEFINITIONS UCHIYAMA_FOUND  )
-    set( Iris_COMPILE_DEFINITIONS "${Iris_COMPILE_DEFINITIONS} -DUCHIYAMA_FOUND" CACHE INTERNAL "all compile definitions iris needs" )
-endif()
-
 
 

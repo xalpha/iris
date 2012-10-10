@@ -76,8 +76,7 @@ set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
     ui/OpenCVSingleCalibration.ui
-    ui/OpenCVStereoCalibration.ui
-    ui/RandomFeatureFinder.ui )
+    ui/OpenCVStereoCalibration.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
 # find NOX
@@ -88,11 +87,6 @@ if( NOT ${Nox_FOUND} )
     ExternalProject_Add(Nox
         GIT_REPOSITORY "https://github.com/xalpha/nox.git"
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$ENV{HOME}/.local )
-endif()
-
-# check if Uchiyama was found
-if( Uchiyama_FOUND )
-    list( APPEND IrisCC_QT_UI ui/UchiyamaFinder.ui )
 endif()
 
 # set include directories

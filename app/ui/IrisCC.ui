@@ -261,14 +261,11 @@
              <string>Chessboard</string>
             </property>
            </item>
-<<<<<<< HEAD
            <item>
             <property name="text">
              <string>Random Dot Markers</string>
             </property>
            </item>
-=======
->>>>>>> experimental
           </widget>
          </item>
          <item>

@@ -37,7 +37,7 @@ set( Iris_DIR ${CMAKE_CURRENT_LIST_DIR})
 set( ENV{Iris_DIR} ${Iris_DIR} )
 
 # add module paths
-list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share )
+list( APPEND CMAKE_MODULE_PATH ${Iris_DIR}/cmake ${CMAKE_INSTALL_PREFIX}/share $ENV{HOME}/.local/share )
 
 # find Eigen3
 if( WIN32 )
@@ -115,7 +115,7 @@ if(OPENMP_FOUND)
 endif()
 
 # try to find Random Dot Markers
-find_package( UCHIYAMARKERS QUIET )
+find_package( UCHIYAMARKERS )
 if( UCHIYAMARKERS_FOUND )
     list( APPEND Iris_INCLUDE_DIRS ${UCHIYAMARKERS_INCLUDE_DIRS} )
     list( APPEND Iris_LINK_LIBRARIES ${UCHIYAMARKERS_LIBRARY} )

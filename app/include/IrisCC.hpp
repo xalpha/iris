@@ -44,6 +44,7 @@ namespace Ui {
 
     // Finders
     class ChessboardFinder;
+    class RandomFeatureFinder;
 
     // CameraCalibration
     class OpenCVSingleCalibration;
@@ -111,6 +112,7 @@ protected:
     Ui::CameraConfig* ui_CameraConfig;
     Ui::CameraInfo* ui_CameraInfo;
     Ui::ChessboardFinder* ui_ChessboardFinder;
+    Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
 

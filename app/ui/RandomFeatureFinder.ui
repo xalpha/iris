@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RandomFeatureFinder</class>
+ <widget class="QDialog" name="RandomFeatureFinder">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>300</width>
+    <height>498</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Random Feature Finder Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Pattern</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Scale</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="scale">
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="decimals">
+         <number>12</number>
+        </property>
+        <property name="value">
+         <double>0.000094736800000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QPlainTextEdit" name="points">
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="plainText">
+         <string notr="true">2359 1487
+390 718
+240 439
+1048 667
+1931 643
+1900 1367
+1896 1544
+2476 1252
+2307 986
+530 357
+184 1378
+2503 1447
+2069 709
+452 163
+1159 1647
+632 432
+2242 1644
+1743 1501
+1089 1129
+1494 292
+356 1154
+800 1033
+155 1575
+1181 1397
+663 823
+2088 959
+529 1392
+891 356
+1534 681
+391 344
+618 1539
+985 1230
+1164 162
+2188 384
+1319 792
+984 953
+2074 1399
+1345 1166
+1503 1061
+873 798
+1563 939
+1604 499
+2348 147
+788 620
+1960 1201
+234 669
+1966 379
+933 1396
+1638 188
+2387 335
+2537 1141
+2394 604
+2278 483
+1309 507
+879 1141
+836 1307
+330 1426
+1448 449
+730 1368
+1159 333
+1774 652
+1745 795
+266 901
+2231 1320
+2163 253
+1742 1023
+347 508
+524 580
+1676 1302
+2101 1641
+1956 522
+1132 1009
+1466 1368
+2011 1069
+1808 912
+1370 1573
+629 1667
+995 227
+1184 818
+1029 1529
+1933 926
+487 920
+2563 838
+130 1130
+1471 817
+695 327
+1840 483
+120 1255
+1340 920
+1217 1121
+2387 1350
+609 1118
+2197 615
+498 1594
+989 546
+243 224
+1306 1350
+2517 276
+1333 168
+2368 744
+778 180
+2523 399
+2230 798
+428 1038
+1853 283
+1348 291
+769 1636
+1917 790
+2442 1001
+2424 1667
+1813 162
+1768 1620
+1484 1244
+1467 149
+2431 849
+1513 1489
+1277 1471
+1702 1167
+1720 279
+1010 380
+907 1602
+1553 1624
+575 228
+2030 134
+284 1044
+2324 1190
+348 1619
+1163 456
+665 571
+1875 1053
+1271 631
+516 1259
+605 699
+2118 522
+2548 553
+124 314
+1409 703
+277 1254
+173 991
+2044 269
+897 141
+795 491
+2208 1459
+2579 170
+910 644
+612 945
+2568 1637
+2563 1023
+531 795
+743 1222</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Ellipse Detection</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="max_radius_ratio">
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="suffix">
+         <string> = max/min</string>
+        </property>
+        <property name="minimum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>10.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>3.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Min Radius</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Max Radii Ratio</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="min_radius">
+        <property name="suffix">
+         <string> px</string>
+        </property>
+        <property name="maximum">
+         <double>9999.989999999999782</double>
+        </property>
+        <property name="value">
+         <double>10.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Descriptor</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QComboBox" name="descriptor">
+        <item>
+         <property name="text">
+          <string>Cross Ratio (5 coplanar points)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>RandomFeatureFinder</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>RandomFeatureFinder</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

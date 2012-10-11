@@ -76,7 +76,8 @@ set( IrisCC_QT_UI
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
     ui/OpenCVSingleCalibration.ui
-    ui/OpenCVStereoCalibration.ui )
+    ui/OpenCVStereoCalibration.ui
+    ui/RandomFeatureFinder.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
 # find NOX

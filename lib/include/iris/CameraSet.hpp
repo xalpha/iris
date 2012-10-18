@@ -350,7 +350,8 @@ inline void CameraSet<T>::save( const std::string& filename, bool undistort )
                     iris::undistort( camIt->second, camIt->second.poses[p], undistorted );
 
                     // assemble filename
-                    std::string imageFileName = camIt->second.poses[p].name.substr( 0, camIt->second.poses[p].name.find_last_of('.') ) + "-undistorted.png";
+                    std::string imageFileName = filename.substr( 0, filename.find_last_of('.') ) + "-";
+                    imageFileName += camIt->second.poses[p].name.substr( 0, camIt->second.poses[p].name.find_last_of('.') ) + "-undistorted.png";
                     undistorted.save_png( imageFileName.c_str() );
                 }
             }

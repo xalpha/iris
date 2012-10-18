@@ -94,7 +94,7 @@ IrisCC::IrisCC(QWidget *parent) :
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
     connect( ui->image_list, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
     connect( ui->erase, SIGNAL(clicked(bool)), this, SLOT(on_erase(void)) );
-    connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
+    connect( ui->calibrate, SIGNAL(clicked(bool)), this, SLOT(on_calibrate(void)) );
     connect( ui->save, SIGNAL(clicked(bool)), this, SLOT(on_save(void)) );
 
     // init finder dialogs
@@ -151,7 +151,7 @@ IrisCC::~IrisCC()
 }
 
 
-void IrisCC::update()
+void IrisCC::calibrate()
 {
     try
     {
@@ -987,9 +987,9 @@ void IrisCC::on_erase()
 }
 
 
-void IrisCC::on_update()
+void IrisCC::on_calibrate()
 {
-    update();
+    calibrate();
 }
 
 

@@ -90,7 +90,7 @@ IrisCC::IrisCC(QWidget *parent) :
     connect( ui->clear, SIGNAL(clicked(bool)), this, SLOT(on_clear(void)) );
     connect( ui->image_list, SIGNAL(currentRowChanged(int)), this, SLOT(on_detectedImageChanged(int)) );
     connect( ui->erase, SIGNAL(clicked(bool)), this, SLOT(on_erase(void)) );
-    connect( ui->update, SIGNAL(clicked(bool)), this, SLOT(on_update(void)) );
+    connect( ui->calibrate, SIGNAL(clicked(bool)), this, SLOT(on_calibrate(void)) );
     connect( ui->save, SIGNAL(clicked(bool)), this, SLOT(on_save(void)) );
 
     // init finder dialogs
@@ -141,7 +141,7 @@ IrisCC::~IrisCC()
 }
 
 
-void IrisCC::update()
+void IrisCC::calibrate()
 {
     try
     {
@@ -547,9 +547,9 @@ void IrisCC::updatePosesPlot()
     {
         ui->plot_poses->update();
         m_worldPoses.setLineWidth( 1 );
-        m_worldPoses( RTs, nox::plot<double>::CS );
+        m_worldPoses( RTs, nox::plot<double>::CS | nox::plot<double>::Layer0 );
         m_worldPoses.setPointSize( 5 );
-        m_worldPoses( points3D, colors );
+        m_worldPoses( points3D, colors, nox::plot<double>::Pos | nox::plot<double>::Transparent | nox::plot<double>::Center | nox::plot<double>::Layer0 );
         ui->plot_poses->update();
     }
 }
@@ -557,7 +557,7 @@ void IrisCC::updatePosesPlot()
 
 void IrisCC::updatePosesPlotCurrent()
 {
-    m_worldPoses.clear( 1 );
+    m_worldPoses.clear( nox::plot<double>::Layer1 );
 
     // draw the current pose
     if( m_cs.hasPose( getPoseId( ui->image_list->currentRow() ) ) )
@@ -568,7 +568,7 @@ void IrisCC::updatePosesPlotCurrent()
             m_worldPoses.setLineWidth( 3 );
             Eigen::Affine3d trans( pose.transformation);
             trans = trans.inverse();
-            m_worldPoses( trans.matrix(), nox::plot<double>::CS | nox::plot<double>::Pos, 1 );
+            m_worldPoses( trans.matrix(), nox::plot<double>::CS | nox::plot<double>::Layer1 );
             ui->plot_poses->update();
         }
     }
@@ -944,9 +944,9 @@ void IrisCC::on_erase()
 }
 
 
-void IrisCC::on_update()
+void IrisCC::on_calibrate()
 {
-    update();
+    calibrate();
 }
 
 

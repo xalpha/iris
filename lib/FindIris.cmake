@@ -12,8 +12,10 @@ find_path( Iris_INCLUDE_DIR
         iris/CameraCalibration.hpp
         iris/Finder.hpp
     PATHS
-	    $ENV{IRIS_DIR}/include
-	    %{CMAKE_INSTALL_PREFIX}/include
+        ${Iris_DIR}/include
+	    $ENV{Iris_DIR}/include
+	    $ENV{HOME}/.local/include
+	    ${CMAKE_INSTALL_PREFIX}/include
         /usr/include
         /usr/local/include
         /opt/include
@@ -24,7 +26,8 @@ find_path( Iris_INCLUDE_DIR
 # find the path to the exported lib files
 find_file( Iris_DEPENDS Iris.cmake
     PATHS
-        %{CMAKE_INSTALL_PREFIX}/share
+        $ENV{HOME}/.local/share
+        ${CMAKE_INSTALL_PREFIX}/share
         /usr/share
         /usr/local/share
         /opt/share

@@ -62,7 +62,7 @@ public:
 
 protected:
 
-    void update();
+    void calibrate();
 
     void updateImageList();
     void updateErrorPlot();
@@ -91,7 +91,7 @@ protected slots:
     void on_load();
     void on_clear();
     void on_erase();
-    void on_update();
+    void on_calibrate();
     void on_save();
 
 //    void on_inputChanged( int page );

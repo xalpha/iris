@@ -93,8 +93,6 @@ install(FILES "${CMAKE_CURRENT_LIST_DIR}/FindIris.cmake" DESTINATION share )
 # install extern headers
 install(FILES ${Iris_EXTERN_INC} DESTINATION "include" )
 
-
-# add test app
-add_executable( test test/test.cpp )
-target_link_libraries( test ${Iris_TARGET} )
-
+# testing
+enable_testing()
+add_subdirectory( test )

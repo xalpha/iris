@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <limits>
 
+
+
 #include <iris/util.hpp>
 #include <Eigen/Core>
 
@@ -61,8 +63,49 @@ public:
 
     void operator =( const RandomFeatureDescriptor& pose );
 
-protected:
+
+
     void describePoint( Point& point, bool generateShiftPermutations );
+
+    size_t count_bits( const uint64_t number );
+
+    std::vector< std::vector<size_t> > possible_combinations( size_t n, size_t k );
+
+    template <typename T>
+    std::vector< std::vector<T> > shift_combinations( const std::vector<T>& vec );
+
+    double area( const Eigen::Vector2d& A,
+                 const Eigen::Vector2d& B,
+                 const Eigen::Vector2d& C );
+
+    double crossRatio( const Eigen::Vector2d& A,
+                       const Eigen::Vector2d& B,
+                       const Eigen::Vector2d& C,
+                       const Eigen::Vector2d& D,
+                       const Eigen::Vector2d& E );
+
+    double affineInvariant( const Eigen::Vector2d& A,
+                            const Eigen::Vector2d& B,
+                            const Eigen::Vector2d& C,
+                            const Eigen::Vector2d& D );
+
+    template<size_t P>
+    double descriptor( const std::vector<Eigen::Vector2d>& points );
+
+
+//    /////
+//    // Find duplicates
+//    ///
+//    template<typename T>
+//    inline bool duplicates( const std::vector<T>& vec )
+//    {
+//        for( size_t i=0; i<vec.size(); i++ )
+//            for( size_t j=0; j<vec.size(); j++ )
+//                if( i != j && vec[i] == vec[j] )
+//                    return true;
+
+//        return false;
+//    }
 
 protected:
     // input data
@@ -86,8 +129,8 @@ protected:
 template <size_t M, size_t N, size_t K>
 inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor()
 {
-    m_mCn = possible_combinations<M,N>();
-    m_nCk = possible_combinations<N,K>();
+    m_mCn = possible_combinations(M,N);
+    m_nCk = possible_combinations(N,K);
     m_featureVectorsPerPoint = m_mCn.size();
 }
 
@@ -291,6 +334,128 @@ inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool ge
             m_featureVectors.push_back(fvs[i]);
     }
 }
+
+
+template <size_t M, size_t N, size_t K>
+inline size_t RandomFeatureDescriptor<M,N,K>::count_bits( const uint64_t number )
+{
+    // init stuff
+    size_t c; // c accumulates the total bits set in v
+    size_t n = static_cast<size_t>(number);
+
+    // count
+    for( c=0; n; c++)
+        n &= n - 1; // clear the least significant bit set
+
+    // return
+    return c;
+}
+
+
+template <size_t M, size_t N, size_t K>
+inline std::vector< std::vector<size_t> > RandomFeatureDescriptor<M,N,K>::possible_combinations( size_t n, size_t k )
+{
+    // compute the maximum number of N combinations
+    std::vector< std::vector<size_t> > result;
+    std::vector<bool> v(n);
+    std::fill(v.begin() + k, v.end(), true);
+
+    do
+    {
+        std::vector<size_t> c;
+        for(size_t i = 0; i < n; ++i)
+            if (!v[i])
+                c.push_back(i+1);
+        result.push_back(c);
+    }
+    while (std::next_permutation(v.begin(), v.end()));
+
+    // return
+    return result;
+}
+
+
+template <size_t M, size_t N, size_t K>
+template <typename T>
+inline std::vector< std::vector<T> > RandomFeatureDescriptor<M,N,K>::shift_combinations( const std::vector<T>& vec )
+{
+    // init stuff
+    std::vector< std::vector<T> > result;
+
+    for( size_t i=0; i<vec.size(); i++ )
+    {
+        std::vector<T> line;
+        for( size_t j=0; j<vec.size(); j++ )
+            line.push_back( vec[ (i+j) % vec.size() ] );
+        result.push_back( line );
+    }
+
+    return result;
+}
+
+
+
+template <size_t M, size_t N, size_t K>
+inline double RandomFeatureDescriptor<M,N,K>::area( const Eigen::Vector2d& A,
+                                                    const Eigen::Vector2d& B,
+                                                    const Eigen::Vector2d& C )
+{
+    Eigen::Vector2d a = B-A;
+    Eigen::Vector2d b = C-A;
+
+    return 0.5 * (a(0)*b(1) - a(1)*b(0));
+}
+
+
+
+
+
+template <size_t M, size_t N, size_t K>
+inline double RandomFeatureDescriptor<M,N,K>::crossRatio( const Eigen::Vector2d& A,
+                                                          const Eigen::Vector2d& B,
+                                                          const Eigen::Vector2d& C,
+                                                          const Eigen::Vector2d& D,
+                                                          const Eigen::Vector2d& E )
+{
+    // compute the cross ratio of five coplanar points
+    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
+    double result = area( A, B, D ) * area( A, C, E );
+
+    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
+        return std::numeric_limits<double>::max();
+    else
+        return ( area( A, B, C ) * area( A, D, E ) ) / result;
+}
+
+
+
+template <size_t M, size_t N, size_t K>
+inline double RandomFeatureDescriptor<M,N,K>::affineInvariant( const Eigen::Vector2d& A,
+                                                               const Eigen::Vector2d& B,
+                                                               const Eigen::Vector2d& C,
+                                                               const Eigen::Vector2d& D )
+{
+    // compute the ratio of triangle areas
+    // area(A,C,D) / area(A,B,C)
+    double result = area( A, B, C );
+
+    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
+        return std::numeric_limits<double>::max();
+    else
+        return area( A, C, D ) / result;
+}
+
+
+template <size_t M, size_t N, size_t K>
+template<size_t P>
+inline double RandomFeatureDescriptor<M,N,K>::descriptor( const std::vector<Eigen::Vector2d>& points )
+{
+    if( P == 5 )
+        return crossRatio( points[0], points[1], points[2], points[3], points[4] );
+    else
+        return affineInvariant( points[0], points[1], points[2], points[3] );
+}
+
 
 
 } // end namespace iris

@@ -276,6 +276,11 @@
           <string>Cross Ratio (5 coplanar points)</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Affine Invariant (4 coplanar points)</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

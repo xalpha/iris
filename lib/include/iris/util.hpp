@@ -633,167 +633,6 @@ private:
 
 
 /////
-// count bits in an integer
-///
-template <typename T>
-inline size_t count_bits( const T number )
-{
-    // init stuff
-    size_t c; // c accumulates the total bits set in v
-    size_t n = static_cast<size_t>(number);
-
-    // count
-    for( c=0; n; c++)
-        n &= n - 1; // clear the least significant bit set
-
-    // return
-    return c;
-}
-
-
-/////
-// compute all possible combinations of K out of N elements
-///
-template<size_t N, size_t K>
-inline std::vector< std::vector<size_t> > possible_combinations()
-{
-    // compute the maximum number of N combinations
-    uint64_t maxC = 1;
-    maxC = maxC << N;
-    std::vector<uint64_t> bits;
-    std::vector< std::vector<size_t> > result;
-
-    // run over all possibilities
-    for( uint64_t i=0; i<maxC; i++ )
-        if( count_bits(i) == K )
-            bits.push_back( i );
-
-    // run over all recovered combinations and extract the indices
-    for( size_t i=0; i<bits.size(); i++ )
-    {
-        // update stuff
-        uint64_t x = static_cast<uint64_t>(bits[i]);
-        std::vector<uint64_t> indices;
-
-        // run over all bits and store their positions
-        for (uint64_t z = 0; z < 64; z++)
-            if( (x>>z) & 0x1 )
-                indices.push_back(z);
-
-        // add the indices to the result
-        result.push_back( indices );
-    }
-
-    // return
-    return result;
-}
-
-
-/////
-// generate all shift permutations of the vector
-///
-template <typename T>
-inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& vec )
-{
-    // init stuff
-    std::vector< std::vector<T> > result;
-
-    for( size_t i=0; i<vec.size(); i++ )
-    {
-        std::vector<T> line;
-        for( size_t j=0; j<vec.size(); j++ )
-            line.push_back( vec[ (i+j) % vec.size() ] );
-        result.push_back( line );
-    }
-
-    return result;
-}
-
-
-/////
-// Area of a triangle
-///
-template<typename T>
-inline T area( const Eigen::Matrix<T,2,1>& A,
-               const Eigen::Matrix<T,2,1>& B,
-               const Eigen::Matrix<T,2,1>& C )
-{
-    Eigen::Matrix<T,2,1> a = B-A;
-    Eigen::Matrix<T,2,1> b = C-A;
-
-    return static_cast<T>(0.5) * (a(0)*b(1) - a(1)*b(0));
-}
-
-
-template <typename T>
-inline double crossRatio( const Eigen::Matrix<T,2,1>& A,
-                          const Eigen::Matrix<T,2,1>& B,
-                          const Eigen::Matrix<T,2,1>& C,
-                          const Eigen::Matrix<T,2,1>& D,
-                          const Eigen::Matrix<T,2,1>& E )
-{
-    // compute the cross ratio of five coplanar points
-    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
-
-    double result = area( A, B, D ) * area( A, C, E );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return std::numeric_limits<double>::max();
-    else
-        return ( area( A, B, C ) * area( A, D, E ) ) / result;
-}
-
-
-template <typename T>
-inline double affineInvariant( const Eigen::Matrix<T,2,1>& A,
-                               const Eigen::Matrix<T,2,1>& B,
-                               const Eigen::Matrix<T,2,1>& C,
-                               const Eigen::Matrix<T,2,1>& D )
-{
-    // compute the ratio of triangle areas
-    // area(A,C,D) / area(A,B,C)
-
-    double result = area( A, B, C );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return std::numeric_limits<double>::max();
-    else
-        return area( A, C, D ) / result;
-}
-
-template<size_t K>
-inline double descriptor( const std::vector<Eigen::Vector2d>& n );
-
-template<>
-inline double descriptor<5>( const std::vector<Eigen::Vector2d>& points )
-{
-    return crossRatio( points[0], points[1], points[2], points[3], points[4] );
-}
-
-
-template<>
-inline double descriptor<4>( const std::vector<Eigen::Vector2d>& points )
-{
-    return affineInvariant( points[0], points[1], points[2], points[3] );
-}
-
-
-/////
-// Find duplicates
-///
-template<typename T>
-inline bool duplicates( const std::vector<T>& vec )
-{
-    for( size_t i=0; i<vec.size(); i++ )
-        for( size_t j=0; j<vec.size(); j++ )
-            if( i != j && vec[i] == vec[j] )
-                return true;
-
-    return false;
-}
-
-
-/////
 // Sum
 //
 template<typename T>
@@ -864,6 +703,24 @@ inline T std_dev( const std::vector<T> &x, bool is_subset=false )
 }
 
 
+/////
+// n choose k number of combinations
+// Knuth's "The Art of Computer Programming, 3rd Edition, Volume 2: Seminumerical Algorithms"
+///
+template <typename T>
+inline T n_choose_k(T n, T k)
+{
+    if (k > n)
+        return 0;
+
+    T r = 1;
+    for (T d = 1; d <= k; ++d)
+    {
+        r *= n--;
+        r /= d;
+    }
+    return r;
+}
 
 
 } // end namespace iris

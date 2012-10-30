@@ -19,68 +19,71 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
+#include <assert.h>
+#include <iostream>
 #include <stdexcept>
-#include <memory>
 
-#include <iris/Finder.hpp>
-#include <iris/CameraSet.hpp>
-#include <iris/util.hpp>
+#include <iris/RandomFeatureDescriptor.hpp>
 
-namespace iris
+void test_count_bits()
 {
+    iris::RandomFeatureDescriptor<1,1,1> rfd;
 
-class CameraCalibration
+    // test zero
+    assert( rfd.count_bits(0) == 0 );
+
+    // test one bit
+    for( uint64_t i=1; i!=0; i*=2 )
+        assert( rfd.count_bits(i) == 1 );
+
+    // test many bits
+    uint64_t number = 0;
+    for( uint64_t i=0; i<64; number= number | ( static_cast<uint64_t>(1) << i), i++ )
+        assert( rfd.count_bits(number) == i );
+}
+
+
+void test_possible_combinations()
 {
-///
-/// \file    CameraCalibration.hpp
-/// \class   CameraCalibration
-///
-/// \package iris
-/// \version 0.1.0
-///
-/// \brief   Parrent class for camera calibration implementations
-///
-/// \details This class offers basic API for calibrating poses and cameras
-///          provided through a CameraSet.
-///
-/// \author  Alexandru Duliu
-/// \date    Jun 5, 2012
-///
+    iris::RandomFeatureDescriptor<1,1,1> rfd;
 
-public:
-    CameraCalibration();
-    virtual ~CameraCalibration();
+    // test identity
+    for( size_t i=0; i<64; i++ )
+        assert( rfd.possible_combinations(i,i).size() == 1 );
 
-    // run the calibration
-    virtual void calibrate( CameraSet_d& cs ) = 0;
+    // test many posibilities
+    for( uint64_t n=1; n<16; n++ )
+        for( uint64_t k=1; k<n; k++ )
+            assert( rfd.possible_combinations(n,k).size() == static_cast<size_t>(iris::n_choose_k(n,k) ) );
 
-    void setFinder( std::shared_ptr<Finder> finder );
-
-    const Finder& finder() const;
-
-protected:
-    virtual void filter( CameraSet_d& cs ) = 0;
-    virtual void commit( CameraSet_d& cs );
-
-    void check();
-
-    void threadID();
-
-protected:
-    // these two do the work
-    std::shared_ptr<Finder> m_finder;
-
-    // filtered
-    std::map< size_t, iris::Camera_d > m_filteredCameras;
-
-    // flags
-    bool m_handEye;
-
-    // threads
-    size_t m_threadCount;
-};
+    // test for duplicates
+    for( uint64_t n=1; n<16; n++ )
+    {
+        for( uint64_t k=1; k<n; k++ )
+        {
+            std::vector< std::vector<size_t> > pc = rfd.possible_combinations(n,k);
+            for( size_t c=0; c<pc.size(); c++ )
+                assert( std::count( pc.begin(), pc.end(), pc[c] ) == 1 );
+        }
+    }
+}
 
 
-} // end namespace iris
+int main(int argc, char** argv)
+{
+    try
+    {
+        // count_bits
+        test_count_bits();
+
+        // test permutations
+        test_possible_combinations();
+    }
+    catch( std::exception &e )
+    {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}

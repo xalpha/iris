@@ -19,77 +19,30 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
+#pragma once
+
 /*
- * OpenCVCalibration.cpp
+ * MultiCameraCalibration.hpp
  *
- *  Created on: Mar 14, 2011
+ *  Created on: Nov 1, 2012
  *      Author: duliu
  */
 
-
-#include <iris/OpenCVCalibration.hpp>
-
+#include <iris/CameraCalibration.hpp>
 
 namespace iris {
 
-OpenCVCalibration::OpenCVCalibration() :
-    CameraCalibration(),
-    m_fixPrincipalPoint( false ),
-    m_fixAspectRatio( true ),
-    m_tangentialDistortion( true ),
-    m_intrinsicGuess(false)
+class MultiCameraCalibration : public CameraCalibration
 {
-}
+public:
+    MultiCameraCalibration();
+    virtual ~MultiCameraCalibration();
 
+    // run the calibration
+    virtual void calibrate( CameraSet_d& cs );
 
-OpenCVCalibration::~OpenCVCalibration() {
-	// TODO Auto-generated destructor stub
-}
-
-
-void OpenCVCalibration::setFixPrincipalPoint( bool val )
-{
-    m_fixPrincipalPoint = val;
-}
-
-
-void OpenCVCalibration::setFixAspectRatio( bool val )
-{
-    m_fixAspectRatio = val;
-}
-
-
-void OpenCVCalibration::setTangentialDistortion( bool val )
-{
-    m_tangentialDistortion = val;
-}
-
-
-void OpenCVCalibration::setIntrinsicGuess( bool val )
-{
-    m_intrinsicGuess = val;
-}
-
-
-std::vector< Eigen::Vector2d > OpenCVCalibration::projectPoints( const std::vector<cv::Point3f> points3D,
-                                                                 const cv::Mat& rot,
-                                                                 const cv::Mat& transl,
-                                                                 const cv::Mat& cameraMatrix,
-                                                                 const cv::Mat& distCoeff )
-{
-    // init stuff
-    std::vector< cv::Point2f > projected;
-    std::vector< Eigen::Vector2d > result;
-
-    // project points and store
-    cv::projectPoints( cv::Mat(points3D), rot, transl, cameraMatrix, distCoeff, projected );
-    for( size_t p=0; p<projected.size(); p++ )
-        result.push_back( Eigen::Vector2d( projected[p].x, projected[p].y ) );
-
-    // return
-    return result;
-}
-
+protected:
+    virtual void filter( CameraSet_d& cs );
+};
 
 } // end namespace iris
-

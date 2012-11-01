@@ -37,6 +37,7 @@ list( APPEND Iris_INC
     include/iris/CameraSet.hpp
     include/iris/ChessboardFinder.hpp
     include/iris/Finder.hpp
+    include/iris/MultiCameraCalibration.hpp
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
@@ -45,6 +46,7 @@ list( APPEND Iris_SRC
     src/CameraCalibration.cpp
     src/ChessboardFinder.cpp
     src/Finder.cpp
+    src/MultiCameraCalibration.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp
     src/OpenCVStereoCalibration.cpp )

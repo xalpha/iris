@@ -44,6 +44,8 @@ public:
     CameraCalibration();
     virtual ~CameraCalibration();
 
+    void setMinCorrespondences( size_t val );
+
     // run the calibration
     virtual void calibrate( CameraSet_d& cs ) = 0;
 
@@ -64,10 +66,10 @@ protected:
     std::shared_ptr<Finder> m_finder;
 
     // filtered
-    std::map< size_t, iris::Camera_d > m_filteredCameras;
+    CameraSet_d::CameraMap m_filteredCameras;
 
-    // flags
-    bool m_handEye;
+    // properties
+    size_t m_minPoseCorrespondences;
 
     // threads
     size_t m_threadCount;

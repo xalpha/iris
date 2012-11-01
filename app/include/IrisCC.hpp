@@ -48,6 +48,7 @@ namespace Ui {
     // CameraCalibration
     class OpenCVSingleCalibration;
     class OpenCVStereoCalibration;
+    class MultiCameraCalibration;
 }
 
 
@@ -113,6 +114,7 @@ protected:
     Ui::ChessboardFinder* ui_ChessboardFinder;
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
+    Ui::MultiCameraCalibration* ui_MultiCameraCalibration;
 
     // opengl
     nox::plot<double> m_worldPoses;

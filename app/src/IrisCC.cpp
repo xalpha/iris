@@ -39,6 +39,7 @@
 #include "ui_ChessboardFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
 #include "ui_OpenCVStereoCalibration.h"
+#include "ui_MultiCameraCalibration.h"
 
 #include <IrisCC.hpp>
 
@@ -46,6 +47,7 @@
 
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
+#include <iris/MultiCameraCalibration.hpp>
 
 
 IrisCC::IrisCC(QWidget *parent) :
@@ -55,7 +57,8 @@ IrisCC::IrisCC(QWidget *parent) :
     ui_CameraInfo( new Ui::CameraInfo ),
     ui_ChessboardFinder( new Ui::ChessboardFinder ),
     ui_OpenCVSingleCalibration( new Ui::OpenCVSingleCalibration ),
-    ui_OpenCVStereoCalibration( new Ui::OpenCVStereoCalibration )
+    ui_OpenCVStereoCalibration( new Ui::OpenCVStereoCalibration ),
+    ui_MultiCameraCalibration( new Ui::MultiCameraCalibration )
 {
     ui->setupUi(this);
 
@@ -98,6 +101,7 @@ IrisCC::IrisCC(QWidget *parent) :
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.back().get() );
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.back().get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_MultiCameraCalibration->setupUi( m_calibrationDialogs.back().get() );
 
     // init opengl
     ui->plot_poses->setWidget( &m_worldPoses );
@@ -133,6 +137,7 @@ IrisCC::~IrisCC()
     delete ui_ChessboardFinder;
     delete ui_OpenCVSingleCalibration;
     delete ui_OpenCVStereoCalibration;
+    delete ui_MultiCameraCalibration;
 }
 
 
@@ -190,7 +195,7 @@ void IrisCC::calibrate()
                 calib->setFixAspectRatio( ui_OpenCVSingleCalibration->fixed_aspect_ratio->isChecked() );
                 calib->setTangentialDistortion( ui_OpenCVSingleCalibration->tangential_distortion->isChecked() );
                 calib->setIntrinsicGuess( static_cast<size_t>( ui_OpenCVSingleCalibration->intrinsic_guess->isChecked() ) );
-                calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVSingleCalibration->minCorrespondences->value() ) );
+                calib->CameraCalibration::setMinCorrespondences( static_cast<size_t>( ui_OpenCVSingleCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
@@ -206,7 +211,16 @@ void IrisCC::calibrate()
                 calib->setSameFocalLength( ui_OpenCVStereoCalibration->same_focal_length->isChecked() );
                 calib->setFixIntrinsic( static_cast<size_t>( ui_OpenCVStereoCalibration->fix_intrinsic->isChecked() ) );
                 calib->setIntrinsicGuess( static_cast<size_t>( ui_OpenCVStereoCalibration->intrinsic_guess->isChecked() ) );
-                calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVStereoCalibration->minCorrespondences->value() ) );
+                calib->CameraCalibration::setMinCorrespondences( static_cast<size_t>( ui_OpenCVStereoCalibration->minCorrespondences->value() ) );
+                cc = std::shared_ptr<iris::CameraCalibration>( calib );
+                break;
+            }
+
+            // Multi-Camera
+            case 3 :
+            {
+                iris::MultiCameraCalibration* calib = new iris::MultiCameraCalibration();
+                calib->setMinCorrespondences( static_cast<size_t>( ui_MultiCameraCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }
@@ -811,6 +825,7 @@ void IrisCC::on_configureCalibration()
 
             case 1 : // OpenCV Single
             case 2 : // OpenCV Stereo
+            case 3 : // Multi-Camera
                 ui->configure_calibration->setEnabled(true);
                 m_calibrationDialogs[ ui->select_calibration->currentIndex() ]->exec();
                 break;

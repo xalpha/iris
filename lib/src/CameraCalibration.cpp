@@ -40,7 +40,7 @@ namespace iris {
 
 CameraCalibration::CameraCalibration() :
     m_finder(0),
-    m_handEye(false),
+    m_minPoseCorrespondences( 8 ),
     m_threadCount(1)
 {
     // use all available threads
@@ -53,6 +53,12 @@ CameraCalibration::CameraCalibration() :
 
 CameraCalibration::~CameraCalibration() {
 	// TODO Auto-generated destructor stub
+}
+
+
+void CameraCalibration::setMinCorrespondences( size_t val )
+{
+    m_minPoseCorrespondences = val;
 }
 
 

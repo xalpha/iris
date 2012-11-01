@@ -75,6 +75,7 @@ set( IrisCC_QT_UI
     ui/CameraInfo.ui
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
+    ui/MultiCameraCalibration.ui
     ui/OpenCVSingleCalibration.ui
     ui/OpenCVStereoCalibration.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )

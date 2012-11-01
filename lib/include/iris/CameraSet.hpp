@@ -39,6 +39,9 @@ template <typename T>
 class CameraSet
 {
 public:
+    typedef std::map< size_t, iris::Camera<T> > CameraMap;
+
+public:
     // constructor
     CameraSet();
 
@@ -53,8 +56,8 @@ public:
     bool erase( const std::string& name ) ;
 
     // get the cameras
-    std::map< size_t, iris::Camera<T> >& cameras();
-    const std::map< size_t, iris::Camera<T> >& cameras() const;
+    CameraMap& cameras();
+    const CameraMap& cameras() const;
 
     // get a particular camera
     bool hasCamera( const size_t id=0 ) const;
@@ -86,7 +89,7 @@ private:
 
 private:
     size_t m_poseCount;
-    std::map< size_t, iris::Camera<T> > m_cameras;
+    CameraMap m_cameras;
 };
 typedef CameraSet<double> CameraSet_d;
 

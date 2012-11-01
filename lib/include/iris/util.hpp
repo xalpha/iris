@@ -578,11 +578,22 @@ inline cimg_library::CImg<T> pixelLimit( const cimg_library::CImg<T>& image, con
 
 
 /////
-// angle comparisson operator
+// angle
 ///
+template<typename T>
+inline T angle( T x, T y )
+{
+    T result = atan2( y, x );
+    return (result < static_cast<T>(0)) ? 6.28318530718 + result : result;
+}
 
+
+/////
+// Angle comparisson operator
+//
 // thanks to Ben Voigt and Tom Sirgedas for putting me on the right track
 // http://stackoverflow.com/questions/7774241/sort-points-by-angle-from-given-axis
+///
 
 template<typename T>
 class counter_clockwise_comparisson
@@ -590,11 +601,8 @@ class counter_clockwise_comparisson
     typedef Eigen::Matrix<T,2,1> Point;
 
 public:
-    counter_clockwise_comparisson(const Point& origin, const Point& direction)
-    {
-        m_origin = origin;
-        m_direction = direction;
-    }
+    counter_clockwise_comparisson() : m_origin( 0, 0 ){}
+    counter_clockwise_comparisson(const Point& origin) : m_origin( origin ){}
 
     bool operator()(const Point& a, const Point& b) const
     {
@@ -602,34 +610,152 @@ public:
         Point dirA = a - m_origin;
         Point dirB = b - m_origin;
 
-        // check A
-        T detB = det(m_direction, dirB);
-        T dotB = dot(m_direction, dirB);
-        if( (0==detB) && (0==dotB) )
-            return false;
+        // compute the angles
+        T angleA = iris::angle( dirA(0), dirA(1) );
+        T angleB = iris::angle( dirB(0), dirB(1) );
 
-        // check B
-        T detA = det(m_direction, dirA);
-        T dotA = dot(m_direction, dirA);
-        if( (0==detA) && (0==dotA) )
-            return true;
-
-        // a&b on the same side
-        if (detA * detB > 0)
-            return det(dirA, dirB) > 0;
-        else
-            return detA > 0;
+        // return the order
+        return angleA < angleB;
     }
 
 private:
-    // determinant of 2x2 matrix [a b]
-    double det( const Point& a, const Point& b) const { return a(0)*b(1) - a(1)*b(0); }
-    double dot( const Point& a, const Point& b) const { return a(0)*b(0) + a(1)*b(1); }
+    Point m_origin;
+};
+
+
+
+template<typename T>
+class clockwise_comparisson
+{
+    typedef Eigen::Matrix<T,2,1> Point;
+
+public:
+    clockwise_comparisson() : m_origin( 0, 0 ){}
+    clockwise_comparisson(const Point& origin) : m_origin( origin ){}
+
+    bool operator()(const Point& a, const Point& b) const
+    {
+        // init stuff
+        Point dirA = a - m_origin;
+        Point dirB = b - m_origin;
+
+        // compute the angles
+        T angleA = iris::angle( dirA(0), dirA(1) );
+        T angleB = iris::angle( dirB(0), dirB(1) );
+
+        // return the order
+        return angleA > angleB;
+    }
 
 private:
     Point m_origin;
-    Point m_direction;
 };
+
+
+
+template <typename T>
+inline size_t count_bits( const T number )
+{
+    // init stuff
+    size_t c; // c accumulates the total bits set in number
+    T n = number;
+
+    // count
+    for( c=0; n; c++)
+        n &= n - 1; // clear the least significant bit set
+
+    // return
+    return c;
+}
+
+
+template <typename T>
+inline std::vector< std::vector<T> > possible_combinations( T n, T k )
+{
+    // compute the maximum number of N combinations
+    std::vector< std::vector<T> > result;
+    std::vector<bool> v(n);
+    std::fill(v.begin() + k, v.end(), true);
+
+    do
+    {
+        std::vector<T> c;
+        for(T i = 0; i < n; ++i)
+            if (!v[i])
+                c.push_back(i+1);
+        result.push_back(c);
+    }
+    while (std::next_permutation(v.begin(), v.end()));
+
+    // return
+    return result;
+}
+
+
+template <typename T>
+inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& vec )
+{
+    // init stuff
+    std::vector< std::vector<T> > result;
+
+    for( size_t i=0; i<vec.size(); i++ )
+    {
+        std::vector<T> line;
+        for( size_t j=0; j<vec.size(); j++ )
+            line.push_back( vec[ (i+j) % vec.size() ] );
+        result.push_back( line );
+    }
+
+    return result;
+}
+
+
+template <typename T>
+inline T area( const Eigen::Matrix<T,2,1>& A,
+               const Eigen::Matrix<T,2,1>& B,
+               const Eigen::Matrix<T,2,1>& C )
+{
+    Eigen::Matrix<T,2,1> a = B-A;
+    Eigen::Matrix<T,2,1> b = C-A;
+
+    return 0.5 * (a(0)*b(1) - a(1)*b(0));
+}
+
+
+template <typename T>
+inline T crossRatio( const Eigen::Matrix<T,2,1>& A,
+                     const Eigen::Matrix<T,2,1>& B,
+                     const Eigen::Matrix<T,2,1>& C,
+                     const Eigen::Matrix<T,2,1>& D,
+                     const Eigen::Matrix<T,2,1>& E )
+{
+    // compute the cross ratio of five coplanar points
+    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
+    T result = area( A, B, D ) * area( A, C, E );
+
+    if( fabs( result ) < std::numeric_limits<T>::epsilon() )
+        return std::numeric_limits<T>::max();
+    else
+        return ( area( A, B, C ) * area( A, D, E ) ) / result;
+}
+
+
+
+template <typename T>
+inline T affineInvariant( const Eigen::Matrix<T,2,1>& A,
+                          const Eigen::Matrix<T,2,1>& B,
+                          const Eigen::Matrix<T,2,1>& C,
+                          const Eigen::Matrix<T,2,1>& D )
+{
+    // compute the ratio of triangle areas
+    // area(A,C,D) / area(A,B,C)
+    T result = area( A, B, C );
+
+    if( fabs( result ) < std::numeric_limits<T>::epsilon() )
+        return std::numeric_limits<T>::max();
+    else
+        return area( A, C, D ) / result;
+}
 
 
 /////

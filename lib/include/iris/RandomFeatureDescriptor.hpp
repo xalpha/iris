@@ -43,13 +43,12 @@ template <size_t M, size_t N, size_t K>
 class RandomFeatureDescriptor
 {
 public:
-    typedef std::vector<double> FeatureVector;
-
     struct Point
     {
         Eigen::Vector2d pos;
         size_t index;
         std::vector<Eigen::Vector2d> neighbors;
+        std::vector<Eigen::VectorXd> descriptors;
     };
 
 
@@ -63,49 +62,9 @@ public:
 
     void operator =( const RandomFeatureDescriptor& pose );
 
-
-
     void describePoint( Point& point, bool generateShiftPermutations );
 
-    size_t count_bits( const uint64_t number );
-
-    std::vector< std::vector<size_t> > possible_combinations( size_t n, size_t k );
-
-    template <typename T>
-    std::vector< std::vector<T> > shift_combinations( const std::vector<T>& vec );
-
-    double area( const Eigen::Vector2d& A,
-                 const Eigen::Vector2d& B,
-                 const Eigen::Vector2d& C );
-
-    double crossRatio( const Eigen::Vector2d& A,
-                       const Eigen::Vector2d& B,
-                       const Eigen::Vector2d& C,
-                       const Eigen::Vector2d& D,
-                       const Eigen::Vector2d& E );
-
-    double affineInvariant( const Eigen::Vector2d& A,
-                            const Eigen::Vector2d& B,
-                            const Eigen::Vector2d& C,
-                            const Eigen::Vector2d& D );
-
-    template<size_t P>
     double descriptor( const std::vector<Eigen::Vector2d>& points );
-
-
-//    /////
-//    // Find duplicates
-//    ///
-//    template<typename T>
-//    inline bool duplicates( const std::vector<T>& vec )
-//    {
-//        for( size_t i=0; i<vec.size(); i++ )
-//            for( size_t j=0; j<vec.size(); j++ )
-//                if( i != j && vec[i] == vec[j] )
-//                    return true;
-
-//        return false;
-//    }
 
 protected:
     // input data
@@ -113,7 +72,6 @@ protected:
 
     // point descriptors
     std::vector<Point> m_pd;
-    std::vector<FeatureVector> m_featureVectors;
 
     // prebacked combinations
     std::vector< std::vector<size_t> > m_mCn;
@@ -147,13 +105,10 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
 {
     // init stuff
     m_points = points;
-    Eigen::Vector2d up(0,1);
     m_pd.clear();
     m_pd.reserve( m_points.size() );
     if( generateShiftPermutations )
         m_featureVectorsPerPoint *= K;
-    m_featureVectors.clear();
-    m_featureVectors.reserve( m_points.size() * m_featureVectorsPerPoint );
 
     // init flann
     cv::Mat_<double> pointsCV( static_cast<int>(points.size()), 2 );
@@ -178,7 +133,7 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
             nearestPoints[m] = m_points[ nearestM(m+1) ];
 
         // sort counter clockwise
-        counter_clockwise_comparisson<double> ccc( m_points[p], up );
+        clockwise_comparisson<double> ccc( m_points[p] );
         std::sort( nearestPoints.begin(), nearestPoints.end(), ccc );
 
         // initialize the point
@@ -200,8 +155,8 @@ template <size_t M, size_t N, size_t K>
 inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDescriptor<M,N,K>& rfd ) const
 {
     // addemble the descriptors
-    cv::Mat_<float> queryFVs = vector2cv<float>(m_featureVectors);
-    cv::Mat_<float> trainFVs = vector2cv<float>(rfd.m_featureVectors);
+//    cv::Mat_<float> queryFVs = vector2cv<float>(m_featureVectors);
+//    cv::Mat_<float> trainFVs = vector2cv<float>(rfd.m_featureVectors);
 
 //    cv::flann::GenericIndex< cv::flann::L2<double> > flann( trainFVs, cvflann::KDTreeIndexParams(5) );
 
@@ -214,10 +169,10 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
 //    std::cout << std::setprecision(2) << trainFVs << std::endl << std::endl << std::endl;
 
     // match the feature vectors
-    cv::FlannBasedMatcher matcher;
-    //cv::BruteForceMatcher<cv::L2<float> > matcher;
-    std::vector< cv::DMatch > matches;
-    matcher.match( queryFVs, trainFVs, matches );
+//    cv::FlannBasedMatcher matcher;
+//    //cv::BruteForceMatcher<cv::L2<float> > matcher;
+//    std::vector< cv::DMatch > matches;
+//    matcher.match( queryFVs, trainFVs, matches );
 
 //    double max_dist = 0; double min_dist = 100;
 
@@ -246,35 +201,37 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
 //    for( int i = 0; i < good_matches.size(); i++ )
 //    { printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); }
 
-    // init vector of best matches
-    std::vector< cv::DMatch > minMatches( m_points.size() );
+//    // init vector of best matches
+//    std::vector< cv::DMatch > minMatches( m_points.size() );
 
-    // run over the matches and choose the best one
-    int fvspp = static_cast<int>(m_featureVectorsPerPoint);
-    for( size_t i=0; i<matches.size(); i++ )
-        if( matches[i].distance < minMatches[ matches[i].queryIdx / fvspp ].distance )
-            minMatches[ matches[i].queryIdx / fvspp ] = matches[i];
+//    // run over the matches and choose the best one
+//    int fvspp = static_cast<int>(m_featureVectorsPerPoint);
+//    for( size_t i=0; i<matches.size(); i++ )
+//        if( matches[i].distance < minMatches[ matches[i].queryIdx / fvspp ].distance )
+//            minMatches[ matches[i].queryIdx / fvspp ] = matches[i];
 
-    // extract the distances
-    std::vector<float> dists;
-    for( size_t i=0; i<minMatches.size(); i++ )
-        dists.push_back( minMatches[i].distance );
+//    // extract the distances
+//    std::vector<float> dists;
+//    for( size_t i=0; i<minMatches.size(); i++ )
+//        dists.push_back( minMatches[i].distance );
 
-    // analyse a bit
-    float m = mean( dists );
+//    // analyse a bit
+//    float m = mean( dists );
 
-    // assemble the pose
-    Pose_d pose;
-    for( size_t i=0; i<minMatches.size(); i++ )
-    {
-        if( minMatches[i].distance < m )
-        {
-            pose.pointIndices.push_back( static_cast<size_t>(minMatches[i].queryIdx / fvspp) );
-            pose.points2D.push_back( rfd.m_points[ minMatches[i].trainIdx / static_cast<int>(rfd.m_featureVectorsPerPoint) ] );
-        }
-    }
+//    // assemble the pose
+//    Pose_d pose;
+//    for( size_t i=0; i<minMatches.size(); i++ )
+//    {
+//        if( minMatches[i].distance < m )
+//        {
+//            pose.pointIndices.push_back( static_cast<size_t>(minMatches[i].queryIdx / fvspp) );
+//            pose.points2D.push_back( rfd.m_points[ minMatches[i].trainIdx / static_cast<int>(rfd.m_featureVectorsPerPoint) ] );
+//        }
+//    }
 
-    return pose;
+//    return pose;
+
+    return Pose_d();
 }
 
 
@@ -283,7 +240,6 @@ inline void RandomFeatureDescriptor<M,N,K>::operator =( const RandomFeatureDescr
 {
     m_points = rfd.m_points;
     m_pd = rfd.m_pd;
-    m_featureVectors = rfd.m_featureVectors;
     m_mCn = rfd.m_mCn;
     m_nCk = rfd.m_nCk;
     m_featureVectorsPerPoint = rfd.m_featureVectorsPerPoint;
@@ -293,164 +249,53 @@ inline void RandomFeatureDescriptor<M,N,K>::operator =( const RandomFeatureDescr
 template <size_t M, size_t N, size_t K>
 inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool generateShiftPermutations )
 {
-    // run over all N combinations
-    size_t shiftCount = generateShiftPermutations ? K : 1;
-    for( size_t n=0; n<m_mCn.size(); n++ )
-    {
-        /////
-        // WARNING: we are now leaving Kansas
-        ///
+//    // run over all N combinations
+//    size_t shiftCount = generateShiftPermutations ? K : 1;
+//    for( size_t n=0; n<m_mCn.size(); n++ )
+//    {
+//        /////
+//        // WARNING: we are now leaving Kansas
+//        ///
 
-        // reserve enough for all feature vectors
-        std::vector<FeatureVector> fvs(shiftCount);
-        for( size_t i=0; i<shiftCount; i++ )
-            fvs[i].reserve( m_featureVectorsPerPoint / (m_mCn.size() * shiftCount) );
+//        // reserve enough for all feature vectors
+//        std::vector<FeatureVector> fvs(shiftCount);
+//        for( size_t i=0; i<shiftCount; i++ )
+//            fvs[i].reserve( m_featureVectorsPerPoint / (m_mCn.size() * shiftCount) );
 
-        // run over all combinations of K elements from mCn
-        for( size_t k=0; k<m_nCk.size(); k++ )
-        {
-            // assemble the points
-            std::vector<Eigen::Vector2d> points;
-            points.reserve( K );
-            for( size_t i=0; i<K; i++ )
-                points.push_back( point.neighbors[ m_mCn[n][ m_nCk[k][i] ] ] );
+//        // run over all combinations of K elements from mCn
+//        for( size_t k=0; k<m_nCk.size(); k++ )
+//        {
+//            // assemble the points
+//            std::vector<Eigen::Vector2d> points;
+//            points.reserve( K );
+//            for( size_t i=0; i<K; i++ )
+//                points.push_back( point.neighbors[ m_mCn[n][ m_nCk[k][i] ] ] );
 
-            // check if shift permutations are required
-            if( generateShiftPermutations )
-            {
-                // generate shift combinations
-                std::vector< std::vector<Eigen::Vector2d> > shift_points = shift_combinations( points );
+//            // check if shift permutations are required
+//            if( generateShiftPermutations )
+//            {
+//                // generate shift combinations
+//                std::vector< std::vector<Eigen::Vector2d> > shift_points = shift_combinations( points );
 
-                // run over all shift combinations and generate descriptors
-                for( size_t i=0; i<K; i++ )
-                    fvs[i].push_back( descriptor<K>( shift_points[i] ) );
-            }
-            else
-                fvs[0].push_back( descriptor<K>( points ) );
-        }
+//                // run over all shift combinations and generate descriptors
+//                for( size_t i=0; i<K; i++ )
+//                    fvs[i].push_back( descriptor( shift_points[i] ) );
+//            }
+//            else
+//                fvs[0].push_back( descriptor( points ) );
+//        }
 
-        // add the feature vector(s)
-        for( size_t i=0; i<fvs.size(); i++ )
-            m_featureVectors.push_back(fvs[i]);
-    }
+//        // add the feature vector(s)
+//        for( size_t i=0; i<fvs.size(); i++ )
+//            m_featureVectors.push_back(fvs[i]);
+//    }
 }
 
 
 template <size_t M, size_t N, size_t K>
-inline size_t RandomFeatureDescriptor<M,N,K>::count_bits( const uint64_t number )
-{
-    // init stuff
-    size_t c; // c accumulates the total bits set in v
-    size_t n = static_cast<size_t>(number);
-
-    // count
-    for( c=0; n; c++)
-        n &= n - 1; // clear the least significant bit set
-
-    // return
-    return c;
-}
-
-
-template <size_t M, size_t N, size_t K>
-inline std::vector< std::vector<size_t> > RandomFeatureDescriptor<M,N,K>::possible_combinations( size_t n, size_t k )
-{
-    // compute the maximum number of N combinations
-    std::vector< std::vector<size_t> > result;
-    std::vector<bool> v(n);
-    std::fill(v.begin() + k, v.end(), true);
-
-    do
-    {
-        std::vector<size_t> c;
-        for(size_t i = 0; i < n; ++i)
-            if (!v[i])
-                c.push_back(i+1);
-        result.push_back(c);
-    }
-    while (std::next_permutation(v.begin(), v.end()));
-
-    // return
-    return result;
-}
-
-
-template <size_t M, size_t N, size_t K>
-template <typename T>
-inline std::vector< std::vector<T> > RandomFeatureDescriptor<M,N,K>::shift_combinations( const std::vector<T>& vec )
-{
-    // init stuff
-    std::vector< std::vector<T> > result;
-
-    for( size_t i=0; i<vec.size(); i++ )
-    {
-        std::vector<T> line;
-        for( size_t j=0; j<vec.size(); j++ )
-            line.push_back( vec[ (i+j) % vec.size() ] );
-        result.push_back( line );
-    }
-
-    return result;
-}
-
-
-
-template <size_t M, size_t N, size_t K>
-inline double RandomFeatureDescriptor<M,N,K>::area( const Eigen::Vector2d& A,
-                                                    const Eigen::Vector2d& B,
-                                                    const Eigen::Vector2d& C )
-{
-    Eigen::Vector2d a = B-A;
-    Eigen::Vector2d b = C-A;
-
-    return 0.5 * (a(0)*b(1) - a(1)*b(0));
-}
-
-
-
-
-
-template <size_t M, size_t N, size_t K>
-inline double RandomFeatureDescriptor<M,N,K>::crossRatio( const Eigen::Vector2d& A,
-                                                          const Eigen::Vector2d& B,
-                                                          const Eigen::Vector2d& C,
-                                                          const Eigen::Vector2d& D,
-                                                          const Eigen::Vector2d& E )
-{
-    // compute the cross ratio of five coplanar points
-    // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
-    double result = area( A, B, D ) * area( A, C, E );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return std::numeric_limits<double>::max();
-    else
-        return ( area( A, B, C ) * area( A, D, E ) ) / result;
-}
-
-
-
-template <size_t M, size_t N, size_t K>
-inline double RandomFeatureDescriptor<M,N,K>::affineInvariant( const Eigen::Vector2d& A,
-                                                               const Eigen::Vector2d& B,
-                                                               const Eigen::Vector2d& C,
-                                                               const Eigen::Vector2d& D )
-{
-    // compute the ratio of triangle areas
-    // area(A,C,D) / area(A,B,C)
-    double result = area( A, B, C );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return std::numeric_limits<double>::max();
-    else
-        return area( A, C, D ) / result;
-}
-
-
-template <size_t M, size_t N, size_t K>
-template<size_t P>
 inline double RandomFeatureDescriptor<M,N,K>::descriptor( const std::vector<Eigen::Vector2d>& points )
 {
-    if( P == 5 )
+    if( K == 5 )
         return crossRatio( points[0], points[1], points[2], points[3], points[4] );
     else
         return affineInvariant( points[0], points[1], points[2], points[3] );

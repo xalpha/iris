@@ -28,4 +28,8 @@ add_executable( ${Iris_Test_RandomFeatureDescriptor} TestRandomFeatureDescriptor
 target_link_libraries( ${Iris_Test_RandomFeatureDescriptor} -lm -lc -Wall ${Iris_LIBRARIES} )
 add_test( TestRandomFeatureDescriptor ${Iris_Test_RandomFeatureDescriptor} )
 
-
+# add test for util
+set( Iris_Test_Util test_util )
+add_executable( ${Iris_Test_Util} TestUtil.cpp )
+target_link_libraries( ${Iris_Test_Util} -lm -lc -Wall ${Iris_LIBRARIES} )
+add_test( TestUtil ${Iris_Test_Util} )

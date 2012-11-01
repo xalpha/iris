@@ -19,12 +19,15 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
- * CameraCalibration.cpp
- *
- *  Created on: Jun 5, 2011
- *      Author: duliu
- */
+
+///
+/// \file    CameraCalibration.cpp
+/// \class   CameraCalibration
+///
+/// \author  Alexandru Duliu
+/// \date    Jun 5, 2012
+///
+
 
 #include <iostream>
 

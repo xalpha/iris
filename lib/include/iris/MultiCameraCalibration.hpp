@@ -21,12 +21,24 @@
 
 #pragma once
 
-/*
- * MultiCameraCalibration.hpp
- *
- *  Created on: Nov 1, 2012
- *      Author: duliu
- */
+
+///
+/// \file    MultiCameraCalibration.hpp
+/// \class   MultiCameraCalibration
+///
+/// \package iris
+/// \version 0.1.0
+///
+/// \brief   Class for multi-camera calibration
+///
+/// \details This class performs calibration of multiple cameras
+///          under the assumption that the images are acquired synchronized
+///
+/// \author  Amin Abouee
+/// \author  Alexandru Duliu
+/// \date    Nov 1, 2012
+///
+
 
 #include <iris/CameraCalibration.hpp>
 

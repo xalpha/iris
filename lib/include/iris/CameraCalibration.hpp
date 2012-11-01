@@ -21,12 +21,23 @@
 
 #pragma once
 
-/*
- * CameraCalibration.hpp
- *
- *  Created on: Jun 5, 2012
- *      Author: duliu
- */
+
+///
+/// \file    CameraCalibration.hpp
+/// \class   CameraCalibration
+///
+/// \package iris
+/// \version 0.1.0
+///
+/// \brief   Parrent class for camera calibration implementations
+///
+/// \details This class offers basic API for calibrating poses and cameras
+///          provided through a CameraSet.
+///
+/// \author  Alexandru Duliu
+/// \date    Jun 5, 2012
+///
+
 
 #include <stdexcept>
 #include <memory>

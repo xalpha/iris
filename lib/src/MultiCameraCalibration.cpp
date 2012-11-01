@@ -19,12 +19,15 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-/*
- * MultiCameraCalibration.cpp
- *
- *  Created on: Nov 1, 2012
- *      Author: duliu
- */
+
+///
+/// \file    MultiCameraCalibration.hpp
+/// \class   MultiCameraCalibration
+///
+/// \author  Amin Abouee
+/// \author  Alexandru Duliu
+/// \date    Nov 1, 2012
+///
 
 
 #include <iris/MultiCameraCalibration.hpp>

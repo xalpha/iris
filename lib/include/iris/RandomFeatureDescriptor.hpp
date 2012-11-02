@@ -43,42 +43,57 @@ template <size_t M, size_t N, size_t K>
 class RandomFeatureDescriptor
 {
 public:
-    struct Point
+    typedef Eigen::VectorXd FeatureVector;
+
+    class Point
     {
+    public:
+        Point() : neighbors(M) {}
+
+        Point( const Point& point )
+        {
+            *this = point;
+        }
+
+        void operator =( const Point& point )
+        {
+            pos = point.pos;
+            neighbors = point.neighbors;
+            featureVectors = point.featureVectors;
+        }
+
         Eigen::Vector2d pos;
-        size_t index;
         std::vector<Eigen::Vector2d> neighbors;
-        std::vector< std::vector<double> > featureVectors;
+        std::list<FeatureVector> featureVectors;
     };
 
 
 public:
-    RandomFeatureDescriptor();
+    RandomFeatureDescriptor( bool generateShiftPermutations=false );
     virtual ~RandomFeatureDescriptor();
 
-    void operator() ( const std::vector<Eigen::Vector2d>& points, bool generateShiftPermutations=false );
+    void operator() ( const std::vector<Eigen::Vector2d>& points );
 
     Pose_d operator& ( const RandomFeatureDescriptor& rfd ) const;
 
     void operator =( const RandomFeatureDescriptor& pose );
 
-    void describePoint( Point& point, bool generateShiftPermutations );
+    void describePoint( Point& point );
 
     double descriptor( const std::vector<Eigen::Vector2d>& points );
 
 protected:
-    // input data
-    std::vector<Eigen::Vector2d> m_points;
-
     // point descriptors
     std::vector<Point> m_pd;
 
     // prebacked combinations
     std::vector< std::vector<size_t> > m_mCn;
     std::vector< std::vector<size_t> > m_nCk;
-    std::vector< std::vector<size_t> > m_kSk;
-    std::vector< std::vector<size_t> > m_kS1;
+    std::vector< std::vector<size_t> > m_kS;
+
+    // prebacked combinations
     size_t m_featureVectorsPerPoint;
+    size_t m_featureVectorLenth;
 };
 
 
@@ -87,19 +102,25 @@ protected:
 ///
 
 template <size_t M, size_t N, size_t K>
-inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor()
+inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor( bool generateShiftPermutations )
 {
     // generate combinations
     m_mCn = possible_combinations(M,N);
     m_nCk = possible_combinations(N,K);
-    m_featureVectorsPerPoint = m_mCn.size();
+    m_featureVectorsPerPoint = iris::n_choose_k(M,N);
+    m_featureVectorLenth = iris::n_choose_k(N,K);
 
     // generate shift permutatins
     std::vector<size_t> shift(K);
     for( size_t i=0; i<K; i++ )
         shift[i] = i;
-    m_kSk = iris::shift_combinations( shift );
-    m_kS1.push_back( shift );
+    if( generateShiftPermutations )
+    {
+        m_kS = iris::shift_combinations( shift );
+        m_featureVectorsPerPoint *= m_kS.size();
+    }
+    else
+        m_kS.push_back( shift );
 }
 
 
@@ -111,52 +132,41 @@ inline RandomFeatureDescriptor<M,N,K>::~RandomFeatureDescriptor()
 
 
 template <size_t M, size_t N, size_t K>
-inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen::Vector2d>& points, bool generateShiftPermutations )
+inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen::Vector2d>& points )
 {
     // init stuff
-    m_points = points;
-    m_pd.clear();
-    m_pd.reserve( m_points.size() );
-    if( generateShiftPermutations )
-        m_featureVectorsPerPoint *= K;
-
-    // init flann
+    cv::Mat_<int> nearestM( 1, M+1 );
+    cv::Mat_<double> distsM( 1, M+1 );
+    m_pd.resize( points.size() );
     cv::Mat_<double> pointsCV( static_cast<int>(points.size()), 2 );
-    for( size_t i=0; i<points.size(); i++ )
+
+    // get the position of the points and init stuff
+    for( size_t p=0; p<points.size(); p++ )
     {
-        pointsCV( i, 0 ) = points[i](0);
-        pointsCV( i, 1 ) = points[i](1);
+        m_pd[p].pos = points[p];
+        pointsCV( p, 0 ) = points[p](0);
+        pointsCV( p, 1 ) = points[p](1);
     }
+
+    // build kd-tree
     cv::flann::GenericIndex< cv::flann::L2_Simple<double> > pointsFlann( pointsCV, cvflann::KDTreeIndexParams(5) );
 
     // generate the descriptor tree for each point
-    for( size_t p=0; p<m_points.size(); p++ )
+    for( size_t p=0; p<m_pd.size(); p++ )
     {
         // get the M nearest neighbors of point
-        cv::Mat_<int> nearestM( 1, M+1 );
-        cv::Mat_<double> distsM( 1, M+1 );
         pointsFlann.knnSearch( pointsCV.row(p).clone(), nearestM, distsM, M+1, cvflann::SearchParams(128) );
 
         // copy points
-        std::vector<Eigen::Vector2d> nearestPoints(M);
         for( size_t m=0; m<M; m++ )
-            nearestPoints[m] = m_points[ nearestM(m+1) ];
+            m_pd[p].neighbors[m] = m_pd[ nearestM(m+1) ].pos;
 
         // sort counter clockwise
-        clockwise_comparisson<double> ccc( m_points[p] );
-        std::sort( nearestPoints.begin(), nearestPoints.end(), ccc );
-
-        // initialize the point
-        Point point;
-        point.pos = m_points[p];
-        point.index = p;
-        point.neighbors = nearestPoints;
+        clockwise_comparisson<double> ccc( m_pd[p].pos );
+        std::sort( m_pd[p].neighbors.begin(), m_pd[p].neighbors.end(), ccc );
 
         // compute the feature vectors for this point
-        describePoint( point, generateShiftPermutations );
-
-        // add the point
-        m_pd.push_back( point );
+        describePoint( m_pd[p] );
     }
 }
 
@@ -240,53 +250,54 @@ inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDes
 //    }
 
 //    return pose;
-
-    return Pose_d();
 }
 
 
 template <size_t M, size_t N, size_t K>
 inline void RandomFeatureDescriptor<M,N,K>::operator =( const RandomFeatureDescriptor<M,N,K>& rfd )
 {
-    m_points = rfd.m_points;
     m_pd = rfd.m_pd;
     m_mCn = rfd.m_mCn;
     m_nCk = rfd.m_nCk;
+    m_kS = rfd.m_kS;
     m_featureVectorsPerPoint = rfd.m_featureVectorsPerPoint;
+    m_featureVectorLenth = rfd.m_featureVectorLenth;
 }
 
 
 template <size_t M, size_t N, size_t K>
-inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool generateShiftPermutations )
+inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point )
 {
-    // set the shift permutations
-    const std::vector< std::vector<size_t> >& kS = generateShiftPermutations ? m_kSk : m_kS1;
-
     /////
     // WARNING: we are now leaving Kansas
     ///
 
     // run over all N combinations
-    point.featureVectors.resize( m_mCn.size() * kS.size() );
+    std::vector<FeatureVector> featureVectors( m_featureVectorsPerPoint, FeatureVector::Zero(m_featureVectorLenth) );
     for( size_t n=0; n<m_mCn.size(); n++ )
     {
         // run over all combinations of K elements from mCn
-        point.featureVectors[n].resize( m_nCk.size() );
         for( size_t k=0; k<m_nCk.size(); k++ )
         {
             // run over all shift permutations
-            for( size_t s=0; s<kS.size(); s++ )
+            for( size_t s=0; s<m_kS.size(); s++ )
             {
                 // assemble the points needed for the descriptor
                 std::vector<Eigen::Vector2d> points(K);
                 for( size_t p=0; p<K; p++ )
-                    points[p] = point.neighbors[ m_mCn[n][ m_nCk[k][ kS[s][p] ] ] ]; // cache rest in peace ;)
+                    points[p] = point.neighbors[ m_mCn[n][ m_nCk[k][ m_kS[s][p] ] ] ]; // cache rest in peace ;)
 
                 // write the descriptor
-                point.featureVectors[n*kS.size() + s][k] = descriptor( points );
+                featureVectors[n*m_kS.size() + s][k] = descriptor( points );
             }
         }
     }
+
+    // sanity check all feature vectors
+    point.featureVectors.clear();
+    for( FeatureVector& fv : featureVectors )
+        if( fv.sum() > 0.0 )
+            point.featureVectors.push_back( fv );
 }
 
 

@@ -38,6 +38,7 @@ namespace iris {
 
 RandomFeatureFinder::RandomFeatureFinder() :
     Finder(),
+    m_patternRFD(false),
     m_minPoints(11),
     m_mserMaxRadiusRatio( 3.0),
     m_mserMinRadius( 10.0)
@@ -56,7 +57,7 @@ void RandomFeatureFinder::configure( const std::vector< Eigen::Vector2d >& point
     if( points.size() > m_minPoints )
     {
         // generate feature vectors
-        m_patternRFD( points, false );
+        m_patternRFD( points );
 
         // set the 3d points
         m_points3D.clear();
@@ -126,8 +127,8 @@ bool RandomFeatureFinder::find( Pose_d& pose )
         return false;
 
     // generate descriptors for detected points
-    RFD poseRFD;
-    poseRFD( posePoints, true );
+    RFD poseRFD(true);
+    poseRFD( posePoints );
 
     // compare the resulting descriptors with the configured
     Pose_d matchedPose = m_patternRFD & poseRFD;

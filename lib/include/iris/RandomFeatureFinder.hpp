@@ -38,7 +38,7 @@ namespace iris
 
 class RandomFeatureFinder : public Finder
 {
-    typedef RandomFeatureDescriptor<9,7,5> RFD;
+    typedef RandomFeatureDescriptor<8,7,5> RFD;
 
 public:
     RandomFeatureFinder();

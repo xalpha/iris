@@ -48,7 +48,7 @@ public:
         Eigen::Vector2d pos;
         size_t index;
         std::vector<Eigen::Vector2d> neighbors;
-        std::vector<Eigen::VectorXd> descriptors;
+        std::vector< std::vector<double> > featureVectors;
     };
 
 
@@ -76,6 +76,8 @@ protected:
     // prebacked combinations
     std::vector< std::vector<size_t> > m_mCn;
     std::vector< std::vector<size_t> > m_nCk;
+    std::vector< std::vector<size_t> > m_kSk;
+    std::vector< std::vector<size_t> > m_kS1;
     size_t m_featureVectorsPerPoint;
 };
 
@@ -87,9 +89,17 @@ protected:
 template <size_t M, size_t N, size_t K>
 inline RandomFeatureDescriptor<M,N,K>::RandomFeatureDescriptor()
 {
+    // generate combinations
     m_mCn = possible_combinations(M,N);
     m_nCk = possible_combinations(N,K);
     m_featureVectorsPerPoint = m_mCn.size();
+
+    // generate shift permutatins
+    std::vector<size_t> shift(K);
+    for( size_t i=0; i<K; i++ )
+        shift[i] = i;
+    m_kSk = iris::shift_combinations( shift );
+    m_kS1.push_back( shift );
 }
 
 
@@ -249,46 +259,34 @@ inline void RandomFeatureDescriptor<M,N,K>::operator =( const RandomFeatureDescr
 template <size_t M, size_t N, size_t K>
 inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point, bool generateShiftPermutations )
 {
-//    // run over all N combinations
-//    size_t shiftCount = generateShiftPermutations ? K : 1;
-//    for( size_t n=0; n<m_mCn.size(); n++ )
-//    {
-//        /////
-//        // WARNING: we are now leaving Kansas
-//        ///
+    // set the shift permutations
+    const std::vector< std::vector<size_t> >& kS = generateShiftPermutations ? m_kSk : m_kS1;
 
-//        // reserve enough for all feature vectors
-//        std::vector<FeatureVector> fvs(shiftCount);
-//        for( size_t i=0; i<shiftCount; i++ )
-//            fvs[i].reserve( m_featureVectorsPerPoint / (m_mCn.size() * shiftCount) );
+    /////
+    // WARNING: we are now leaving Kansas
+    ///
 
-//        // run over all combinations of K elements from mCn
-//        for( size_t k=0; k<m_nCk.size(); k++ )
-//        {
-//            // assemble the points
-//            std::vector<Eigen::Vector2d> points;
-//            points.reserve( K );
-//            for( size_t i=0; i<K; i++ )
-//                points.push_back( point.neighbors[ m_mCn[n][ m_nCk[k][i] ] ] );
+    // run over all N combinations
+    point.featureVectors.resize( m_mCn.size() * kS.size() );
+    for( size_t n=0; n<m_mCn.size(); n++ )
+    {
+        // run over all combinations of K elements from mCn
+        point.featureVectors[n].resize( m_nCk.size() );
+        for( size_t k=0; k<m_nCk.size(); k++ )
+        {
+            // run over all shift permutations
+            for( size_t s=0; s<kS.size(); s++ )
+            {
+                // assemble the points needed for the descriptor
+                std::vector<Eigen::Vector2d> points(K);
+                for( size_t p=0; p<K; p++ )
+                    points[p] = point.neighbors[ m_mCn[n][ m_nCk[k][ kS[s][p] ] ] ]; // cache rest in peace ;)
 
-//            // check if shift permutations are required
-//            if( generateShiftPermutations )
-//            {
-//                // generate shift combinations
-//                std::vector< std::vector<Eigen::Vector2d> > shift_points = shift_combinations( points );
-
-//                // run over all shift combinations and generate descriptors
-//                for( size_t i=0; i<K; i++ )
-//                    fvs[i].push_back( descriptor( shift_points[i] ) );
-//            }
-//            else
-//                fvs[0].push_back( descriptor( points ) );
-//        }
-
-//        // add the feature vector(s)
-//        for( size_t i=0; i<fvs.size(); i++ )
-//            m_featureVectors.push_back(fvs[i]);
-//    }
+                // write the descriptor
+                point.featureVectors[n*kS.size() + s][k] = descriptor( points );
+            }
+        }
+    }
 }
 
 
@@ -297,8 +295,10 @@ inline double RandomFeatureDescriptor<M,N,K>::descriptor( const std::vector<Eige
 {
     if( K == 5 )
         return crossRatio( points[0], points[1], points[2], points[3], points[4] );
-    else
+    else if( K == 4 )
         return affineInvariant( points[0], points[1], points[2], points[3] );
+    else
+        throw std::runtime_error( "RandomFeatureDescriptor::descriptor: unknown invariant with \"" + iris::toString(K) + "\" points." );
 }
 
 

@@ -194,7 +194,7 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
     matcher.match( m_flannMatrix, rfd.m_flannMatrix, matches );
 
     // mark all the matches
-    Eigen::MatrixXi matchMatrix = Eigen::MatrixXi::Zero( m_points.size(), rfd.m_points.size() );
+    //Eigen::MatrixXi matchMatrix = Eigen::MatrixXi::Zero( m_points.size(), rfd.m_points.size() );
     Eigen::MatrixXf distMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
     for( cv::DMatch& m : matches )
         distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), m.distance );
@@ -210,9 +210,9 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
         bool found = false;
         size_t idx;
         for( size_t t=0; t<rfd.m_points.size(); t++ )
-            if( trainMask[t] && matchMatrix(q,t) < minDist )
+            if( trainMask[t] && distMatrix(q,t) < minDist )
             {
-                minDist = matchMatrix(q,t);
+                minDist = distMatrix(q,t);
                 found = true;
                 idx = t;
             }
@@ -227,9 +227,6 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
         }
     }
 
-
-
-
     // now run Ransac
     Eigen::Matrix3d H;
     std::vector<cv::Point2f> queryPointsCV = iris::eigen2cv<float>( queryPoints );
@@ -237,42 +234,8 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
     cv::Mat_<float> HCV = cv::findHomography( queryPointsCV, trainPointsCV, CV_RANSAC, 5.0 );
     cv::cv2eigen( HCV, H );
 
-    std::cout << H << std::endl;
-
     // project these points with the homography
     std::vector<Eigen::Vector2d> projected2D = iris::project_points( H, queryPoints );
-
-    cv::Mat img;
-    cimg2cv( *(pose.image), img );
-//    cvtColor(img, img, CV_RGB2GRAY);
-//    cvtColor(img, img, CV_GRAY2RGB);
-    for( size_t p=0; p<trainPointsCV.size(); p++ )
-    {
-        cv::circle( img, trainPointsCV[p], 5, cv::Scalar(0,0,255), 3, 8, 0 );
-        cv::circle( img, cv::Point2f( projected2D[p](0), projected2D[p](1) ), 5, cv::Scalar(0,255,0), 3, 8, 0 );
-    }
-
-
-    cv::namedWindow( pose.name.c_str(), 0 );
-    cv::imshow( pose.name.c_str(), img );
-    cvResizeWindow( pose.name.c_str(), 800, 600 );
-
-
-    while( true )
-    {
-        //Handle pause/unpause and ESC
-        int c = cv::waitKey(15);
-        if(c == 'q')
-            break;
-    }
-
-
-//    for( size_t i=0; i<queryPoints.size(); i++ )
-//    {
-//        Eigen::Vector4d p4D = H * Eigen::Vector4d(queryPoints[i](0), queryPoints[i](1), 0, 1);
-//        Eigen::Vector3d p3D(p4D(0), p4D(1), p4D(2));
-//        projected2D[i] = p3D.hnormalized();
-//    }
 
     // write results
     pose.points2D.clear();

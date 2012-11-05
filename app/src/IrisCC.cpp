@@ -425,7 +425,7 @@ void IrisCC::updateImage( int row )
             row = 0;
 
         // get the image
-        const iris::Pose_d pose = m_cs.pose( getPoseId(row) );
+        const iris::Pose_d& pose = m_cs.pose( getPoseId(row) );
         const cimg_library::CImg<uint8_t>& image = *pose.image;
 
         // convert image to Qt

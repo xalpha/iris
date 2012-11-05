@@ -261,6 +261,11 @@
              <string>Chessboard</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>Random Features</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>

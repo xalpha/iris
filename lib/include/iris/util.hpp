@@ -83,7 +83,6 @@ public:
     std::string name;
     // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
-    std::vector< Eigen::Matrix<T,2,1> > detected2D;
     // correspondences
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
@@ -186,9 +185,9 @@ inline cv::Mat_<To> vector2cv( const std::vector< std::vector<Ti> >& dat )
     // init stuff
     cv::Mat_<float> result( dat.size(), dat[0].size() );
 
-    for( size_t i=0; i<dat.size(); i++ )
-        for( size_t j=0; j<dat[i].size(); j++ )
-            result( i, j ) = static_cast<To>(dat[i][j]);
+        for( size_t i=0; i<dat.size(); i++ )
+            for( size_t j=0; j<dat[i].size(); j++ )
+                result( i, j ) = static_cast<To>(dat[i][j]);
 
     // return
     return result;
@@ -578,11 +577,22 @@ inline cimg_library::CImg<T> pixelLimit( const cimg_library::CImg<T>& image, con
 
 
 /////
-// angle comparisson operator
+// angle
 ///
+template<typename T>
+inline T angle( T x, T y )
+{
+    T result = atan2( y, x );
+    return (result < static_cast<T>(0)) ? 6.28318530718 + result : result;
+}
 
+
+/////
+// Angle comparisson operator
+//
 // thanks to Ben Voigt and Tom Sirgedas for putting me on the right track
 // http://stackoverflow.com/questions/7774241/sort-points-by-angle-from-given-axis
+///
 
 template<typename T>
 class counter_clockwise_comparisson
@@ -590,11 +600,8 @@ class counter_clockwise_comparisson
     typedef Eigen::Matrix<T,2,1> Point;
 
 public:
-    counter_clockwise_comparisson(const Point& origin, const Point& direction)
-    {
-        m_origin = origin;
-        m_direction = direction;
-    }
+    counter_clockwise_comparisson() : m_origin( 0, 0 ){}
+    counter_clockwise_comparisson(const Point& origin) : m_origin( origin ){}
 
     bool operator()(const Point& a, const Point& b) const
     {
@@ -602,45 +609,55 @@ public:
         Point dirA = a - m_origin;
         Point dirB = b - m_origin;
 
-        // check A
-        T detB = det(m_direction, dirB);
-        T dotB = dot(m_direction, dirB);
-        if( (0==detB) && (0==dotB) )
-            return false;
+        // compute the angles
+        T angleA = iris::angle( dirA(0), dirA(1) );
+        T angleB = iris::angle( dirB(0), dirB(1) );
 
-        // check B
-        T detA = det(m_direction, dirA);
-        T dotA = dot(m_direction, dirA);
-        if( (0==detA) && (0==dotA) )
-            return true;
-
-        // a&b on the same side
-        if (detA * detB > 0)
-            return det(dirA, dirB) > 0;
-        else
-            return detA > 0;
+        // return the order
+        return angleA < angleB;
     }
 
 private:
-    // determinant of 2x2 matrix [a b]
-    double det( const Point& a, const Point& b) const { return a(0)*b(1) - a(1)*b(0); }
-    double dot( const Point& a, const Point& b) const { return a(0)*b(0) + a(1)*b(1); }
-
-private:
     Point m_origin;
-    Point m_direction;
 };
 
 
-/////
-// count bits in an integer
-///
+
+template<typename T>
+class clockwise_comparisson
+{
+    typedef Eigen::Matrix<T,2,1> Point;
+
+public:
+    clockwise_comparisson() : m_origin( 0, 0 ){}
+    clockwise_comparisson(const Point& origin) : m_origin( origin ){}
+
+    bool operator()(const Point& a, const Point& b) const
+    {
+        // init stuff
+        Point dirA = a - m_origin;
+        Point dirB = b - m_origin;
+
+        // compute the angles
+        T angleA = iris::angle( dirA(0), dirA(1) );
+        T angleB = iris::angle( dirB(0), dirB(1) );
+
+        // return the order
+        return angleA > angleB;
+    }
+
+private:
+    Point m_origin;
+};
+
+
+
 template <typename T>
 inline size_t count_bits( const T number )
 {
     // init stuff
-    size_t c; // c accumulates the total bits set in v
-    size_t n = static_cast<size_t>(number);
+    size_t c; // c accumulates the total bits set in number
+    T n = number;
 
     // count
     for( c=0; n; c++)
@@ -651,47 +668,29 @@ inline size_t count_bits( const T number )
 }
 
 
-/////
-// compute all possible combinations of K out of N elements
-///
-template<size_t N, size_t K>
-inline std::vector< std::vector<size_t> > possible_combinations()
+template <typename T>
+inline std::vector< std::vector<T> > possible_combinations( T n, T k )
 {
     // compute the maximum number of N combinations
-    uint64_t maxC = 1;
-    maxC = maxC << N;
-    std::vector<uint64_t> bits;
-    std::vector< std::vector<size_t> > result;
+    std::vector< std::vector<T> > result;
+    std::vector<bool> v(n);
+    std::fill(v.begin() + k, v.end(), true);
 
-    // run over all possibilities
-    for( uint64_t i=0; i<maxC; i++ )
-        if( count_bits(i) == K )
-            bits.push_back( i );
-
-    // run over all recovered combinations and extract the indices
-    for( size_t i=0; i<bits.size(); i++ )
+    do
     {
-        // update stuff
-        uint64_t x = static_cast<uint64_t>(bits[i]);
-        std::vector<uint64_t> indices;
-
-        // run over all bits and store their positions
-        for (uint64_t z = 0; z < 64; z++)
-            if( (x>>z) & 0x1 )
-                indices.push_back(z);
-
-        // add the indices to the result
-        result.push_back( indices );
+        std::vector<T> c;
+        for(T i = 0; i < n; ++i)
+            if (!v[i])
+                c.push_back(i);
+        result.push_back(c);
     }
+    while (std::next_permutation(v.begin(), v.end()));
 
     // return
     return result;
 }
 
 
-/////
-// generate all shift permutations of the vector
-///
 template <typename T>
 inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& vec )
 {
@@ -710,10 +709,7 @@ inline std::vector< std::vector<T> > shift_combinations( const std::vector<T>& v
 }
 
 
-/////
-// Area of a triangle
-///
-template<typename T>
+template <typename T>
 inline T area( const Eigen::Matrix<T,2,1>& A,
                const Eigen::Matrix<T,2,1>& B,
                const Eigen::Matrix<T,2,1>& C )
@@ -721,75 +717,43 @@ inline T area( const Eigen::Matrix<T,2,1>& A,
     Eigen::Matrix<T,2,1> a = B-A;
     Eigen::Matrix<T,2,1> b = C-A;
 
-    return static_cast<T>(0.5) * (a(0)*b(1) - a(1)*b(0));
+    return 0.5 * (a(0)*b(1) - a(1)*b(0));
 }
 
 
 template <typename T>
-inline double crossRatio( const Eigen::Matrix<T,2,1>& A,
-                          const Eigen::Matrix<T,2,1>& B,
-                          const Eigen::Matrix<T,2,1>& C,
-                          const Eigen::Matrix<T,2,1>& D,
-                          const Eigen::Matrix<T,2,1>& E )
+inline T crossRatio( const Eigen::Matrix<T,2,1>& A,
+                     const Eigen::Matrix<T,2,1>& B,
+                     const Eigen::Matrix<T,2,1>& C,
+                     const Eigen::Matrix<T,2,1>& D,
+                     const Eigen::Matrix<T,2,1>& E )
 {
     // compute the cross ratio of five coplanar points
     // area(A,B,C)*area(A,D,E) / area(A,B,D)*area(A,C,E)
+    T result = area( A, B, D ) * area( A, C, E );
 
-    double result = area( A, B, D ) * area( A, C, E );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return std::numeric_limits<double>::max();
+    if( fabs( result ) < std::numeric_limits<T>::epsilon() )
+        return std::numeric_limits<T>::max();
     else
         return ( area( A, B, C ) * area( A, D, E ) ) / result;
 }
 
 
+
 template <typename T>
-inline double affineInvariant( const Eigen::Matrix<T,2,1>& A,
-                               const Eigen::Matrix<T,2,1>& B,
-                               const Eigen::Matrix<T,2,1>& C,
-                               const Eigen::Matrix<T,2,1>& D )
+inline T affineInvariant( const Eigen::Matrix<T,2,1>& A,
+                          const Eigen::Matrix<T,2,1>& B,
+                          const Eigen::Matrix<T,2,1>& C,
+                          const Eigen::Matrix<T,2,1>& D )
 {
     // compute the ratio of triangle areas
     // area(A,C,D) / area(A,B,C)
+    T result = area( A, B, C );
 
-    double result = area( A, B, C );
-
-    if( fabs( result ) < std::numeric_limits<double>::epsilon() )
-        return std::numeric_limits<double>::max();
+    if( fabs( result ) < std::numeric_limits<T>::epsilon() )
+        return std::numeric_limits<T>::max();
     else
         return area( A, C, D ) / result;
-}
-
-template<size_t K>
-inline double descriptor( const std::vector<Eigen::Vector2d>& n );
-
-template<>
-inline double descriptor<5>( const std::vector<Eigen::Vector2d>& points )
-{
-    return crossRatio( points[0], points[1], points[2], points[3], points[4] );
-}
-
-
-template<>
-inline double descriptor<4>( const std::vector<Eigen::Vector2d>& points )
-{
-    return affineInvariant( points[0], points[1], points[2], points[3] );
-}
-
-
-/////
-// Find duplicates
-///
-template<typename T>
-inline bool duplicates( const std::vector<T>& vec )
-{
-    for( size_t i=0; i<vec.size(); i++ )
-        for( size_t j=0; j<vec.size(); j++ )
-            if( i != j && vec[i] == vec[j] )
-                return true;
-
-    return false;
 }
 
 
@@ -861,6 +825,99 @@ template<typename T>
 inline T std_dev( const std::vector<T> &x, bool is_subset=false )
 {
     return sqrt( var(x, is_subset) );
+}
+
+
+/////
+// n choose k number of combinations
+// Knuth's "The Art of Computer Programming, 3rd Edition, Volume 2: Seminumerical Algorithms"
+///
+template <typename T>
+inline T n_choose_k(T n, T k)
+{
+    if (k > n)
+        return 0;
+
+    T r = 1;
+    for (T d = 1; d <= k; ++d)
+    {
+        r *= n--;
+        r /= d;
+    }
+    return r;
+}
+
+
+/////
+// Generate Random points with within range and min distance
+///
+template <typename T>
+inline std::vector<Eigen::Matrix<T,2,1> > generate_points( const size_t count,
+                                                           const T minDist,
+                                                           const Eigen::Matrix<T,2,1>& minP,
+                                                           const Eigen::Matrix<T,2,1>& maxP )
+{
+    // init stuff
+    std::vector<Eigen::Matrix<T,2,1> > points;
+    points.reserve( count );
+    Eigen::Matrix<T,2,1> scale = static_cast<T>(0.5) * (maxP - minP) - Eigen::Matrix<T,2,1>::Constant(minDist);
+    Eigen::Matrix<T,2,1> trans = scale + minP + Eigen::Matrix<T,2,1>::Constant(minDist);
+
+    // fill with points
+    for( size_t i=0; i<count; i++ )
+    {
+        while( true )
+        {
+            // get new point
+            Eigen::Matrix<T,2,1> p = Eigen::Matrix<T,2,1>::Random();
+            p(0) *= scale(0);
+            p(1) *= scale(1);
+            p += trans;
+
+            // compute distance to closest point
+            bool collision = false;
+            for( size_t n=0; n<points.size() && !collision; n++ )
+                collision = ( points[n] - p ).norm() < minDist;
+
+            // check for collision
+            if( !collision )
+            {
+                points.push_back( p );
+                break;
+            }
+        }
+    }
+
+    // return result
+    return points;
+}
+template <typename T>
+inline std::vector<Eigen::Matrix<T,2,1> > generate_points( const size_t count, const T minDist )
+{
+    Eigen::Matrix<T,2,1> minP(0,0), maxP(1,1);
+    return generate_points( count, minDist, minP, maxP );
+}
+
+
+///////
+//// Project Points
+/////
+template <typename T, int Dim>
+inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+1,Dim+1>& P,
+                                             const Eigen::Matrix<T,Dim,1>& point )
+{
+    Eigen::Matrix<T,Dim+1,1> projected = P * point.homogeneous();
+    return projected.hnormalized();
+}
+
+template <typename T, int Dim>
+inline std::vector<Eigen::Matrix<T,Dim,1> > project_points( const Eigen::Matrix<T,Dim+1,Dim+1>& P,
+                                                            const std::vector<Eigen::Matrix<T,Dim,1> >& points )
+{
+    std::vector< Eigen::Matrix<T,Dim,1> > pp( points.size() );
+    for( size_t i=0; i<pp.size(); i++ )
+        pp[i] = project_point( P, points[i] );
+    return pp;
 }
 
 

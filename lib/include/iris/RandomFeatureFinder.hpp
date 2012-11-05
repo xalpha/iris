@@ -21,66 +21,55 @@
 
 #pragma once
 
-#include <stdexcept>
-#include <memory>
+/*
+ * RandomFeatureFinder.hpp
+ *
+ *  Created on: Jul 25, 2012
+ *      Author: duliu
+ */
 
+
+#include <iris/RandomFeatureDescriptor.hpp>
 #include <iris/Finder.hpp>
-#include <iris/CameraSet.hpp>
-#include <iris/util.hpp>
 
 namespace iris
 {
 
-class CameraCalibration
+
+class RandomFeatureFinder : public Finder
 {
-///
-/// \file    CameraCalibration.hpp
-/// \class   CameraCalibration
-///
-/// \package iris
-/// \version 0.1.0
-///
-/// \brief   Parrent class for camera calibration implementations
-///
-/// \details This class offers basic API for calibrating poses and cameras
-///          provided through a CameraSet.
-///
-/// \author  Alexandru Duliu
-/// \date    Jun 5, 2012
-///
+    typedef RandomFeatureDescriptor<8,7,5> RFD;
 
 public:
-    CameraCalibration();
-    virtual ~CameraCalibration();
+    RandomFeatureFinder();
+    virtual ~RandomFeatureFinder();
 
-    // run the calibration
-    virtual void calibrate( CameraSet_d& cs ) = 0;
+    void configure( const std::vector< Eigen::Vector2d >& points );
+    void configure( const std::string& points );
 
-    void setFinder( std::shared_ptr<Finder> finder );
+    void setMinPoints( size_t minPoints );
+    void setMaxRadiusRatio( double val );
+    void setMinRadius( double val );
+    void setMeanAreaFac( double val );
 
-    const Finder& finder() const;
-
-protected:
-    virtual void filter( CameraSet_d& cs ) = 0;
-    virtual void commit( CameraSet_d& cs );
-
-    void check();
-
-    void threadID();
+    virtual bool find( Pose_d& pose );
 
 protected:
-    // these two do the work
-    std::shared_ptr<Finder> m_finder;
+    std::vector< Eigen::Vector2d > findCircles( const cimg_library::CImg<uint8_t>& image );
 
-    // filtered
-    std::map< size_t, iris::Camera_d > m_filteredCameras;
+    std::vector<cv::RotatedRect> filterEllipses( const std::vector<cv::RotatedRect>& ellipses );
 
-    // flags
-    bool m_handEye;
+    std::vector<cv::RotatedRect> removeIntersectingEllipses( const std::vector<cv::RotatedRect>& ellipses );
 
-    // threads
-    size_t m_threadCount;
+protected:
+    // config
+    RFD m_patternRFD;
+    size_t m_minPoints;
+
+    // MSER elipse detector
+    double m_mserMaxRadiusRatio;
+    double m_mserMinRadius;
+    double m_mserMearAreaFac;
 };
-
 
 } // end namespace iris

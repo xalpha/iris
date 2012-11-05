@@ -24,8 +24,6 @@ void showPose( const iris::Pose_d& pose )
     std::string name = ss.str();
 
     // render the points
-    for( size_t i=0; i<pose.detected2D.size(); i++ )
-        cv::circle( img, cv::Point( pose.detected2D[i](0), pose.detected2D[i](1) ), 7, cv::Scalar(0,128,255), -1, 8, 0 );
     for( size_t i=0; i<pose.points2D.size(); i++ )
         cv::circle( img, cv::Point( pose.points2D[i](0), pose.points2D[i](1) ), 5, cv::Scalar(0,255,0), -1, 8, 0 );
     for( size_t i=0; i<pose.projected2D.size(); i++ )

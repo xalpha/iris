@@ -161,7 +161,10 @@ bool ChessboardFinder::find( Pose_d& pose )
         if( m_subpixelCorner )
         {
             cv::Mat grayImage;
-            cv::cvtColor(imageCV, grayImage, CV_RGB2GRAY);
+            if( pose.image->spectrum() == 1 )
+                grayImage = imageCV;
+            else
+                cv::cvtColor(imageCV, grayImage, CV_RGB2GRAY);
             cv::cornerSubPix(grayImage, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 0.1 ));
         }
 

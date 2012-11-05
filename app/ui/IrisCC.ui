@@ -263,6 +263,11 @@
            </item>
            <item>
             <property name="text">
+             <string>Random Features</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>Random Dot Markers</string>
             </property>
            </item>

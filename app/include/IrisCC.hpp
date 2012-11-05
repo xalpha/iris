@@ -44,6 +44,7 @@ namespace Ui {
 
     // Finders
     class ChessboardFinder;
+    class RandomFeatureFinder;
 #ifdef UCHIYAMARKERS_FOUND
     class UCHIYAMARKERSFinder;
 #endif
@@ -114,9 +115,11 @@ protected:
     Ui::CameraConfig* ui_CameraConfig;
     Ui::CameraInfo* ui_CameraInfo;
     Ui::ChessboardFinder* ui_ChessboardFinder;
+    Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
 #ifdef UCHIYAMARKERS_FOUND
     Ui::UCHIYAMARKERSFinder* ui_UCHIYAMARKERSFinder;
 #endif
+
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
 

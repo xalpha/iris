@@ -25,6 +25,7 @@
 # Iris_INCLUDE_DIR - include directory for iris headers
 # Iris_INCLUDE_DIRS - all include directories iris needs
 # Iris_LIBRARY - library
+# Iris_LIBRARIES -
 
 # version
 set(Iris_MAJOR_VERSION 0)
@@ -91,6 +92,8 @@ set( Iris_LINK_LIBRARIES
     -lc
     ${OpenCV_LIBS} CACHE INTERNAL "all libs iris needs" )
 
+# set libraries
+set( Iris_LIBRARIES ${Iris_LIBRARY} ${Iris_LINK_LIBRARIES} CACHE INTERNAL "the iris lib" )
 
 # enable C++11 support
 if( NOT WIN32 )

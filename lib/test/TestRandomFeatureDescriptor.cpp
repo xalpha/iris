@@ -19,68 +19,52 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
+#include <assert.h>
+#include <iostream>
 #include <stdexcept>
-#include <memory>
 
-#include <iris/Finder.hpp>
-#include <iris/CameraSet.hpp>
-#include <iris/util.hpp>
+#include <iris/RandomFeatureDescriptor.hpp>
 
-namespace iris
+
+template <size_t M, size_t N, size_t K>
+inline void test_rfd()
 {
+    // init stuff
+    iris::Pose_d pose;
+    iris::RandomFeatureDescriptor<M,N,K> pattern(true), image(false);
 
-class CameraCalibration
+    // gen random points
+    std::vector<Eigen::Vector2d> points = iris::generate_points( 100, 10.0, Eigen::Vector2d(0,0), Eigen::Vector2d(1024.0, 768.0) );
+
+    // do it
+    pattern(points);
+    image(points);
+    pattern.match( image, pose );
+
+    // check the reprojection error
+    for( size_t i=0; i<pose.points2D.size(); i++ )
+        assert( (pose.points2D[i]-pose.projected2D[i]).norm() < 5.0 );
+}
+
+
+int main(int argc, char** argv)
 {
-///
-/// \file    CameraCalibration.hpp
-/// \class   CameraCalibration
-///
-/// \package iris
-/// \version 0.1.0
-///
-/// \brief   Parrent class for camera calibration implementations
-///
-/// \details This class offers basic API for calibrating poses and cameras
-///          provided through a CameraSet.
-///
-/// \author  Alexandru Duliu
-/// \date    Jun 5, 2012
-///
+    try
+    {
+        test_rfd<8,7,5>();
+    }
+    catch( std::exception &e )
+    {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
 
-public:
-    CameraCalibration();
-    virtual ~CameraCalibration();
-
-    // run the calibration
-    virtual void calibrate( CameraSet_d& cs ) = 0;
-
-    void setFinder( std::shared_ptr<Finder> finder );
-
-    const Finder& finder() const;
-
-protected:
-    virtual void filter( CameraSet_d& cs ) = 0;
-    virtual void commit( CameraSet_d& cs );
-
-    void check();
-
-    void threadID();
-
-protected:
-    // these two do the work
-    std::shared_ptr<Finder> m_finder;
-
-    // filtered
-    std::map< size_t, iris::Camera_d > m_filteredCameras;
-
-    // flags
-    bool m_handEye;
-
-    // threads
-    size_t m_threadCount;
-};
+    return 0;
+}
 
 
-} // end namespace iris
+
+
+
+
+

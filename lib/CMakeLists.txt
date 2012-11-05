@@ -92,6 +92,6 @@ install(FILES ${Iris_EXTERN_INC} DESTINATION "include" )
 
 
 # add test app
-add_executable( test test/test.cpp )
-target_link_libraries( test ${Iris_TARGET} )
+add_executable( TestOpenCVSingleCalibration test/TestOpenCVSingleCalibration.cpp )
+target_link_libraries( TestOpenCVSingleCalibration ${Iris_TARGET} )
 

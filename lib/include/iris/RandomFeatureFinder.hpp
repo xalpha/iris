@@ -50,6 +50,7 @@ public:
     void setMinPoints( size_t minPoints );
     void setMaxRadiusRatio( double val );
     void setMinRadius( double val );
+    void setMeanAreaFac( double val );
 
     virtual bool find( Pose_d& pose );
 
@@ -68,6 +69,7 @@ protected:
     // MSER elipse detector
     double m_mserMaxRadiusRatio;
     double m_mserMinRadius;
+    double m_mserMearAreaFac;
 };
 
 } // end namespace iris

@@ -41,9 +41,9 @@ RandomFeatureFinder::RandomFeatureFinder() :
     m_patternRFD(false),
     m_minPoints(11),
     m_mserMaxRadiusRatio( 3.0),
-    m_mserMinRadius( 5.0)
+    m_mserMinRadius( 5.0),
+    m_mserMearAreaFac( 2.0 )
 {
-    m_useOpenMP = false;
 }
 
 
@@ -114,6 +114,12 @@ void RandomFeatureFinder::setMaxRadiusRatio( double val )
 void RandomFeatureFinder::setMinRadius( double val )
 {
     m_mserMinRadius = val;
+}
+
+
+void RandomFeatureFinder::setMeanAreaFac( double val )
+{
+    m_mserMearAreaFac = val;
 }
 
 
@@ -248,7 +254,7 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::filterEllipses( const std::vec
         // filter the elipses
         ok = ok & ((rMax/rMin) <= m_mserMaxRadiusRatio);
         ok = ok & rMin > m_mserMinRadius;
-        ok = ok & fabs( areas[e] - mean_area ) < mean_area;
+        ok = ok & fabs( areas[e] - mean_area ) < m_mserMearAreaFac*mean_area;
 
         // if all is well keep it
         if( ok )

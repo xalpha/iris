@@ -194,10 +194,32 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
     matcher.match( m_flannMatrix, rfd.m_flannMatrix, matches );
 
     // mark all the matches
+    std::vector<Eigen::Vector2d> matchQueryPoints, matchTrainPoints;
     //Eigen::MatrixXi matchMatrix = Eigen::MatrixXi::Zero( m_points.size(), rfd.m_points.size() );
-    Eigen::MatrixXf distMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
+    //Eigen::MatrixXf distMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
     for( cv::DMatch& m : matches )
-        distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), m.distance );
+    {
+        //distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), m.distance );
+        matchQueryPoints.push_back( m_points[m_flannIndices[m.queryIdx]].pos );
+        matchTrainPoints.push_back( rfd.m_points[rfd.m_flannIndices[m.trainIdx]].pos );
+    }
+
+    // run RANSAC and compute reprojection error
+    Eigen::Matrix3d H;
+    std::vector<cv::Point2f> matchQueryPointsCV = iris::eigen2cv<float>(matchQueryPoints);
+    std::vector<cv::Point2f> matchTrainPointsCV = iris::eigen2cv<float>(matchTrainPoints);
+    cv::Mat_<float> HCV = cv::findHomography( matchQueryPointsCV, matchTrainPointsCV, CV_RANSAC, 5.0 );
+    cv::cv2eigen( HCV, H );
+
+    // compute matrix of reprojection errors
+    Eigen::MatrixXf reprojMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
+    for( cv::DMatch& m : matches )
+    {
+        // project point and compute the reprojection error
+        Eigen::Vector2d pp = iris::project_point( H, m_points[m_flannIndices[m.queryIdx]].pos );
+        float err = static_cast<float>( (pp-rfd.m_points[rfd.m_flannIndices[m.trainIdx]].pos).norm() );
+        reprojMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( reprojMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), err );
+    }
 
     //  select the best matches
     std::vector<bool> trainMask(rfd.m_points.size(), true);
@@ -206,13 +228,13 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
     for( size_t q=0; q<m_points.size(); q++ )
     {
         // get the best free point
-        float minDist = std::numeric_limits<float>::max();
+        float minErr = std::numeric_limits<float>::max();
         bool found = false;
         size_t idx;
         for( size_t t=0; t<rfd.m_points.size(); t++ )
-            if( trainMask[t] && distMatrix(q,t) < minDist )
+            if( trainMask[t] && reprojMatrix(q,t) < minErr && reprojMatrix(q,t) < 15.0 )
             {
-                minDist = distMatrix(q,t);
+                minErr = reprojMatrix(q,t);
                 found = true;
                 idx = t;
             }
@@ -227,27 +249,27 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
         }
     }
 
-    // now run Ransac
-    Eigen::Matrix3d H;
-    std::vector<cv::Point2f> queryPointsCV = iris::eigen2cv<float>( queryPoints );
-    std::vector<cv::Point2f> trainPointsCV = iris::eigen2cv<float>(trainPoints);
-    cv::Mat_<float> HCV = cv::findHomography( queryPointsCV, trainPointsCV, CV_RANSAC, 5.0 );
-    cv::cv2eigen( HCV, H );
-
     // project these points with the homography
     std::vector<Eigen::Vector2d> projected2D = iris::project_points( H, queryPoints );
 
-    // write results
-    pose.points2D.clear();
-    pose.pointIndices.clear();
-    pose.projected2D.clear();
-    for( size_t i=0; i<queryPoints.size(); i++ )
-        if( (trainPoints[i]-projected2D[i]).norm() < 15.0 )
-        {
-            pose.points2D.push_back( trainPoints[i] );
-            pose.pointIndices.push_back( queryIndices[i] );
-            pose.projected2D.push_back( projected2D[i] );
-        }
+    pose.points2D = trainPoints;
+    pose.pointIndices = queryIndices;
+    pose.projected2D = projected2D;
+
+
+
+
+//    // write results
+//    pose.points2D.clear();
+//    pose.pointIndices.clear();
+//    pose.projected2D.clear();
+//    for( size_t i=0; i<queryPoints.size(); i++ )
+//        if( (trainPoints[i]-projected2D[i]).norm() < 15.0 )
+//        {
+//            pose.points2D.push_back( trainPoints[i] );
+//            pose.pointIndices.push_back( queryIndices[i] );
+//            pose.projected2D.push_back( projected2D[i] );
+//        }
 }
 
 

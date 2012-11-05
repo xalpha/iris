@@ -115,7 +115,7 @@ if(OPENMP_FOUND)
 endif()
 
 # try to find Random Dot Markers
-find_package( UCHIYAMARKERS )
+find_package( UCHIYAMARKERS QUIET )
 if( UCHIYAMARKERS_FOUND )
     list( APPEND Iris_INCLUDE_DIRS ${UCHIYAMARKERS_INCLUDE_DIRS} )
     list( APPEND Iris_LINK_LIBRARIES ${UCHIYAMARKERS_LIBRARY} )

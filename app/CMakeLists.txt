@@ -105,7 +105,7 @@ set( IrisCC_LINK_LIBS
     ${Nox_LIBRARIES}
     ${GLEW_LIBRARY}
     ${QT_LIBRARIES}
-    ${Iris_LIBRARY} )
+    ${Iris_LIBRARIES} )
 
 # set compile definitions
 set( IrisCC_COMPILE_DEFINITIONS

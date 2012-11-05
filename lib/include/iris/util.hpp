@@ -186,9 +186,9 @@ inline cv::Mat_<To> vector2cv( const std::vector< std::vector<Ti> >& dat )
     // init stuff
     cv::Mat_<float> result( dat.size(), dat[0].size() );
 
-    for( size_t i=0; i<dat.size(); i++ )
-        for( size_t j=0; j<dat[i].size(); j++ )
-            result( i, j ) = static_cast<To>(dat[i][j]);
+        for( size_t i=0; i<dat.size(); i++ )
+            for( size_t j=0; j<dat[i].size(); j++ )
+                result( i, j ) = static_cast<To>(dat[i][j]);
 
     // return
     return result;
@@ -847,6 +847,87 @@ inline T n_choose_k(T n, T k)
     }
     return r;
 }
+
+
+/////
+// Generate Random points with within range and min distance
+///
+template <typename T>
+inline std::vector<Eigen::Matrix<T,2,1> > generate_points( const size_t count,
+                                                           const T minDist,
+                                                           const Eigen::Matrix<T,2,1>& minP,
+                                                           const Eigen::Matrix<T,2,1>& maxP )
+{
+    // init stuff
+    std::vector<Eigen::Matrix<T,2,1> > points;
+    points.reserve( count );
+    Eigen::Matrix<T,2,1> scale = static_cast<T>(0.5) * (maxP - minP) - Eigen::Matrix<T,2,1>::Constant(minDist);
+    Eigen::Matrix<T,2,1> trans = scale + minP + Eigen::Matrix<T,2,1>::Constant(minDist);
+
+    // fill with points
+    for( size_t i=0; i<count; i++ )
+    {
+        while( true )
+        {
+            // get new point
+            Eigen::Matrix<T,2,1> p = Eigen::Matrix<T,2,1>::Random();
+            p(0) *= scale(0);
+            p(1) *= scale(1);
+            p += trans;
+
+            // compute distance to closest point
+            bool collision = false;
+            for( size_t n=0; n<points.size() && !collision; n++ )
+                collision = ( points[n] - p ).norm() < minDist;
+
+            // check for collision
+            if( !collision )
+            {
+                points.push_back( p );
+                break;
+            }
+        }
+    }
+
+    // return result
+    return points;
+}
+template <typename T>
+inline std::vector<Eigen::Matrix<T,2,1> > generate_points( const size_t count, const T minDist )
+{
+    Eigen::Matrix<T,2,1> minP(0,0), maxP(1,1);
+    return generate_points( count, minDist, minP, maxP );
+}
+
+
+/////
+// Project Points
+///
+template <typename T, int Dim>
+inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+1,Dim+1>& P, const Eigen::Matrix<T,Dim,1>& point )
+{
+    Eigen::Matrix<T,Dim+1,1> projected = P * point.homogeneous();
+    return projected.hnormalized();
+}
+
+template <typename T, int Dim>
+inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+2,Dim+2>& P, const Eigen::Matrix<T,Dim,1>& point )
+{
+    Eigen::Matrix<T,Dim+2,1> projected = P * Eigen::Matrix<T,Dim+2,1>(point(0), point(1), 0, 1);
+    return projected.hnormalized().hnormalized();
+}
+
+template <typename T, int DimV, int DimM>
+inline std::vector<Eigen::Matrix<T,DimV,1> > project_points( const Eigen::Matrix<T,DimM,DimM>& P,
+                                                            const std::vector<Eigen::Matrix<T,DimV,1> >& points )
+{
+    std::vector< Eigen::Matrix<T,DimV,1> > pp( points.size() );
+    for( size_t i=0; i<pp.size(); i++ )
+        pp[i] = project_point( P, points[i] );
+    return pp;
+}
+
+
 
 
 } // end namespace iris

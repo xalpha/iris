@@ -26,11 +26,32 @@
 #include <iris/RandomFeatureDescriptor.hpp>
 
 
+template <size_t M, size_t N, size_t K>
+inline void test_rfd()
+{
+    // init stuff
+    iris::RandomFeatureDescriptor<M,N,K> pattern(true), image(false);
+
+    // gen random points
+    std::vector<Eigen::Vector2d> points = iris::generate_points( 100, 10.0, Eigen::Vector2d(0,0), Eigen::Vector2d(1024.0, 768.0) );
+
+    // do it
+    pattern(points);
+    image(points);
+    pattern.match( image );
+    iris::Pose_d pose = pattern.match( image );
+
+    // check the reprojection error
+    for( size_t i=0; i<pose.points2D.size(); i++ )
+        assert( (pose.points2D[i]-pose.projected2D[i]).norm() < 5.0 );
+}
+
+
 int main(int argc, char** argv)
 {
     try
     {
-
+        test_rfd<8,7,5>();
     }
     catch( std::exception &e )
     {
@@ -40,3 +61,10 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+
+
+
+
+
+

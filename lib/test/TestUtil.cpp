@@ -205,28 +205,66 @@ void test_angular_comparisson()
 }
 
 
+template <typename T>
+inline void test_generate_points()
+{
+    for( size_t i=16; i<=4096; i*=2 )
+    {
+        // generate points
+        T minDist = static_cast<T>( (rand()%10) + 2);
+        Eigen::Matrix<T,2,1> minP( 0.0, 0.0 );
+        Eigen::Matrix<T,2,1> maxP( 1024.0, 1024.0);
+        std::vector<Eigen::Matrix<T,2,1> > points = iris::generate_points( i, minDist, minP, maxP );
+
+        // test the number of points
+        assert( points.size() == i );
+
+        // run over the points
+        for( size_t p=0; p<i; p++ )
+        {
+            // test points are greater than min
+            assert( points[p](0) >= (minP(0) + minDist) );
+            assert( points[p](1) >= (minP(1) + minDist) );
+
+            // test points are lower than max
+            assert( points[p](0) <= (maxP(0) + minDist) );
+            assert( points[p](1) <= (maxP(1) + minDist) );
+
+            // test that the point is not too close to other points
+            for( size_t j=0; j<i; j++ )
+                if( j != p )
+                    assert( (points[p]-points[j]).norm() >= minDist );
+        }
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     try
     {
-        // count_bits
-        test_count_bits();
+//        // count_bits
+//        test_count_bits();
 
-        // test permutations
-        test_possible_combinations();
+//        // test permutations
+//        test_possible_combinations();
 
-        // test shift permutations
-        test_shift_combinations<int>();
-        test_shift_combinations<size_t>();
-        test_shift_combinations<uint64_t>();
+//        // test shift permutations
+//        test_shift_combinations<int>();
+//        test_shift_combinations<size_t>();
+//        test_shift_combinations<uint64_t>();
 
-        // test the angle function
-        test_angle<float>( 10.0f );
-        test_angle<double>( 10000000000.0 );
+//        // test the angle function
+//        test_angle<float>( 10.0f );
+//        test_angle<double>( 10000000000.0 );
 
-        // test the counter clockwise comparisson
-        test_angular_comparisson<float>();
-        test_angular_comparisson<double>();
+//        // test the counter clockwise comparisson
+//        test_angular_comparisson<float>();
+//        test_angular_comparisson<double>();
+
+        // test generate points
+        test_generate_points<float>();
+        test_generate_points<double>();
     }
     catch( std::exception &e )
     {

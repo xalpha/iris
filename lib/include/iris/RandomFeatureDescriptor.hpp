@@ -48,7 +48,10 @@ public:
     class Point
     {
     public:
-        Point() : neighbors(M) {}
+        Point()
+        {
+            neighbors.resize(M);
+        }
 
         Point( const Point& point )
         {
@@ -74,17 +77,21 @@ public:
 
     void operator() ( const std::vector<Eigen::Vector2d>& points );
 
-    Pose_d operator& ( const RandomFeatureDescriptor& rfd ) const;
+    Pose_d match( const RandomFeatureDescriptor& rfd ) const;
 
     void operator =( const RandomFeatureDescriptor& pose );
+
+protected:
 
     void describePoint( Point& point );
 
     double descriptor( const std::vector<Eigen::Vector2d>& points );
 
+    void fv2cv( const std::vector<Point>& points, cv::Mat_<float>& fvs, std::vector<size_t>& indices ) const;
+
 protected:
     // point descriptors
-    std::vector<Point> m_pd;
+    std::vector<Point> m_points;
 
     // prebacked combinations
     std::vector< std::vector<size_t> > m_mCn;
@@ -94,6 +101,10 @@ protected:
     // prebacked combinations
     size_t m_featureVectorsPerPoint;
     size_t m_featureVectorLenth;
+
+    // flann
+    cv::Mat_<float> m_flannMatrix;
+    std::vector<size_t> m_flannIndices;
 };
 
 
@@ -137,13 +148,13 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
     // init stuff
     cv::Mat_<int> nearestM( 1, M+1 );
     cv::Mat_<double> distsM( 1, M+1 );
-    m_pd.resize( points.size() );
+    m_points.resize( points.size() );
     cv::Mat_<double> pointsCV( static_cast<int>(points.size()), 2 );
 
     // get the position of the points and init stuff
     for( size_t p=0; p<points.size(); p++ )
     {
-        m_pd[p].pos = points[p];
+        m_points[p].pos = points[p];
         pointsCV( p, 0 ) = points[p](0);
         pointsCV( p, 1 ) = points[p](1);
     }
@@ -151,112 +162,103 @@ inline void RandomFeatureDescriptor<M,N,K>::operator() ( const std::vector<Eigen
     // build kd-tree
     cv::flann::GenericIndex< cv::flann::L2_Simple<double> > pointsFlann( pointsCV, cvflann::KDTreeIndexParams(5) );
 
-    // generate the descriptor tree for each point
-    for( size_t p=0; p<m_pd.size(); p++ )
+    // compute multiple feature vectors for all points
+    for( size_t p=0; p<m_points.size(); p++ )
     {
         // get the M nearest neighbors of point
         pointsFlann.knnSearch( pointsCV.row(p).clone(), nearestM, distsM, M+1, cvflann::SearchParams(128) );
 
         // copy points
         for( size_t m=0; m<M; m++ )
-            m_pd[p].neighbors[m] = m_pd[ nearestM(m+1) ].pos;
+            m_points[p].neighbors[m] = m_points[ nearestM(m+1) ].pos;
 
         // sort counter clockwise
-        clockwise_comparisson<double> ccc( m_pd[p].pos );
-        std::sort( m_pd[p].neighbors.begin(), m_pd[p].neighbors.end(), ccc );
+        clockwise_comparisson<double> ccc( m_points[p].pos );
+        std::sort( m_points[p].neighbors.begin(), m_points[p].neighbors.end(), ccc );
 
         // compute the feature vectors for this point
-        describePoint( m_pd[p] );
+        describePoint( m_points[p] );
     }
+
+    // convert feature vectors to matrices for opencv
+    fv2cv( m_points, m_flannMatrix, m_flannIndices );
 }
 
 
 template <size_t M, size_t N, size_t K>
-inline Pose_d RandomFeatureDescriptor<M,N,K>::operator& ( const RandomFeatureDescriptor<M,N,K>& rfd ) const
+inline Pose_d RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor<M,N,K>& rfd ) const
 {
-    // addemble the descriptors
-//    cv::Mat_<float> queryFVs = vector2cv<float>(m_featureVectors);
-//    cv::Mat_<float> trainFVs = vector2cv<float>(rfd.m_featureVectors);
-
-//    cv::flann::GenericIndex< cv::flann::L2<double> > flann( trainFVs, cvflann::KDTreeIndexParams(5) );
-
-//    // get the M nearest neighbors of point
-//    cv::Mat_<int> nearestM( int(m_featureVectors.size()), 1 );
-//    cv::Mat_<double> distsM( int(m_featureVectors.size()), 1 );
-//    flann.knnSearch( queryFVs, nearestM, distsM, 1, cvflann::SearchParams(128) );
-
-//    std::cout << std::setprecision(2) << queryFVs << std::endl << std::endl << std::endl;
-//    std::cout << std::setprecision(2) << trainFVs << std::endl << std::endl << std::endl;
-
     // match the feature vectors
-//    cv::FlannBasedMatcher matcher;
-//    //cv::BruteForceMatcher<cv::L2<float> > matcher;
-//    std::vector< cv::DMatch > matches;
-//    matcher.match( queryFVs, trainFVs, matches );
+    cv::FlannBasedMatcher matcher;
+    std::vector< cv::DMatch > matches;
+    matcher.match( m_flannMatrix, rfd.m_flannMatrix, matches );
 
-//    double max_dist = 0; double min_dist = 100;
+    // mark all the matches
+    Eigen::MatrixXi matchMatrix = Eigen::MatrixXi::Zero( m_points.size(), rfd.m_points.size() );
+    Eigen::MatrixXf distMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
+    for( cv::DMatch& m : matches )
+        distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), m.distance );
 
-//    //-- Quick calculation of max and min distances between keypoints
-//    for( int i = 0; i < queryFVs.rows; i++ )
-//    { double dist = matches[i].distance;
-//      if( dist > 0 && dist < min_dist ) min_dist = dist;
-//      if( dist > max_dist ) max_dist = dist;
-//    }
+    //  select the best matches
+    std::vector<bool> trainMask(rfd.m_points.size(), true);
+    std::vector<Eigen::Vector2d> queryPoints, trainPoints;
+    std::vector<size_t> queryIndices;
+    for( size_t q=0; q<m_points.size(); q++ )
+    {
+        // get the best free point
+        float minDist = std::numeric_limits<float>::max();
+        bool found = false;
+        size_t idx;
+        for( size_t t=0; t<rfd.m_points.size(); t++ )
+            if( trainMask[t] && matchMatrix(q,t) < minDist )
+            {
+                minDist = matchMatrix(q,t);
+                found = true;
+                idx = t;
+            }
 
-//    printf("-- Max dist : %f \n", max_dist );
-//    printf("-- Min dist : %f \n", min_dist );
+        // if successfull process
+        if( found )
+        {
+            queryPoints.push_back( m_points[q].pos );
+            queryIndices.push_back( q );
+            trainPoints.push_back(rfd.m_points[idx].pos);
+            trainMask[idx] = false;
+        }
+    }
 
-//    //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist )
-//    //-- PS.- radiusMatch can also be used here.
-//    std::vector< cv::DMatch > good_matches;
+    // now run Ransac
+    Eigen::Matrix4d H;
+    std::vector<cv::Point2f> queryPointsCV = iris::eigen2cv<float>( queryPoints );
+    std::vector<cv::Point2f> trainPointsCV = iris::eigen2cv<float>(trainPoints);
+    cv::Mat_<float> HCV = cv::findHomography( queryPointsCV, trainPointsCV, CV_RANSAC, 5.0 );
+    cv::cv2eigen( HCV, H );
 
-//    for( int i = 0; i < queryFVs.rows; i++ )
-//    { if( matches[i].distance > 0 && matches[i].distance <= 2*min_dist )
-//      { good_matches.push_back( matches[i]); }
-//    }
+    std::cout  << H << std::endl;
+    for( Eigen::Vector2d& ggg : queryPoints )
+        std::cout << ggg << std::endl;
 
-//    if( good_matches.size() == 0 )
-//        std::cout << "RandomFeatureDescriptor: NO good Matches." << std::endl;
+    // project these points with the homography
+    std::vector<Eigen::Vector2d> projected2D = iris::project_points( H, queryPoints );
 
-//    for( int i = 0; i < good_matches.size(); i++ )
-//    { printf( "-- Good Match [%d] Keypoint 1: %d  -- Keypoint 2: %d  \n", i, good_matches[i].queryIdx, good_matches[i].trainIdx ); }
+    // write results
+    Pose_d pose;
+    for( size_t i=0; i<queryPoints.size(); i++ )
+        if( (queryPoints[i]-projected2D[i]).norm() < 5.0 )
+        {
+            pose.points2D.push_back( trainPoints[i] );
+            pose.pointIndices.push_back( queryIndices[i] );
+            pose.projected2D.push_back( projected2D[i] );
+        }
 
-//    // init vector of best matches
-//    std::vector< cv::DMatch > minMatches( m_points.size() );
-
-//    // run over the matches and choose the best one
-//    int fvspp = static_cast<int>(m_featureVectorsPerPoint);
-//    for( size_t i=0; i<matches.size(); i++ )
-//        if( matches[i].distance < minMatches[ matches[i].queryIdx / fvspp ].distance )
-//            minMatches[ matches[i].queryIdx / fvspp ] = matches[i];
-
-//    // extract the distances
-//    std::vector<float> dists;
-//    for( size_t i=0; i<minMatches.size(); i++ )
-//        dists.push_back( minMatches[i].distance );
-
-//    // analyse a bit
-//    float m = mean( dists );
-
-//    // assemble the pose
-//    Pose_d pose;
-//    for( size_t i=0; i<minMatches.size(); i++ )
-//    {
-//        if( minMatches[i].distance < m )
-//        {
-//            pose.pointIndices.push_back( static_cast<size_t>(minMatches[i].queryIdx / fvspp) );
-//            pose.points2D.push_back( rfd.m_points[ minMatches[i].trainIdx / static_cast<int>(rfd.m_featureVectorsPerPoint) ] );
-//        }
-//    }
-
-//    return pose;
+    return pose;
 }
 
 
 template <size_t M, size_t N, size_t K>
 inline void RandomFeatureDescriptor<M,N,K>::operator =( const RandomFeatureDescriptor<M,N,K>& rfd )
 {
-    m_pd = rfd.m_pd;
+    m_points = rfd.m_points;
     m_mCn = rfd.m_mCn;
     m_nCk = rfd.m_nCk;
     m_kS = rfd.m_kS;
@@ -310,6 +312,29 @@ inline double RandomFeatureDescriptor<M,N,K>::descriptor( const std::vector<Eige
         return affineInvariant( points[0], points[1], points[2], points[3] );
     else
         throw std::runtime_error( "RandomFeatureDescriptor::descriptor: unknown invariant with \"" + iris::toString(K) + "\" points." );
+}
+
+
+template <size_t M, size_t N, size_t K>
+inline void RandomFeatureDescriptor<M,N,K>::fv2cv( const std::vector<Point>& points, cv::Mat_<float>& fvs, std::vector<size_t>& indices ) const
+{
+    // count vectors
+    size_t fvCount = 0;
+    for( const Point& p : points )
+        fvCount += p.featureVectors.size();
+
+    // assemble matrix
+    size_t row = 0;
+    fvs = cv::Mat_<float>( fvCount, m_featureVectorLenth );
+    indices.resize( fvCount );
+    for( size_t p=0; p<points.size(); p++ )
+        for( const FeatureVector& fv : points[p].featureVectors )
+        {
+            for( size_t j=0; j<m_featureVectorLenth; j++ )
+                fvs( row, j ) = static_cast<float>(fv[j]);
+            indices[row] = p;
+            row++;
+        }
 }
 
 

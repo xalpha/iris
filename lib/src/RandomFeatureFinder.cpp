@@ -131,7 +131,7 @@ bool RandomFeatureFinder::find( Pose_d& pose )
     poseRFD( posePoints );
 
     // compare the resulting descriptors with the configured
-    Pose_d matchedPose = m_patternRFD & poseRFD;
+    Pose_d matchedPose = m_patternRFD.match( poseRFD );
 
     // assemble the result
     if( matchedPose.pointIndices.size() >= m_minPoints )

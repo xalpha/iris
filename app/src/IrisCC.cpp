@@ -425,7 +425,7 @@ void IrisCC::updateImage( int row )
             row = 0;
 
         // get the image
-        const iris::Pose_d pose = m_cs.pose( m_poseIndices[row] );
+        const iris::Pose_d pose = m_cs.pose( getPoseId(row) );
         const cimg_library::CImg<uint8_t>& image = *pose.image;
 
         // convert image to Qt
@@ -441,6 +441,9 @@ void IrisCC::updateImage( int row )
             }
         }
 
+        // get the height of the image
+        double height = static_cast<double>(imageQt.height());
+
         // set the images
         ui->plot_image->setAxisBackground(QPixmap::fromImage(imageQt), true, Qt::IgnoreAspectRatio );
         ui->plot_image->xAxis->setRange(0, imageQt.width() );
@@ -449,11 +452,7 @@ void IrisCC::updateImage( int row )
         // draw the detected points
         if( !pose.rejected )
         {
-            // get the pose
-            const iris::Pose_d& pose = m_cs.pose( getPoseId(row) );
-
-            // copy the data
-            double height = static_cast<double>(imageQt.height());
+            // plot the points
             for( size_t i=0; i<pose.points2D.size(); i++ )
             {
                 // get the color hue

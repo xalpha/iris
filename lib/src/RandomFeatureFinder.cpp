@@ -137,7 +137,6 @@ bool RandomFeatureFinder::find( Pose_d& pose )
     if( matchedPose.pointIndices.size() >= m_minPoints )
     {
         // set the indices and 2D points
-        pose.detected2D = posePoints;
         pose.pointIndices = matchedPose.pointIndices;
         pose.points2D = matchedPose.points2D;
         pose.pointsMax = m_points3D.size();

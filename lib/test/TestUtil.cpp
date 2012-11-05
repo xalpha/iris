@@ -56,14 +56,20 @@ void test_possible_combinations()
         for( uint64_t k=1; k<n; k++ )
             assert( iris::possible_combinations(n,k).size() == static_cast<size_t>(iris::n_choose_k(n,k) ) );
 
-    // test for duplicates
+    // more in-depth tests
     for( uint64_t n=1; n<16; n++ )
     {
         for( uint64_t k=1; k<n; k++ )
         {
+            // test for duplicates
             std::vector< std::vector<size_t> > pc = iris::possible_combinations(n,k);
             for( size_t c=0; c<pc.size(); c++ )
                 assert( std::count( pc.begin(), pc.end(), pc[c] ) == 1 );
+
+            // test the range of the values
+            for( auto a : pc )
+                for( size_t b : a )
+                    assert( b>=0 && b<n );
         }
     }
 }
@@ -243,24 +249,24 @@ int main(int argc, char** argv)
 {
     try
     {
-//        // count_bits
-//        test_count_bits();
+        // count_bits
+        test_count_bits();
 
-//        // test permutations
-//        test_possible_combinations();
+        // test permutations
+        test_possible_combinations();
 
-//        // test shift permutations
-//        test_shift_combinations<int>();
-//        test_shift_combinations<size_t>();
-//        test_shift_combinations<uint64_t>();
+        // test shift permutations
+        test_shift_combinations<int>();
+        test_shift_combinations<size_t>();
+        test_shift_combinations<uint64_t>();
 
-//        // test the angle function
-//        test_angle<float>( 10.0f );
-//        test_angle<double>( 10000000000.0 );
+        // test the angle function
+        test_angle<float>( 10.0f );
+        test_angle<double>( 10000000000.0 );
 
-//        // test the counter clockwise comparisson
-//        test_angular_comparisson<float>();
-//        test_angular_comparisson<double>();
+        // test the counter clockwise comparisson
+        test_angular_comparisson<float>();
+        test_angular_comparisson<double>();
 
         // test generate points
         test_generate_points<float>();

@@ -83,7 +83,6 @@ public:
     std::string name;
     // image
     std::shared_ptr< cimg_library::CImg<uint8_t> > image;
-    std::vector< Eigen::Matrix<T,2,1> > detected2D;
     // correspondences
     std::vector< Eigen::Matrix<T,2,1> > points2D;
     std::vector< Eigen::Matrix<T,3,1> > points3D;
@@ -682,7 +681,7 @@ inline std::vector< std::vector<T> > possible_combinations( T n, T k )
         std::vector<T> c;
         for(T i = 0; i < n; ++i)
             if (!v[i])
-                c.push_back(i+1);
+                c.push_back(i);
         result.push_back(c);
     }
     while (std::next_permutation(v.begin(), v.end()));

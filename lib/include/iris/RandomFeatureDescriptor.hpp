@@ -287,7 +287,13 @@ inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point )
                 // assemble the points needed for the descriptor
                 std::vector<Eigen::Vector2d> points(K);
                 for( size_t p=0; p<K; p++ )
-                    points[p] = point.neighbors[ m_mCn[n][ m_nCk[k][ m_kS[s][p] ] ] ]; // cache rest in peace ;)
+                {
+                    size_t a = m_kS[s][p];
+                    size_t b = m_nCk[k][a];
+                    size_t c = m_mCn[n][b];
+                    points[p] = point.neighbors[c];
+                    //points[p] = point.neighbors[ m_mCn[n][ m_nCk[k][ m_kS[s][p] ] ] ]; // rest in peace cache ;)
+                }
 
                 // write the descriptor
                 featureVectors[n*m_kS.size() + s][k] = descriptor( points );

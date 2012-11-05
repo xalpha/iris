@@ -41,8 +41,9 @@ RandomFeatureFinder::RandomFeatureFinder() :
     m_patternRFD(false),
     m_minPoints(11),
     m_mserMaxRadiusRatio( 3.0),
-    m_mserMinRadius( 10.0)
+    m_mserMinRadius( 5.0)
 {
+    m_useOpenMP = false;
 }
 
 
@@ -131,14 +132,12 @@ bool RandomFeatureFinder::find( Pose_d& pose )
     poseRFD( posePoints );
 
     // compare the resulting descriptors with the configured
-    Pose_d matchedPose = m_patternRFD.match( poseRFD );
+    m_patternRFD.match( poseRFD, pose );
 
     // assemble the result
-    if( matchedPose.pointIndices.size() >= m_minPoints )
+    if( pose.pointIndices.size() >= m_minPoints )
     {
-        // set the indices and 2D points
-        pose.pointIndices = matchedPose.pointIndices;
-        pose.points2D = matchedPose.points2D;
+        // set max number of points
         pose.pointsMax = m_points3D.size();
 
         // run over the indices and set the 3D points
@@ -172,9 +171,19 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
     cv::MSER mser;
     mser( img, contours, mask );
 
+//    // vis the blobs
+//    cvtColor(img, img, CV_GRAY2RGB);
+//    for( size_t c = 0; c < contours.size(); c++ )
+//    {
+//        // vis the blob
+//        cv::Scalar blobCol( rand()%256, rand()%256, rand()%256 );
+//        for( size_t p = 0; p < contours[c].size(); p++ )
+//             cv::circle( img, contours[c][p], 1, blobCol, -1, 8, 0 );
+//    }
+
     // fit ellipses
-    for( size_t c = 0; c < contours.size(); c++ )
-        ellipses.push_back( cv::fitEllipse( contours[c] ) );
+    for( auto &c : contours )
+        ellipses.push_back( cv::fitEllipse( c ) );
 
     // filter detected ellipses
     ellipses = filterEllipses( ellipses );
@@ -182,9 +191,33 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
     // remove self intersecting elipses
     ellipses = removeIntersectingEllipses( ellipses );
 
+//    // vis ellipses
+//    cv::Scalar ellCol( 0, 0, 255 );
+//    for( auto &e : ellipses )
+//        cv::ellipse( img, e, ellCol, 3 );
+
+//    cv::namedWindow( "ggg", 0 );
+//    cv::imshow( "ggg", img );
+//    cvResizeWindow( "ggg", 800, 600 );
+
+
+//    while( true )
+//    {
+//        //Handle pause/unpause and ESC
+//        int c = cv::waitKey(15);
+//        if(c == 'q')
+//            break;
+//    }
+
+
+
+
+    // remove self intersecting elipses
+    //ellipses = removeIntersectingEllipses( ellipses );
+
     // add centers
-    for( size_t e = 0; e < ellipses.size(); e++ )
-        centers.push_back( Eigen::Vector2d( ellipses[e].center.x, ellipses[e].center.y ) );
+    for( auto &e : ellipses )
+        centers.push_back( Eigen::Vector2d( e.center.x, e.center.y ) );
 
     // return
     return centers;
@@ -195,15 +228,15 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::filterEllipses( const std::vec
 {
     // init stuff
     std::vector<cv::RotatedRect> result;
-//    float pi = std::acos(-1.0);
-//    std::vector<float> areas;
+    float pi = std::atan(1)*4;
+    std::vector<float> areas;
 
-//    // analyze the ellipses
-//    for( size_t e = 0; e < ellipses.size(); e++ )
-//        areas.push_back( pi * ellipses[e].size.width * ellipses[e].size.height );
+    // compute the mean area
+    for( size_t e = 0; e < ellipses.size(); e++ )
+        areas.push_back( pi * ellipses[e].size.width * ellipses[e].size.height );
+    float mean_area = mean( areas );
 
-//    // filter ellipses
-//    float mean_area = mean( areas );
+    // filter ellipses
     for( size_t e = 0; e < ellipses.size(); e++ )
     {
         // fit the elipse
@@ -215,7 +248,7 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::filterEllipses( const std::vec
         // filter the elipses
         ok = ok & ((rMax/rMin) <= m_mserMaxRadiusRatio);
         ok = ok & rMin > m_mserMinRadius;
-        //ok = ok & fabs( areas[e] - mean_area ) < 0.5*mean_area;
+        ok = ok & fabs( areas[e] - mean_area ) < mean_area;
 
         // if all is well keep it
         if( ok )

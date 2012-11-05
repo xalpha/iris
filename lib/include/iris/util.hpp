@@ -899,28 +899,22 @@ inline std::vector<Eigen::Matrix<T,2,1> > generate_points( const size_t count, c
 }
 
 
+///////
+//// Project Points
 /////
-// Project Points
-///
 template <typename T, int Dim>
-inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+1,Dim+1>& P, const Eigen::Matrix<T,Dim,1>& point )
+inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+1,Dim+1>& P,
+                                             const Eigen::Matrix<T,Dim,1>& point )
 {
     Eigen::Matrix<T,Dim+1,1> projected = P * point.homogeneous();
     return projected.hnormalized();
 }
 
 template <typename T, int Dim>
-inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+2,Dim+2>& P, const Eigen::Matrix<T,Dim,1>& point )
+inline std::vector<Eigen::Matrix<T,Dim,1> > project_points( const Eigen::Matrix<T,Dim+1,Dim+1>& P,
+                                                            const std::vector<Eigen::Matrix<T,Dim,1> >& points )
 {
-    Eigen::Matrix<T,Dim+2,1> projected = P * Eigen::Matrix<T,Dim+2,1>(point(0), point(1), 0, 1);
-    return projected.hnormalized().hnormalized();
-}
-
-template <typename T, int DimV, int DimM>
-inline std::vector<Eigen::Matrix<T,DimV,1> > project_points( const Eigen::Matrix<T,DimM,DimM>& P,
-                                                            const std::vector<Eigen::Matrix<T,DimV,1> >& points )
-{
-    std::vector< Eigen::Matrix<T,DimV,1> > pp( points.size() );
+    std::vector< Eigen::Matrix<T,Dim,1> > pp( points.size() );
     for( size_t i=0; i<pp.size(); i++ )
         pp[i] = project_point( P, points[i] );
     return pp;

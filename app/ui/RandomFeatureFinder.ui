@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>306</width>
     <height>498</height>
    </rect>
   </property>
@@ -256,7 +256,7 @@
          <double>9999.989999999999782</double>
         </property>
         <property name="value">
-         <double>10.000000000000000</double>
+         <double>5.000000000000000</double>
         </property>
        </widget>
       </item>

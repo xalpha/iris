@@ -22,14 +22,24 @@
 # set include directories
 include_directories( ${Iris_INCLUDE_DIRS} )
 
+# add test for util
+set( Iris_Test_Util test_util )
+add_executable( ${Iris_Test_Util} TestUtil.cpp )
+target_link_libraries( ${Iris_Test_Util} -lm -lc -Wall ${Iris_LIBRARIES} )
+add_test( TestUtil ${Iris_Test_Util} )
+
+
 # add test for rdf
 set( Iris_Test_RandomFeatureDescriptor test_rfd )
 add_executable( ${Iris_Test_RandomFeatureDescriptor} TestRandomFeatureDescriptor.cpp )
 target_link_libraries( ${Iris_Test_RandomFeatureDescriptor} -lm -lc -Wall ${Iris_LIBRARIES} )
 add_test( TestRandomFeatureDescriptor ${Iris_Test_RandomFeatureDescriptor} )
 
-# add test for util
-set( Iris_Test_Util test_util )
-add_executable( ${Iris_Test_Util} TestUtil.cpp )
-target_link_libraries( ${Iris_Test_Util} -lm -lc -Wall ${Iris_LIBRARIES} )
-add_test( TestUtil ${Iris_Test_Util} )
+
+# add test for rff
+set( Iris_Test_RandomFeatureFinder test_rff )
+add_executable( ${Iris_Test_RandomFeatureFinder} TestRandomFeatureFinder.cpp )
+target_link_libraries( ${Iris_Test_RandomFeatureFinder} -lm -lc -Wall ${Iris_LIBRARIES} )
+add_test( TestRandomFeatureFinder ${Iris_Test_RandomFeatureFinder} )
+
+

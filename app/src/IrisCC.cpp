@@ -104,13 +104,13 @@ IrisCC::IrisCC(QWidget *parent) :
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.back().get() );
 
     // init opengl
-    ui->plot_poses->setWidget( &m_worldPoses );
-    Eigen::Matrix4d mv;
-    mv << 1, 0, 0, 0,
-          0, 0,-1, 0,
-          0, 1, 0, 0,
-          0, 0, 0, 1;
-    m_worldPoses.setMV(mv);
+    //ui->plot_poses->setWidget( &m_worldPoses );
+    //Eigen::Matrix4d mv;
+    //mv << 1, 0, 0, 0,
+    //      0, 0,-1, 0,
+    //      0, 1, 0, 0,
+    //      0, 0, 0, 1;
+    //m_worldPoses.setMV(mv);
 
     // init image plot
     ui->plot_image->xAxis->setRange(0, 1);
@@ -272,7 +272,7 @@ void IrisCC::calibrate()
         // update the error plot
         updateImageList();
         updateErrorPlot();
-        updatePosesPlot();
+        //updatePosesPlot();
         updateImage( ui->image_list->currentRow() );
     }
     catch( std::exception &e )
@@ -532,79 +532,79 @@ void IrisCC::updateImage( int row )
 }
 
 
-void IrisCC::updatePosesPlot()
-{
-    // init stuff
-    std::vector<Eigen::Matrix4d> RTs;
-    std::vector<Eigen::Vector3d> points3D;
-    std::vector<Eigen::Vector4d> colors;
-    double alphaInc = static_cast<double>(1) / static_cast<double>(m_cs.poseCount());
-    m_worldPoses.clear();
-
-    // run over all camera poses
-    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
-        for( size_t p=0; p<camIt->second.poses.size(); p++ )
-            if( !camIt->second.poses[p].rejected )
-            {
-                // init alpha values
-                if( points3D.size() == 0 )
-                {
-                    points3D.resize( camIt->second.poses[p].pointsMax );
-                    colors.resize( camIt->second.poses[p].pointsMax, Eigen::Vector4d::Zero() );
-                }
-
-                // get the transformation of the pose
-                Eigen::Affine3d trans(camIt->second.poses[p].transformation);
-                trans = trans.inverse();
-                Eigen::Matrix4d rt = trans.matrix();
-                RTs.push_back( rt );
-
-                // get the points in this pose
-                for( size_t k=0; k<camIt->second.poses[p].points3D.size(); k++ )
-                {
-                    double hue = static_cast<double>(3*camIt->second.poses[p].pointIndices[k])/static_cast<double>(4*camIt->second.poses[p].pointsMax);
-                    double alpha = colors[camIt->second.poses[p].pointIndices[k]](3) + alphaInc;
-
-                    QColor col;
-                    col.setHslF( hue, 0.8, 0.4 );
-
-                    points3D[camIt->second.poses[p].pointIndices[k]] = camIt->second.poses[p].points3D[k];
-                    colors[camIt->second.poses[p].pointIndices[k]] = Eigen::Vector4d( col.redF(), col.greenF(), col.blueF(), alpha );
-                }
-            }
-
-    // update widget
-    if( RTs.size() > 0 )
-    {
-        ui->plot_poses->update();
-        m_worldPoses.setLineWidth( 1 );
-        m_worldPoses( RTs, nox::plot<double>::CS | nox::plot<double>::Layer0 );
-        m_worldPoses.setPointSize( 5 );
-        m_worldPoses( points3D, colors, nox::plot<double>::Pos | nox::plot<double>::Transparent | nox::plot<double>::Center | nox::plot<double>::Layer0 );
-        ui->plot_poses->update();
-    }
-}
-
-
-void IrisCC::updatePosesPlotCurrent()
-{
-    m_worldPoses.clear( nox::plot<double>::Layer1 );
-
-    // draw the current pose
-    if( m_cs.hasPose( getPoseId( ui->image_list->currentRow() ) ) )
-    {
-        const iris::Pose_d& pose = m_cs.pose( getPoseId( ui->image_list->currentRow() ) );
-        if( !pose.rejected )
-        {
-            m_worldPoses.setLineWidth( 3 );
-            Eigen::Affine3d trans( pose.transformation);
-            trans = trans.inverse();
-            m_worldPoses( trans.matrix(), nox::plot<double>::CS | nox::plot<double>::Layer1 );
-            ui->plot_poses->update();
-        }
-    }
-
-}
+//void IrisCC::updatePosesPlot()
+//{
+//    // init stuff
+//    std::vector<Eigen::Matrix4d> RTs;
+//    std::vector<Eigen::Vector3d> points3D;
+//    std::vector<Eigen::Vector4d> colors;
+//    double alphaInc = static_cast<double>(1) / static_cast<double>(m_cs.poseCount());
+//    m_worldPoses.clear();
+//
+//    // run over all camera poses
+//    for( auto camIt=m_cs.cameras().begin(); camIt != m_cs.cameras().end(); camIt++ )
+//        for( size_t p=0; p<camIt->second.poses.size(); p++ )
+//            if( !camIt->second.poses[p].rejected )
+//            {
+//                // init alpha values
+//                if( points3D.size() == 0 )
+//                {
+//                    points3D.resize( camIt->second.poses[p].pointsMax );
+//                    colors.resize( camIt->second.poses[p].pointsMax, Eigen::Vector4d::Zero() );
+//                }
+//
+//                // get the transformation of the pose
+//                Eigen::Affine3d trans(camIt->second.poses[p].transformation);
+//                trans = trans.inverse();
+//                Eigen::Matrix4d rt = trans.matrix();
+//                RTs.push_back( rt );
+//
+//                // get the points in this pose
+//                for( size_t k=0; k<camIt->second.poses[p].points3D.size(); k++ )
+//                {
+//                    double hue = static_cast<double>(3*camIt->second.poses[p].pointIndices[k])/static_cast<double>(4*camIt->second.poses[p].pointsMax);
+//                    double alpha = colors[camIt->second.poses[p].pointIndices[k]](3) + alphaInc;
+//
+//                    QColor col;
+//                    col.setHslF( hue, 0.8, 0.4 );
+//
+//                    points3D[camIt->second.poses[p].pointIndices[k]] = camIt->second.poses[p].points3D[k];
+//                    colors[camIt->second.poses[p].pointIndices[k]] = Eigen::Vector4d( col.redF(), col.greenF(), col.blueF(), alpha );
+//                }
+//            }
+//
+//    // update widget
+//    if( RTs.size() > 0 )
+//    {
+//        ui->plot_poses->update();
+//        m_worldPoses.setLineWidth( 1 );
+//        m_worldPoses( RTs, nox::plot<double>::CS | nox::plot<double>::Layer0 );
+//        m_worldPoses.setPointSize( 5 );
+//        m_worldPoses( points3D, colors, nox::plot<double>::Pos | nox::plot<double>::Transparent | nox::plot<double>::Center | nox::plot<double>::Layer0 );
+//        ui->plot_poses->update();
+//    }
+//}
+//
+//
+//void IrisCC::updatePosesPlotCurrent()
+//{
+//    m_worldPoses.clear( nox::plot<double>::Layer1 );
+//
+//    // draw the current pose
+//    if( m_cs.hasPose( getPoseId( ui->image_list->currentRow() ) ) )
+//    {
+//        const iris::Pose_d& pose = m_cs.pose( getPoseId( ui->image_list->currentRow() ) );
+//        if( !pose.rejected )
+//        {
+//            m_worldPoses.setLineWidth( 3 );
+//            Eigen::Affine3d trans( pose.transformation);
+//            trans = trans.inverse();
+//            m_worldPoses( trans.matrix(), nox::plot<double>::CS | nox::plot<double>::Layer1 );
+//            ui->plot_poses->update();
+//        }
+//    }
+//
+//}
 
 
 void IrisCC::updateCameraList()
@@ -661,7 +661,7 @@ void IrisCC::clear()
     // cleanup the error plot
     ui->plot_error->clearPlottables();
     ui->plot_error->clearGraphs();
-    m_worldPoses.clear();
+    //m_worldPoses.clear();
 
     // clear images
     m_poseIndices.clear();
@@ -674,7 +674,7 @@ void IrisCC::clear()
     updateImageList();
     updateImage(-1);
     updateErrorPlot();
-    updatePosesPlot();
+    //updatePosesPlot();
 }
 
 
@@ -967,8 +967,8 @@ void IrisCC::on_erase()
                 m_cs.erase( m_poseIndices[row] );
                 updateImageList();
                 updateErrorPlot();
-                updatePosesPlot();
-                updatePosesPlotCurrent();
+                //updatePosesPlot();
+                //updatePosesPlotCurrent();
             }
         }
     }
@@ -1058,5 +1058,5 @@ void IrisCC::on_detectedImageChanged( int idx )
 {
     updateImage( idx );
     updateErrorPlot();
-    updatePosesPlotCurrent();
+    //updatePosesPlotCurrent();
 }

@@ -22,7 +22,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
 
 #include <QApplication>
 #include <QGLFormat>

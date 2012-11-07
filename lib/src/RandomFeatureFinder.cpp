@@ -188,8 +188,8 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
 //    }
 
     // fit ellipses
-    for( auto &c : contours )
-        ellipses.push_back( cv::fitEllipse( c ) );
+    for( size_t i=0; i<contours.size(); i++ )
+        ellipses.push_back( cv::fitEllipse( contours[i] ) );
 
     // filter detected ellipses
     ellipses = filterEllipses( ellipses );
@@ -222,8 +222,8 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
     //ellipses = removeIntersectingEllipses( ellipses );
 
     // add centers
-    for( auto &e : ellipses )
-        centers.push_back( Eigen::Vector2d( e.center.x, e.center.y ) );
+    for( size_t e=0; e<ellipses.size(); e++ )
+        centers.push_back( Eigen::Vector2d( ellipses[e].center.x, ellipses[e].center.y ) );
 
     // return
     return centers;
@@ -234,7 +234,7 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::filterEllipses( const std::vec
 {
     // init stuff
     std::vector<cv::RotatedRect> result;
-    float pi = std::atan(1)*4;
+    float pi = std::atan(1.0f)*4.0f;
     std::vector<float> areas;
 
     // compute the mean area

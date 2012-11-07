@@ -67,8 +67,8 @@ void test_possible_combinations()
                 assert( std::count( pc.begin(), pc.end(), pc[c] ) == 1 );
 
             // test the range of the values
-            for( auto a : pc )
-                for( size_t b : a )
+            for( size_t a=0; a<pc.size(); a++ )
+                for( size_t b=0; b<pc[a].size(); b++ )
                     assert( b>=0 && b<n );
         }
     }

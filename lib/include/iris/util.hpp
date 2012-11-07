@@ -916,7 +916,7 @@ inline std::vector<Eigen::Matrix<T,Dim,1> > project_points( const Eigen::Matrix<
 {
     std::vector< Eigen::Matrix<T,Dim,1> > pp( points.size() );
     for( size_t i=0; i<pp.size(); i++ )
-        pp[i] = project_point( P, points[i] );
+        pp[i] = project_point<T,Dim>( P, points[i] );
     return pp;
 }
 

@@ -32,7 +32,7 @@
 
 #include <iris/CameraCalibration.hpp>
 
-#include <nox/plot.hpp>
+//#include <nox/plot.hpp>
 
 
 
@@ -67,8 +67,8 @@ protected:
     void updateImageList();
     void updateErrorPlot();
     void updateImage( int row );
-    void updatePosesPlot();
-    void updatePosesPlotCurrent();
+    //void updatePosesPlot();
+    //void updatePosesPlotCurrent();
     void updateCameraList();
 
     void critical( const std::string& message );
@@ -116,8 +116,8 @@ protected:
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
 
-    // opengl
-    nox::plot<double> m_worldPoses;
+    //// opengl
+    //nox::plot<double> m_worldPoses;
 
     // camera set
     iris::CameraSet_d m_cs;

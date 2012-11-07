@@ -8,9 +8,11 @@ endif()
 
 # set some variabiles
 set( CMAKE_BUILD_TYPE Debug )
-if( NOT WIN32 )
-    set( BUILD_SHARED_LIBS TRUE )
-endif()
+#if( NOT WIN32 )
+#    set( BUILD_SHARED_LIBS TRUE )
+#else()
+#    set( BUILD_SHARED_LIBS FALSE )
+#endif()
 
 # add lib and app
 add_subdirectory( lib )

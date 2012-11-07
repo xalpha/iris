@@ -195,11 +195,9 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
 
     // mark all the matches
     std::vector<Eigen::Vector2d> matchQueryPoints, matchTrainPoints;
-    //Eigen::MatrixXi matchMatrix = Eigen::MatrixXi::Zero( m_points.size(), rfd.m_points.size() );
-    //Eigen::MatrixXf distMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
-    for( cv::DMatch& m : matches )
+    for( size_t i=0; i<matches.size(); i++ )
     {
-        //distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( distMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), m.distance );
+        const cv::DMatch& m = matches[i];
         matchQueryPoints.push_back( m_points[m_flannIndices[m.queryIdx]].pos );
         matchTrainPoints.push_back( rfd.m_points[rfd.m_flannIndices[m.trainIdx]].pos );
     }
@@ -213,10 +211,11 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
 
     // compute matrix of reprojection errors
     Eigen::MatrixXf reprojMatrix = Eigen::MatrixXf::Constant( m_points.size(), rfd.m_points.size(), std::numeric_limits<float>::max() );
-    for( cv::DMatch& m : matches )
+    for( size_t i=0; i<matches.size(); i++ )
     {
-        // project point and compute the reprojection error
-        Eigen::Vector2d pp = iris::project_point( H, m_points[m_flannIndices[m.queryIdx]].pos );
+		// project point and compute the reprojection error
+        const cv::DMatch& m = matches[i];
+        Eigen::Vector2d pp = iris::project_point<double,2>( H, m_points[m_flannIndices[m.queryIdx]].pos );
         float err = static_cast<float>( (pp-rfd.m_points[rfd.m_flannIndices[m.trainIdx]].pos).norm() );
         reprojMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ) = std::min( reprojMatrix( m_flannIndices[m.queryIdx], rfd.m_flannIndices[m.trainIdx] ), err );
     }
@@ -250,7 +249,7 @@ inline void RandomFeatureDescriptor<M,N,K>::match( const RandomFeatureDescriptor
     }
 
     // project these points with the homography
-    std::vector<Eigen::Vector2d> projected2D = iris::project_points( H, queryPoints );
+    std::vector<Eigen::Vector2d> projected2D = iris::project_points<double,2>( H, queryPoints );
 
     pose.points2D = trainPoints;
     pose.pointIndices = queryIndices;
@@ -321,9 +320,9 @@ inline void RandomFeatureDescriptor<M,N,K>::describePoint( Point& point )
 
     // sanity check all feature vectors
     point.featureVectors.clear();
-    for( FeatureVector& fv : featureVectors )
-        if( fv.sum() > 0.0 )
-            point.featureVectors.push_back( fv );
+    for( size_t i=0; i<featureVectors.size(); i++ )
+        if( featureVectors[i].sum() > 0.0 )
+            point.featureVectors.push_back( featureVectors[i] );
 }
 
 
@@ -344,16 +343,17 @@ inline void RandomFeatureDescriptor<M,N,K>::fv2cv( const std::vector<Point>& poi
 {
     // count vectors
     size_t fvCount = 0;
-    for( const Point& p : points )
-        fvCount += p.featureVectors.size();
+    for( size_t i=0; i<points.size(); i++ )
+        fvCount += points[i].featureVectors.size();
 
     // assemble matrix
     size_t row = 0;
     fvs = cv::Mat_<float>( fvCount, m_featureVectorLenth );
     indices.resize( fvCount );
     for( size_t p=0; p<points.size(); p++ )
-        for( const FeatureVector& fv : points[p].featureVectors )
+        for( auto it=points[p].featureVectors.begin(); it!=points[p].featureVectors.end(); it++ )
         {
+			const FeatureVector& fv = *it;
             for( size_t j=0; j<m_featureVectorLenth; j++ )
                 fvs( row, j ) = static_cast<float>(fv[j]);
             indices[row] = p;

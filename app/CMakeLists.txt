@@ -21,7 +21,7 @@
 
 
 cmake_minimum_required(VERSION 2.8)
-project( IrisCC CXX )
+project( IrisCC )
 
 # add module paths
 list( APPEND CMAKE_MODULE_PATH
@@ -29,9 +29,6 @@ list( APPEND CMAKE_MODULE_PATH
     ${CMAKE_INSTALL_PREFIX}/share
     ${CMAKE_CURRENT_LIST_DIR}/cmake
     $ENV{HOME}/.local/share )
-
-# find GLEW
-find_package( GLEW REQUIRED )
 
 # find Qt
 if( WIN32 )
@@ -62,13 +59,9 @@ set( IrisCC_Target irisCC )
 
 # set the header files of QObject derived classes
 set( IrisCC_INC
-    include/IrisCC.hpp
-    include/WidgetQt.hpp
-    include/WorldPoses.hpp )
+    include/IrisCC.hpp )
 set( IrisCC_SRC
     src/IrisCC.cpp
-    src/WidgetQt.cpp
-    src/WorldPoses.cpp
     src/main.cpp )
 set( IrisCC_QT_UI
     ui/CameraConfig.ui
@@ -81,31 +74,28 @@ set( IrisCC_QT_UI
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
 # find NOX
-find_package( Nox QUIET )
-if( NOT ${Nox_FOUND} )
-    message(STATUS "Nox not found, pulling from server...")
-    include(ExternalProject)
-    ExternalProject_Add(Nox
-        GIT_REPOSITORY "https://github.com/xalpha/nox.git"
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$ENV{HOME}/.local )
-endif()
+#find_package( Nox QUIET )
+#if( NOT ${Nox_FOUND} )
+#    message(STATUS "Nox not found, pulling from server...")
+#    include(ExternalProject)
+#    ExternalProject_Add(Nox
+#        GIT_REPOSITORY "https://github.com/xalpha/nox.git"
+#        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$ENV{HOME}/.local )
+#endif()
 
 # set include directories
 set( IrisCC_INCLUDE_DIRS
     include
-    extern/gl2ps
     extern/qcustomplot
     ${Iris_INCLUDE_DIRS}
-    ${Nox_INCLUDE_DIRS}
     $ENV{HOME}/.local/include
     ${CMAKE_CURRENT_BINARY_DIR} )
 
 # set link libraries
 set( IrisCC_LINK_LIBS
-    ${Nox_LIBRARIES}
-    ${GLEW_LIBRARY}
     ${QT_LIBRARIES}
-    ${Iris_LIBRARIES} )
+    ${Iris_LIBRARIES}
+    -lm -lc -Wall )
 
 # set compile definitions
 set( IrisCC_COMPILE_DEFINITIONS

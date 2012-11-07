@@ -73,16 +73,6 @@ set( IrisCC_QT_UI
     ui/RandomFeatureFinder.ui )
 set( IrisCC_QT_RES res/IrisCC.qrc )
 
-# find NOX
-#find_package( Nox QUIET )
-#if( NOT ${Nox_FOUND} )
-#    message(STATUS "Nox not found, pulling from server...")
-#    include(ExternalProject)
-#    ExternalProject_Add(Nox
-#        GIT_REPOSITORY "https://github.com/xalpha/nox.git"
-#        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=$ENV{HOME}/.local )
-#endif()
-
 # set include directories
 set( IrisCC_INCLUDE_DIRS
     include

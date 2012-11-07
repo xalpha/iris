@@ -21,7 +21,7 @@
 
 
 cmake_minimum_required(VERSION 2.8)
-project( IrisCC )
+project( IrisCC CXX )
 
 # add module paths
 list( APPEND CMAKE_MODULE_PATH

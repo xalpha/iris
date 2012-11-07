@@ -100,7 +100,7 @@ if( NOT WIN32 )
     if( CMAKE_COMPILER_IS_GNUCXX )
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
     else( CMAKE_COMPILER_IS_GNUCXX )
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Qunused-arguments")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11 -v")
     endif()
 endif()
 

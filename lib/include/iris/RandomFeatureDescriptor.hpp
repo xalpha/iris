@@ -31,8 +31,6 @@
 #include <algorithm>
 #include <limits>
 
-
-
 #include <iris/util.hpp>
 #include <Eigen/Core>
 

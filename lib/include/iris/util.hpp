@@ -30,12 +30,13 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+// opencv
 using std::ptrdiff_t;
-
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/flann/flann.hpp>
 
+// cimg
 #define cimg_display 0
 #include <CImg.h>
 

@@ -29,8 +29,6 @@
 #include <iostream>
 #include <strstream>
 
-#include <opencv/cv.h>
-
 #include <iris/RandomFeatureFinder.hpp>
 
 namespace iris {
@@ -177,16 +175,6 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
     cv::MSER mser;
     mser( img, contours, mask );
 
-//    // vis the blobs
-//    cvtColor(img, img, CV_GRAY2RGB);
-//    for( size_t c = 0; c < contours.size(); c++ )
-//    {
-//        // vis the blob
-//        cv::Scalar blobCol( rand()%256, rand()%256, rand()%256 );
-//        for( size_t p = 0; p < contours[c].size(); p++ )
-//             cv::circle( img, contours[c][p], 1, blobCol, -1, 8, 0 );
-//    }
-
     // fit ellipses
     for( size_t i=0; i<contours.size(); i++ )
         ellipses.push_back( cv::fitEllipse( contours[i] ) );
@@ -196,30 +184,6 @@ std::vector<Eigen::Vector2d> RandomFeatureFinder::findCircles( const cimg_librar
 
     // remove self intersecting elipses
     ellipses = removeIntersectingEllipses( ellipses );
-
-//    // vis ellipses
-//    cv::Scalar ellCol( 0, 0, 255 );
-//    for( auto &e : ellipses )
-//        cv::ellipse( img, e, ellCol, 3 );
-
-//    cv::namedWindow( "ggg", 0 );
-//    cv::imshow( "ggg", img );
-//    cvResizeWindow( "ggg", 800, 600 );
-
-
-//    while( true )
-//    {
-//        //Handle pause/unpause and ESC
-//        int c = cv::waitKey(15);
-//        if(c == 'q')
-//            break;
-//    }
-
-
-
-
-    // remove self intersecting elipses
-    //ellipses = removeIntersectingEllipses( ellipses );
 
     // add centers
     for( size_t e=0; e<ellipses.size(); e++ )
@@ -253,8 +217,8 @@ std::vector<cv::RotatedRect> RandomFeatureFinder::filterEllipses( const std::vec
 
         // filter the elipses
         ok = ok & ((rMax/rMin) <= m_mserMaxRadiusRatio);
-        ok = ok & rMin > m_mserMinRadius;
-        ok = ok & fabs( areas[e] - mean_area ) < m_mserMearAreaFac*mean_area;
+        ok = ok & (rMin > m_mserMinRadius);
+        ok = ok & (fabs( areas[e] - mean_area ) < m_mserMearAreaFac*mean_area);
 
         // if all is well keep it
         if( ok )

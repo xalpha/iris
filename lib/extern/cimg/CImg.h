@@ -27217,10 +27217,10 @@ namespace cimg_library {
        \param pattern An integer whose bits describe the line pattern (optional).
        \param init_hatch if \c true, reinit hatch motif.
     **/
-    template<typename t>
+    template<typename tt>
     CImg<T>& draw_spline(const int x0, const int y0, const float u0, const float v0,
                          const int x1, const int y1, const float u1, const float v1,
-                         const CImg<t>& texture,
+                         const CImg<tt>& texture,
                          const int tx0, const int ty0, const int tx1, const int ty1,
                          const float opacity=1,
                          const float precision=4, const unsigned int pattern=~0U,

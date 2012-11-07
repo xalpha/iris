@@ -52,14 +52,14 @@ void test_possible_combinations()
         assert( iris::possible_combinations(i,i).size() == 1 );
 
     // test many posibilities
-    for( uint64_t n=1; n<16; n++ )
-        for( uint64_t k=1; k<n; k++ )
+    for( size_t n=1; n<16; n++ )
+        for( size_t k=1; k<n; k++ )
             assert( iris::possible_combinations(n,k).size() == static_cast<size_t>(iris::n_choose_k(n,k) ) );
 
     // more in-depth tests
-    for( uint64_t n=1; n<16; n++ )
+    for( size_t n=1; n<16; n++ )
     {
-        for( uint64_t k=1; k<n; k++ )
+        for( size_t k=1; k<n; k++ )
         {
             // test for duplicates
             std::vector< std::vector<size_t> > pc = iris::possible_combinations(n,k);

@@ -12,6 +12,7 @@ if( NOT WIN32 )
     set( BUILD_SHARED_LIBS TRUE )
 endif()
 
+
 # add lib and app
 add_subdirectory( lib )
 add_subdirectory( app )

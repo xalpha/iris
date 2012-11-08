@@ -41,6 +41,8 @@ list( APPEND Iris_INC
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
+    include/iris/RandomFeatureDescriptor.hpp
+    include/iris/RandomFeatureFinder.hpp
     include/iris/util.hpp )
 list( APPEND Iris_SRC
     src/CameraCalibration.cpp
@@ -49,7 +51,8 @@ list( APPEND Iris_SRC
     src/MultiCameraCalibration.cpp
     src/OpenCVCalibration.cpp
     src/OpenCVSingleCalibration.cpp
-    src/OpenCVStereoCalibration.cpp )
+    src/OpenCVStereoCalibration.cpp
+    src/RandomFeatureFinder.cpp )
 
 # external dependencies of iris
 list( APPEND Iris_EXTERN_INC
@@ -93,7 +96,7 @@ install(FILES "${CMAKE_CURRENT_LIST_DIR}/FindIris.cmake" DESTINATION share )
 install(FILES ${Iris_EXTERN_INC} DESTINATION "include" )
 
 
-# add test app
-add_executable( test test/test.cpp )
-target_link_libraries( test ${Iris_TARGET} )
+# testing
+enable_testing()
+add_subdirectory( test )
 

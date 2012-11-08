@@ -173,7 +173,6 @@ bool ChessboardFinder::find( Pose_d& pose )
             pose.points2D.push_back( Eigen::Vector2d( corners[i].x, corners[i].y ) );
 
         // set the 3d Points
-        pose.detected2D = pose.points2D;
         pose.points3D = m_points3D;
         pose.pointIndices = m_indices;
         pose.pointsMax = m_indices.size();

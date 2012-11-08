@@ -25,6 +25,7 @@
 # Iris_INCLUDE_DIR - include directory for iris headers
 # Iris_INCLUDE_DIRS - all include directories iris needs
 # Iris_LIBRARY - library
+# Iris_LIBRARIES -
 
 # version
 set(Iris_MAJOR_VERSION 0)
@@ -91,13 +92,15 @@ set( Iris_LINK_LIBRARIES
     -lc
     ${OpenCV_LIBS} CACHE INTERNAL "all libs iris needs" )
 
+# set libraries
+set( Iris_LIBRARIES ${Iris_LIBRARY} ${Iris_LINK_LIBRARIES} CACHE INTERNAL "the iris lib" )
 
 # enable C++11 support
 if( NOT WIN32 )
     if( CMAKE_COMPILER_IS_GNUCXX )
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
     else( CMAKE_COMPILER_IS_GNUCXX )
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Qunused-arguments")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11 -v")
     endif()
 endif()
 

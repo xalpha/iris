@@ -52,7 +52,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_image">
        <attribute name="title">
@@ -93,22 +93,6 @@
            </size>
           </property>
          </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_scene">
-       <attribute name="title">
-        <string>Scene</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="margin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="WorldPoses" name="plot_poses" native="true"/>
         </item>
        </layout>
       </widget>
@@ -261,6 +245,11 @@
              <string>Chessboard</string>
             </property>
            </item>
+           <item>
+            <property name="text">
+             <string>Random Features</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item>
@@ -390,12 +379,6 @@
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
    <header location="global">qcustomplot.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>WorldPoses</class>
-   <extends>QWidget</extends>
-   <header location="global">WorldPoses.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

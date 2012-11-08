@@ -32,7 +32,7 @@
 
 #include <iris/CameraCalibration.hpp>
 
-#include <nox/plot.hpp>
+//#include <nox/plot.hpp>
 
 
 
@@ -44,6 +44,7 @@ namespace Ui {
 
     // Finders
     class ChessboardFinder;
+    class RandomFeatureFinder;
 
     // CameraCalibration
     class OpenCVSingleCalibration;
@@ -67,8 +68,8 @@ protected:
     void updateImageList();
     void updateErrorPlot();
     void updateImage( int row );
-    void updatePosesPlot();
-    void updatePosesPlotCurrent();
+    //void updatePosesPlot();
+    //void updatePosesPlotCurrent();
     void updateCameraList();
 
     void critical( const std::string& message );
@@ -112,12 +113,13 @@ protected:
     Ui::CameraConfig* ui_CameraConfig;
     Ui::CameraInfo* ui_CameraInfo;
     Ui::ChessboardFinder* ui_ChessboardFinder;
+    Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
     Ui::MultiCameraCalibration* ui_MultiCameraCalibration;
 
-    // opengl
-    nox::plot<double> m_worldPoses;
+    //// opengl
+    //nox::plot<double> m_worldPoses;
 
     // camera set
     iris::CameraSet_d m_cs;

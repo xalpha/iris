@@ -900,9 +900,9 @@ inline std::vector<Eigen::Matrix<T,2,1> > generate_points( const size_t count, c
 }
 
 
-///////
-//// Project Points
 /////
+// Project Points
+///
 template <typename T, int Dim>
 inline Eigen::Matrix<T,Dim,1> project_point( const Eigen::Matrix<T,Dim+1,Dim+1>& P,
                                              const Eigen::Matrix<T,Dim,1>& point )
@@ -922,6 +922,176 @@ inline std::vector<Eigen::Matrix<T,Dim,1> > project_points( const Eigen::Matrix<
 }
 
 
+/////
+// Color Map
+///
+enum ColorMap
+{
+    Rainbow = 0,
+    Gray = 1,
+    BlueWhiteRed = 2,
+    GrayWhiteRed = 3,
+    BlueYellowRed = 4,
+    RedOrangeWhite = 5,
+    VioletWhite = 6,
+    Heat = 7
+};
+
+template <int Len>
+inline Eigen::Vector3d color_interpolate( const double value, const Eigen::Vector3d* ramp )
+{
+    // compute the index and the interpolation weights
+    double beta = value*static_cast<double>(Len);
+    int index = static_cast<int>(beta);
+    beta -= static_cast<double>(index);
+    double alpha = 1.0 - beta;
+
+    // prepare result
+    if( value < 0 )
+        return ramp[0];
+    else if( index >= Len )
+        return ramp[Len];
+    else
+    {
+        // interpolate
+        Eigen::Vector3d col = alpha*ramp[index] + beta*ramp[index+1];
+
+        // clamp
+        for( size_t i=0; i<3; i++ )
+        {
+            col(i) = col(i) < 0.0 ? 0.0 : col(i);
+            col(i) = col(i) > 1.0 ? 1.0 : col(i);
+        }
+
+        return col;
+    }
+}
+
+template <ColorMap M>
+inline Eigen::Vector3d colorize( const double value );
+
+template <>
+inline Eigen::Vector3d colorize<Rainbow>( const double value )
+{
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.0, 0.0, 0.0 ), // Black
+                               Eigen::Vector3d( 0.0, 0.0, 1.0 ), // Blue
+                               Eigen::Vector3d( 0.0, 1.0, 1.0 ), // Cyan
+                               Eigen::Vector3d( 0.0, 1.0, 0.0 ), // Green
+                               Eigen::Vector3d( 1.0, 1.0, 0.0 ), // Yellow
+                               Eigen::Vector3d( 1.0, 0.0, 0.0 ), // Red
+                               Eigen::Vector3d( 1.0, 1.0, 1.0 ), // White
+                               Eigen::Vector3d( 1.0, 1.0, 1.0 )};// White
+
+    return color_interpolate<7>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<Gray>( const double value )
+{
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.0, 0.0, 0.0 ), // Black
+                               Eigen::Vector3d( 1.0, 1.0, 1.0 ), // White
+                               Eigen::Vector3d( 1.0, 1.0, 1.0 )};// White
+
+    return color_interpolate<2>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<BlueWhiteRed>( const double value )
+{
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.02, 0.44, 0.69), // Blue
+                               Eigen::Vector3d( 0.97, 0.97, 0.97), // White
+                               Eigen::Vector3d( 0.79, 0.00, 0.12), // Red
+                               Eigen::Vector3d( 0.79, 0.00, 0.12)};// Red
+
+    return color_interpolate<3>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<GrayWhiteRed>( const double value )
+{
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.25, 0.25, 0.25), // Gray75
+                               Eigen::Vector3d( 0.97, 0.97, 0.97), // White
+                               Eigen::Vector3d( 0.79, 0.00, 0.12), // Red
+                               Eigen::Vector3d( 0.79, 0.00, 0.12)};// Red
+
+    return color_interpolate<3>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<BlueYellowRed>( const double value )
+{
+    // from blue to very light yellow to red
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.11, 0.34, 0.49), //
+                               Eigen::Vector3d( 0.67, 0.86, 0.64), //
+                               Eigen::Vector3d( 1.00, 1.00, 0.75), //
+                               Eigen::Vector3d( 0.99, 0.68, 0.38), //
+                               Eigen::Vector3d( 0.84, 0.09, 0.11), //
+                               Eigen::Vector3d( 0.84, 0.09, 0.11)};//
+
+    return color_interpolate<5>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<RedOrangeWhite>( const double value )
+{
+    // shades of red to orange and white
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.74, 0.00, 0.15), //
+                               Eigen::Vector3d( 0.94, 0.23, 0.12), //
+                               Eigen::Vector3d( 0.99, 0.55, 0.23), //
+                               Eigen::Vector3d( 0.99, 0.80, 0.36), //
+                               Eigen::Vector3d( 1.00, 1.00, 0.70), //
+                               Eigen::Vector3d( 1.00, 1.00, 1.00), //
+                               Eigen::Vector3d( 1.00, 1.00, 1.00)};//
+
+    return color_interpolate<7>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<VioletWhite>( const double value )
+{
+    // from violet to almost white
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.48, 0.00, 0.47), //
+                               Eigen::Vector3d( 0.76, 0.10, 0.50), //
+                               Eigen::Vector3d( 0.96, 0.40, 0.63), //
+                               Eigen::Vector3d( 0.98, 0.70, 0.72), //
+                               Eigen::Vector3d( 0.99, 0.92, 0.88), //
+                               Eigen::Vector3d( 0.99, 0.92, 0.88), //
+                               Eigen::Vector3d( 1.00, 1.00, 1.00), //
+                               Eigen::Vector3d( 1.00, 1.00, 1.00)};//
+
+    return color_interpolate<7>( value, ramp );
+}
+
+
+template <>
+inline Eigen::Vector3d colorize<Heat>( const double value )
+{
+    // from violet to almost white
+    Eigen::Vector3d ramp[] = { Eigen::Vector3d( 0.388235294, 0.007843137, 0.372549020), //
+                               Eigen::Vector3d( 0.458823529, 0.015686275, 0.376470588), //
+                               Eigen::Vector3d( 0.545098039, 0.027450980, 0.368627451), //
+                               Eigen::Vector3d( 0.635294118, 0.039215686, 0.333333333), //
+                               Eigen::Vector3d( 0.701960784, 0.054901961, 0.298039216), //
+                               Eigen::Vector3d( 0.792156863, 0.070588235, 0.227450980), //
+                               Eigen::Vector3d( 0.866666667, 0.086274510, 0.149019608), //
+                               Eigen::Vector3d( 0.533333333, 0.176470588, 0.113725490), //
+                               Eigen::Vector3d( 0.976470588, 0.345098039, 0.133333333), //
+                               Eigen::Vector3d( 0.980392157, 0.552941176, 0.168627451), //
+                               Eigen::Vector3d( 0.984313725, 0.729411765, 0.729411765), //
+                               Eigen::Vector3d( 0.984313725, 0.831372549, 0.356862745), //
+                               Eigen::Vector3d( 0.984313725, 0.898039216, 0.501960784), //
+                               Eigen::Vector3d( 0.992156863, 0.949019608, 0.627450980), //
+                               Eigen::Vector3d( 1.00, 1.00, 1.00), //
+                               Eigen::Vector3d( 1.00, 1.00, 1.00)};//
+
+    return color_interpolate<15>( value, ramp );
+}
 
 
 } // end namespace iris

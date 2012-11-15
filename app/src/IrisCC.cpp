@@ -272,6 +272,7 @@ void IrisCC::calibrate()
         // update the error plot
         updateImageList();
         updateErrorPlot();
+        updateCoveragePlot();
         //updatePosesPlot();
         updateImage( ui->image_list->currentRow() );
     }
@@ -435,6 +436,85 @@ void IrisCC::updateErrorPlot()
 
     // redraw
     ui->plot_error->replot();
+}
+
+
+void IrisCC::updateCoveragePlot()
+{
+    // clear the plot
+    ui->plot_coverage->clearGraphs();
+    ui->plot_coverage->clearPlottables();
+    ui->plot_coverage->setAxisBackground( QPixmap() );
+    ui->plot_coverage->replot();
+    int res = 256;
+    int rad = 3;
+    double minP = 16.0f;
+
+    // get the current camera
+    if( m_cs.hasCamera( getCameraId( ui->select_camera->currentIndex() ) ) )
+    {
+        // run over all poses of the camera
+        const iris::Camera_d& cam = m_cs.camera( getCameraId( ui->select_camera->currentIndex() ) );
+
+        // determine the scale
+        int width, height, scale;
+        if( cam.imageSize(0) > cam.imageSize(1) )
+        {
+            scale = cam.imageSize(0) / res;
+            width = res;
+            height = cam.imageSize(1) / scale;
+        }
+        else
+        {
+            scale = cam.imageSize(1) / res;
+            height = res;
+            width = cam.imageSize(0) / scale;
+        }
+
+        // init coverage map
+        cimg_library::CImg<float> cm(width, height);
+        for( int y=0; y<height; y++ )
+            for( int x=0; x<width; x++ )
+                cm(x,y) = 0.0f;
+
+        // run over all poses increment the coverage
+        for( size_t p=0; p<cam.poses.size(); p++ )
+            if( !cam.poses[p].rejected )
+                for( size_t i=0; i<cam.poses[p].points2D.size(); i++ )
+                {
+                    int x = static_cast<int>(floor(cam.poses[p].points2D[i](0))/scale );
+                    int y = static_cast<int>(floor(cam.poses[p].points2D[i](1))/scale);
+
+                    for( int row=y-rad; row<=y+rad; row++ )
+                        for( int col=x-rad; col<=x+rad; col++ )
+                            if( row>=0 && row<height && col>=0 && col <width)
+                                cm( col, row ) += 1.0f;
+                }
+
+        // colorzie the image
+        cm.blur( static_cast<float>(rad) );
+        cm.resize( cam.imageSize(0), cam.imageSize(1), -100, 1, 5 );
+        QImage imageQt( cam.imageSize(0), cam.imageSize(1), QImage::Format_RGB888 );
+        #pragma omp parallel for
+        for( int y=0; y<cam.imageSize(1); y++ )
+        {
+            for( int x=0; x<cam.imageSize(0); x++ )
+            {
+                double f  = static_cast<double>(cm(x,y)) / minP;
+                Eigen::Vector3d col = iris::colorize<iris::VioletWhite>( 1.0-f );
+                QColor colQt;
+                colQt.setRgbF( col(0), col(1), col(2) );
+                imageQt.setPixel( x, y, colQt.rgb() );
+            }
+        }
+
+        ui->plot_coverage->xAxis->setRange( 0, cam.imageSize(0) );
+        ui->plot_coverage->yAxis->setRange( 0, cam.imageSize(1) );
+        ui->plot_coverage->setAxisBackground(QPixmap::fromImage(imageQt), true, Qt::IgnoreAspectRatio );
+    }
+
+    // redraw
+    ui->plot_coverage->replot();
 }
 
 
@@ -654,15 +734,6 @@ void IrisCC::warning( const std::string& message )
 
 void IrisCC::clear()
 {
-    // cleanup the image plot
-    ui->plot_image->clearGraphs();
-    ui->plot_image->clearPlottables();
-
-    // cleanup the error plot
-    ui->plot_error->clearPlottables();
-    ui->plot_error->clearGraphs();
-    //m_worldPoses.clear();
-
     // clear images
     m_poseIndices.clear();
 
@@ -674,6 +745,7 @@ void IrisCC::clear()
     updateImageList();
     updateImage(-1);
     updateErrorPlot();
+    updateCoveragePlot();
     //updatePosesPlot();
 }
 
@@ -716,6 +788,7 @@ void IrisCC::on_selectCamera()
     {
         ui->configure_camera->setEnabled(true);
         updateErrorPlot();
+        updateCoveragePlot();
     }
 }
 
@@ -967,6 +1040,7 @@ void IrisCC::on_erase()
                 m_cs.erase( m_poseIndices[row] );
                 updateImageList();
                 updateErrorPlot();
+                updateCoveragePlot();
                 //updatePosesPlot();
                 //updatePosesPlotCurrent();
             }

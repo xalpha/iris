@@ -66,6 +66,7 @@ protected:
 
     void updateImageList();
     void updateErrorPlot();
+    void updateCoveragePlot();
     void updateImage( int row );
     //void updatePosesPlot();
     //void updatePosesPlotCurrent();

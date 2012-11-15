@@ -42,6 +42,7 @@
 #include "ui_OpenCVStereoCalibration.h"
 
 #include <IrisCC.hpp>
+#include <iris/colormap.hpp>
 
 #include <iris/ChessboardFinder.hpp>
 #include <iris/RandomFeatureFinder.hpp>
@@ -501,7 +502,8 @@ void IrisCC::updateCoveragePlot()
             for( int x=0; x<cam.imageSize(0); x++ )
             {
                 double f  = static_cast<double>(cm(x,y)) / minP;
-                Eigen::Vector3d col = iris::colorize<iris::VioletWhite>( 1.0-f );
+                f = f>1.0 ? 1.0 : f;
+                Eigen::Vector3d col = iris::colorize<iris::LinearizedRainbow>( 1.0-0.5*f );
                 QColor colQt;
                 colQt.setRgbF( col(0), col(1), col(2) );
                 imageQt.setPixel( x, y, colQt.rgb() );

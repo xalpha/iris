@@ -36,6 +36,7 @@ list( APPEND Iris_INC
     include/iris/CameraCalibration.hpp
     include/iris/CameraSet.hpp
     include/iris/ChessboardFinder.hpp
+    include/iris/colormap.hpp
     include/iris/Finder.hpp
     include/iris/OpenCVCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp

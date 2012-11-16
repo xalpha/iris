@@ -447,9 +447,9 @@ void IrisCC::updateCoveragePlot()
     ui->plot_coverage->clearPlottables();
     ui->plot_coverage->setAxisBackground( QPixmap() );
     ui->plot_coverage->replot();
-    int res = 256;
-    int rad = 3;
-    double minP = 16.0f;
+    static const int res = 128;
+    static const int rad = 2;
+    static const double minP = 16.0f;
 
     // get the current camera
     if( m_cs.hasCamera( getCameraId( ui->select_camera->currentIndex() ) ) )
@@ -479,18 +479,22 @@ void IrisCC::updateCoveragePlot()
                 cm(x,y) = 0.0f;
 
         // run over all poses increment the coverage
-        for( size_t p=0; p<cam.poses.size(); p++ )
-            if( !cam.poses[p].rejected )
-                for( size_t i=0; i<cam.poses[p].points2D.size(); i++ )
+        const std::vector< iris::Pose_d >& poses = cam.poses;
+        for( size_t p=0; p<poses.size(); p++ )
+            if( !poses[p].rejected )
+            {
+                const std::vector< Eigen::Vector2d >& points = poses[p].points2D;
+                for( size_t i=0; i<poses[p].points2D.size(); i++ )
                 {
-                    int x = static_cast<int>(floor(cam.poses[p].points2D[i](0))/scale );
-                    int y = static_cast<int>(floor(cam.poses[p].points2D[i](1))/scale);
+                    int x = static_cast<int>(points[i](0))/scale;
+                    int y = static_cast<int>(points[i](1))/scale;
 
                     for( int row=y-rad; row<=y+rad; row++ )
                         for( int col=x-rad; col<=x+rad; col++ )
                             if( row>=0 && row<height && col>=0 && col <width)
                                 cm( col, row ) += 1.0f;
                 }
+            }
 
         // colorzie the image
         cm.blur( static_cast<float>(rad) );

@@ -24,6 +24,24 @@
 #include <iris/util.hpp>
 
 
+///
+/// \file    colormap.hpp
+///
+/// \package iris
+/// \version 0.1.0
+///
+/// \brief   simple function to colorize scalar values with selected color maps
+///
+/// \details Acknowledgements: the author would like to thank the following for
+///          providing such hight quality material about colormaps:
+///          - Haim Levkowitz’s color center (http://www.cs.uml.edu/~haim/ColorCenter/)
+///          - Cynthia Brewer and Mark Harrower (http://colorbrewer2.org/)
+///
+/// \author  Alexandru Duliu
+/// \date    Nov 15, 2012
+///
+
+
 namespace iris
 {
 

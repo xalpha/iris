@@ -733,8 +733,8 @@ void IrisCC::on_configureCamera()
         ui_CameraConfig->fy->setValue( cam.intrinsic(1,1) );
         ui_CameraConfig->cx->setValue( cam.intrinsic(0,2) );
         ui_CameraConfig->cy->setValue( cam.intrinsic(1,2) );
-        ui_CameraConfig->sensor_width->setValue( cam.sensorSize(0) );
-        ui_CameraConfig->sensor_height->setValue( cam.sensorSize(1) );
+        ui_CameraConfig->sensor_width->setValue( cam.sensorSize(0) * 1000.0 );
+        ui_CameraConfig->sensor_height->setValue( cam.sensorSize(1) * 1000.0 );
 
         // show the dialog
         m_cameraConfigDialog.exec();
@@ -809,8 +809,8 @@ void IrisCC::on_acceptConfigureCamera()
         cam.intrinsic(1,1) = ui_CameraConfig->fy->value();
         cam.intrinsic(0,2) = ui_CameraConfig->cx->value();
         cam.intrinsic(1,2) = ui_CameraConfig->cy->value();
-        cam.sensorSize(0) = ui_CameraConfig->sensor_width->value();
-        cam.sensorSize(1) = ui_CameraConfig->sensor_height->value();
+        cam.sensorSize(0) = ui_CameraConfig->sensor_width->value() / 1000.0;
+        cam.sensorSize(1) = ui_CameraConfig->sensor_height->value() / 1000.0;
     }
 }
 

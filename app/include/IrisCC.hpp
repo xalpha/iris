@@ -49,7 +49,7 @@ namespace Ui {
     // CameraCalibration
     class OpenCVSingleCalibration;
     class OpenCVStereoCalibration;
-    class MultiCameraCalibration;
+    class OpenCVMultiCalibration;
 }
 
 
@@ -116,7 +116,7 @@ protected:
     Ui::RandomFeatureFinder* ui_RandomFeatureFinder;
     Ui::OpenCVSingleCalibration* ui_OpenCVSingleCalibration;
     Ui::OpenCVStereoCalibration* ui_OpenCVStereoCalibration;
-    Ui::MultiCameraCalibration* ui_MultiCameraCalibration;
+    Ui::OpenCVMultiCalibration* ui_OpenCVMultiCalibration;
 
     //// opengl
     //nox::plot<double> m_worldPoses;

@@ -23,8 +23,8 @@
 
 
 ///
-/// \file    MultiCameraCalibration.hpp
-/// \class   MultiCameraCalibration
+/// \file    OpenCVMultiCalibration.hpp
+/// \class   OpenCVMultiCalibration
 ///
 /// \package iris
 /// \version 0.1.0
@@ -32,7 +32,7 @@
 /// \brief   Class for multi-camera calibration
 ///
 /// \details This class performs calibration of multiple cameras
-///          under the assumption that the images are acquired synchronized
+///          under the assumption that the images are acquired synchronized.
 ///
 /// \author  Amin Abouee
 /// \author  Alexandru Duliu
@@ -44,11 +44,11 @@
 
 namespace iris {
 
-class MultiCameraCalibration : public CameraCalibration
+class OpenCVMultiCalibration : public CameraCalibration
 {
 public:
-    MultiCameraCalibration();
-    virtual ~MultiCameraCalibration();
+    OpenCVMultiCalibration();
+    virtual ~OpenCVMultiCalibration();
 
     // run the calibration
     virtual void calibrate( CameraSet_d& cs );

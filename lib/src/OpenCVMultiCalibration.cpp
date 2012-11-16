@@ -21,32 +21,33 @@
 
 
 ///
-/// \file    MultiCameraCalibration.hpp
-/// \class   MultiCameraCalibration
+/// \file    OpenCVMultiCalibration.hpp.hpp
+/// \class   OpenCVMultiCalibration.hpp
 ///
 /// \author  Amin Abouee
 /// \author  Alexandru Duliu
 /// \date    Nov 1, 2012
 ///
 
+#include <multiCalibrate.hpp>
 
-#include <iris/MultiCameraCalibration.hpp>
+#include <iris/OpenCVMultiCalibration.hpp>
 
 
 namespace iris {
 
-MultiCameraCalibration::MultiCameraCalibration() :
+OpenCVMultiCalibration::OpenCVMultiCalibration() :
     CameraCalibration()
 {
 }
 
 
-MultiCameraCalibration::~MultiCameraCalibration() {
+OpenCVMultiCalibration::~OpenCVMultiCalibration() {
 	// TODO Auto-generated destructor stub
 }
 
 
-void MultiCameraCalibration::calibrate( CameraSet_d& cs )
+void OpenCVMultiCalibration::calibrate( CameraSet_d& cs )
 {
     // this is where the actual work is performed
     //
@@ -58,7 +59,7 @@ void MultiCameraCalibration::calibrate( CameraSet_d& cs )
 }
 
 
-void MultiCameraCalibration::filter( CameraSet_d& cs )
+void OpenCVMultiCalibration::filter( CameraSet_d& cs )
 {
     // filter function runs over all poses of all cameras
     // selects the poses and in the order it needs them

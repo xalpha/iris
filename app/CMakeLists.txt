@@ -68,7 +68,7 @@ set( IrisCC_QT_UI
     ui/CameraInfo.ui
     ui/ChessboardFinder.ui
     ui/IrisCC.ui
-    ui/MultiCameraCalibration.ui
+    ui/OpenCVMultiCalibration.ui
     ui/OpenCVSingleCalibration.ui
     ui/OpenCVStereoCalibration.ui
     ui/RandomFeatureFinder.ui )

@@ -299,7 +299,7 @@
              </item>
              <item>
               <property name="text">
-               <string>Multi Camera</string>
+               <string>OpenCV Multi Camera</string>
               </property>
              </item>
             </widget>

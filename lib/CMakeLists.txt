@@ -37,8 +37,8 @@ list( APPEND Iris_INC
     include/iris/CameraSet.hpp
     include/iris/ChessboardFinder.hpp
     include/iris/Finder.hpp
-    include/iris/MultiCameraCalibration.hpp
     include/iris/OpenCVCalibration.hpp
+    include/iris/OpenCVMultiCalibration.hpp
     include/iris/OpenCVSingleCalibration.hpp
     include/iris/OpenCVStereoCalibration.hpp
     include/iris/RandomFeatureDescriptor.hpp
@@ -48,8 +48,8 @@ list( APPEND Iris_SRC
     src/CameraCalibration.cpp
     src/ChessboardFinder.cpp
     src/Finder.cpp
-    src/MultiCameraCalibration.cpp
     src/OpenCVCalibration.cpp
+    src/OpenCVMultiCalibration.cpp
     src/OpenCVSingleCalibration.cpp
     src/OpenCVStereoCalibration.cpp
     src/RandomFeatureFinder.cpp )
@@ -57,8 +57,10 @@ list( APPEND Iris_SRC
 # external dependencies of iris
 list( APPEND Iris_EXTERN_INC
     extern/cimg/CImg.h
+    extern/multiCalibrate/multiCalibrate.hpp
     extern/tinyxml2/tinyxml2.h )
 list( APPEND Iris_EXTERN_SRC
+    extern/multiCalibrate/multiCalibrate.cpp
     extern/tinyxml2/tinyxml2.cpp )
 
 # set include directories

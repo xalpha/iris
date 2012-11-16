@@ -40,7 +40,7 @@
 #include "ui_RandomFeatureFinder.h"
 #include "ui_OpenCVSingleCalibration.h"
 #include "ui_OpenCVStereoCalibration.h"
-#include "ui_MultiCameraCalibration.h"
+#include "ui_OpenCVMultiCalibration.h"
 
 #include <IrisCC.hpp>
 
@@ -49,7 +49,7 @@
 
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
-#include <iris/MultiCameraCalibration.hpp>
+#include <iris/OpenCVMultiCalibration.hpp>
 
 
 IrisCC::IrisCC(QWidget *parent) :
@@ -61,7 +61,7 @@ IrisCC::IrisCC(QWidget *parent) :
     ui_RandomFeatureFinder( new Ui::RandomFeatureFinder ),
     ui_OpenCVSingleCalibration( new Ui::OpenCVSingleCalibration ),
     ui_OpenCVStereoCalibration( new Ui::OpenCVStereoCalibration ),
-    ui_MultiCameraCalibration( new Ui::MultiCameraCalibration )
+    ui_OpenCVMultiCalibration( new Ui::OpenCVMultiCalibration )
 {
     ui->setupUi(this);
 
@@ -105,7 +105,7 @@ IrisCC::IrisCC(QWidget *parent) :
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVSingleCalibration->setupUi( m_calibrationDialogs.back().get() );
     m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVStereoCalibration->setupUi( m_calibrationDialogs.back().get() );
-    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_MultiCameraCalibration->setupUi( m_calibrationDialogs.back().get() );
+    m_calibrationDialogs.push_back( std::shared_ptr<QDialog>( new QDialog(this) ) );   ui_OpenCVMultiCalibration->setupUi( m_calibrationDialogs.back().get() );
 
     // init opengl
     //ui->plot_poses->setWidget( &m_worldPoses );
@@ -142,7 +142,7 @@ IrisCC::~IrisCC()
     delete ui_RandomFeatureFinder;
     delete ui_OpenCVSingleCalibration;
     delete ui_OpenCVStereoCalibration;
-    delete ui_MultiCameraCalibration;
+    delete ui_OpenCVMultiCalibration;
 }
 
 
@@ -236,7 +236,7 @@ void IrisCC::calibrate()
             case 0 :
                 throw std::runtime_error("IrisCC::update: No Calibration selected.");
 
-            // OpenCV
+            // OpenCV Single
             case 1 :
             {
                 iris::OpenCVSingleCalibration* calib = new iris::OpenCVSingleCalibration();
@@ -265,11 +265,11 @@ void IrisCC::calibrate()
                 break;
             }
 
-            // Multi-Camera
+            // OpenCV Multi
             case 3 :
             {
-                iris::MultiCameraCalibration* calib = new iris::MultiCameraCalibration();
-                calib->setMinCorrespondences( static_cast<size_t>( ui_MultiCameraCalibration->minCorrespondences->value() ) );
+                iris::OpenCVMultiCalibration* calib = new iris::OpenCVMultiCalibration();
+                calib->setMinCorrespondences( static_cast<size_t>( ui_OpenCVMultiCalibration->minCorrespondences->value() ) );
                 cc = std::shared_ptr<iris::CameraCalibration>( calib );
                 break;
             }

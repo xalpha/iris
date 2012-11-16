@@ -752,6 +752,7 @@ void IrisCC::on_cameraInfo()
         // camera
         ui_CameraInfo->name->setText( QString::number(cam.id) );
         ui_CameraInfo->image_size->setText( QString::number( cam.imageSize(0) ) + "x" + QString::number( cam.imageSize(1) ) );
+        ui_CameraInfo->aspect_ratio->setText( QString::number( static_cast<double>(cam.imageSize(0)) / static_cast<double>(cam.imageSize(1)) ) );
 
         // update the dialog
         ui_CameraInfo->fx->setText( QString::number( cam.intrinsic(0,0) ) );
@@ -760,15 +761,17 @@ void IrisCC::on_cameraInfo()
         ui_CameraInfo->cy->setText( QString::number( cam.intrinsic(1,2) ) );
 
         // set intrinsic matrix
-        std::stringstream sim;
-        sim << cam.intrinsic;
-        ui_CameraInfo->intrinsic_matrix->setText( QString(sim.str().c_str()) );
+        QString intr;
+        for( size_t y=0; y<3; y++ )
+            for( size_t x=0; x<3; x++ )
+                intr += QString::number(cam.intrinsic(y,x)) + QString((x==2 && y!=2) ? "\n" : "\t");
+        ui_CameraInfo->intrinsic_matrix->setText( intr );
 
         // set the distortion
-        ui_CameraInfo->distortion_model->setText( "OpenCV" );
+        ui_CameraInfo->camera_model->setText( "Pinhole" );
         QString dist;
         for( size_t i=0; i<cam.distortion.size(); i++ )
-            dist += QString::number( cam.distortion[i] ) + "\n";
+            dist += QString::number( cam.distortion[i] ) + ((i>0 && ((i+1)%3)==0) ? "\n" : "   ");
         ui_CameraInfo->distortion_params->setText( dist );
 
         // f, fov & aspect ratio

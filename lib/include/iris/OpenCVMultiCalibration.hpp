@@ -55,6 +55,8 @@ public:
 
 protected:
     virtual void filter( CameraSet_d& cs );
+    bool checkImageSize (const std::vector <iris::Camera_d> & cameraRef );
+    bool checkFrame( const iris::Pose_d& pose1, const iris::Pose_d& pose2 );
 };
 
 } // end namespace iris

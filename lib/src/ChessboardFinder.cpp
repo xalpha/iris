@@ -204,8 +204,8 @@ int ChessboardFinder::devideFactor( const cimg_library::CImg<uint8_t>& image )
 {
     // init stuff
     int f = 1;
-    int mapPix = 2000000;
-    int slack = 1000000;
+    int mapPix = 1000000;
+    int slack = 100000;
     int pixelCount = image.width()*image.height();
 
     // determine the best scale factor

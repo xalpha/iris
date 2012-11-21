@@ -97,18 +97,22 @@ void OpenCVMultiCalibration::calibrate( CameraSet_d& cs )
 
 }
 
+/**
+ * @brief filter function runs over all poses of all cameras
+       selects the poses and in the order it needs them
+       and stores a copy in m_filteredCameras
+       init stuff
 
+ * @param cs input cameras from GUI
+ */
 void OpenCVMultiCalibration::filter( CameraSet_d& cs )
 {
-    // filter function runs over all poses of all cameras
-    // selects the poses and in the order it needs them
-    // and stores a copy in m_filteredCameras
-    // hihi
-    // init stuff
     m_filteredCameras.clear();
-    size_t framesAdded = 0;
+    size_t framesAdded = 0;  /*!< the number of accepted frames*/
 
-    // get refs of camera
+    /**
+     * @brief cameraRef the refrences of cameras
+     */
     std::vector <iris::Camera_d> cameraRef;
     for( auto it = cs.cameras().begin(); it != cs.cameras().end(); it++ )
     {
@@ -116,18 +120,26 @@ void OpenCVMultiCalibration::filter( CameraSet_d& cs )
     }
 
 
-    // check that the cameras have the same image size
+    /**
+     * uses for check the size of images in every camera
+     */
     if( /*!(m_intrinsicGuess || m_fixIntrinsic) &&*/ checkImageSize(cameraRef) )
        throw std::runtime_error("OpenCVMultiCalibration::filter: cameras do not have the same images size.");
 
-    // do the actual filtering
+    /**
+     * do the actual filtering
+     */
     for( size_t p=0; p<cameraRef[0].poses.size(); p++ )
     {
-        // guilty untill proven innocent
+        /**
+         * guilty untill proven innocent
+         */
         for(int i=0;i<cameraRef.size();i++)
             cameraRef[i].poses[p].rejected = true;
 
-        // check if this frame is valid
+        /**
+         * @brief posescheck it's true if all poses have the same lenght and indices
+         */
         bool posescheck = true;
         for(int i=1;i<cameraRef.size();i++)
         {
@@ -146,7 +158,9 @@ void OpenCVMultiCalibration::filter( CameraSet_d& cs )
         }
     }
 
-    // set image size
+    /**
+     * set image size and add them to m_filteredCamera
+     */
     if( framesAdded > 0 )
     {
         for(int i=0;i<cameraRef.size();i++)
@@ -157,6 +171,12 @@ void OpenCVMultiCalibration::filter( CameraSet_d& cs )
         }
     }
 }
+
+/**
+ * @brief OpenCVMultiCalibration::checkImageSize check the image size of all cameras
+ * @param cameraRef the refrences of all cameras
+ * @return True if all image sizes are the same
+ */
 
 bool OpenCVMultiCalibration::checkImageSize(const std::vector <iris::Camera_d> &cameraRef)
 {
@@ -170,6 +190,12 @@ bool OpenCVMultiCalibration::checkImageSize(const std::vector <iris::Camera_d> &
     return true;
 }
 
+/**
+ * @brief OpenCVMultiCalibration::checkFrame check the specification of 2 poses
+ * @param pose1 the first pose
+ * @param pose2 the second pose
+ * @return true is the the lenght and indices of both poses match
+ */
 bool OpenCVMultiCalibration::checkFrame(const Pose_d & pose1, const Pose_d & pose2)
 {
     // check if the arrays have the same length

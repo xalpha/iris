@@ -9,7 +9,6 @@
 #include <iris/OpenCVSingleCalibration.hpp>
 #include <iris/OpenCVStereoCalibration.hpp>
 
-
 void showPose( const iris::Pose_d& pose )
 {
     // get the image
